@@ -1,9 +1,12 @@
 import type { Page, CellEditor, DraftRow } from '../../types/table'
+import type { useColumnSelection } from '../../hooks/useColumnSelection'
 import { EditableCell } from './EditableCell'
 
 type Props = {
   row: (string | null)[]
   rowNumber: number
+  rowIndex: number
+  selection: ReturnType<typeof useColumnSelection>
   rowKey: string
   active: string
   data: Page
@@ -21,6 +24,8 @@ type Props = {
 export function EditableTableRow({
   row,
   rowNumber,
+  rowIndex,
+  selection,
   rowKey,
   active,
   data,
@@ -46,6 +51,12 @@ export function EditableTableRow({
         return (
           <EditableCell
             key={column}
+            selected={selection.includes(column, rowIndex)}
+            selectionEvents={{
+              onPointerDown: (event) => selection.start(event, column, rowIndex),
+              onPointerEnter: (event) => selection.extend(event, column, rowIndex),
+              onContextMenu: (event) => selection.openMenu(event, column, rowIndex)
+            }}
             value={value}
             editable={data.editable[column] && !data.primaryKeys.some((index) => row[index] === null)}
             modified={modified}

@@ -26,7 +26,7 @@ export function TableStructureEditor({ model, rows }: Props) {
   const allRows = [...rows, ...additions.map((column) => columnKeys.map((key) => column[key]))]
   const count = draft.changes.length + additions.length + Number(draft.name !== undefined)
   const invalid = additions.some((column) => !column.name.trim() || !column.kind.trim())
-  const fullEditing = model.driver === 'postgresql'
+  const fullEditing = model.driver === 'postgresql' || model.driver === 'mysql'
   const blocked = model.changeCount > 0 || model.saving
 
   const stage = (row: number, field: number, value: string | null) => {

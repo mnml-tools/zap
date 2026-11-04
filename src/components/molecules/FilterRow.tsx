@@ -9,13 +9,25 @@ type Props = {
   columns: string[]
   disabled: boolean
   canAdd: boolean
+  canRemove: boolean
   onChange: (patch: Partial<TableFilter>) => void
   onApply: () => void
   onRemove: () => void
   onAdd: () => void
 }
 
-export function FilterRow({ row, index, columns, disabled, canAdd, onChange, onApply, onRemove, onAdd }: Props) {
+export function FilterRow({
+  row,
+  index,
+  columns,
+  disabled,
+  canAdd,
+  canRemove,
+  onChange,
+  onApply,
+  onRemove,
+  onAdd
+}: Props) {
   const noValue = row.operator === 'is_null' || row.operator === 'is_not_null'
 
   return (
@@ -74,7 +86,12 @@ export function FilterRow({ row, index, columns, disabled, canAdd, onChange, onA
       <Button disabled={disabled || !row.column} onClick={onApply}>
         Apply
       </Button>
-      <Button aria-label={`Remove filter ${index + 1}`} title="Remove filter" disabled={disabled} onClick={onRemove}>
+      <Button
+        aria-label={`Remove filter ${index + 1}`}
+        title="Remove filter"
+        disabled={disabled || !canRemove}
+        onClick={onRemove}
+      >
         <Minus size={13} />
       </Button>
       <Button

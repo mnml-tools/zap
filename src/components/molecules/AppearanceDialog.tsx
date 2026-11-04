@@ -2,6 +2,7 @@ import { useEffect, useId, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useTheme } from '../../hooks/useTheme'
 import { accents, modes } from '../../services/theme'
+import { isDialogBackdropClick } from '../../lib/dialog'
 import { Button } from '../atoms/Button'
 
 export function AppearanceDialog({ onDismiss }: { onDismiss: () => void }) {
@@ -21,6 +22,9 @@ export function AppearanceDialog({ onDismiss }: { onDismiss: () => void }) {
       ref={dialog}
       className="modal error-dialog appearance-dialog"
       aria-labelledby={title}
+      onClick={(event) => {
+        if (isDialogBackdropClick(event)) onDismiss()
+      }}
       onCancel={(event) => {
         event.preventDefault()
         onDismiss()

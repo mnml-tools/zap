@@ -1,7 +1,7 @@
 import { isTauri } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 
-export const modes = ['system', 'light', 'dark'] as const
+export const modes = ['light', 'dark'] as const
 
 export const accents = ['pink', 'blue', 'orange', 'green', 'purple'] as const
 
@@ -11,7 +11,6 @@ export type Accent = (typeof accents)[number]
 
 const themeKey = 'zap.theme'
 const accentKey = 'zap.accent'
-const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
 const listeners = new Set<() => void>()
 
 function readPreference<T extends string>(key: string, options: readonly T[], fallback: T): T {
@@ -33,12 +32,11 @@ function readAppearance() {
 let current = readAppearance()
 
 function applyMode() {
-  document.documentElement.dataset.theme =
-    current.theme === 'system' ? (systemTheme.matches ? 'dark' : 'light') : current.theme
+  document.documentElement.dataset.theme = current.theme
 
   if (isTauri())
     getCurrentWindow()
-      .setTheme(current.theme === 'system' ? null : current.theme)
+      .setTheme(current.theme)
       .catch((error) => console.error('Unable to update native window theme:', error))
 }
 
@@ -84,10 +82,6 @@ export function setAccent(accent: Accent) {
   persist(accentKey, accent)
   notify()
 }
-
-systemTheme.addEventListener('change', () => {
-  if (current.theme === 'system') applyMode()
-})
 
 window.addEventListener('storage', (event) => {
   if (event.key === themeKey || event.key === accentKey || event.key === null) {

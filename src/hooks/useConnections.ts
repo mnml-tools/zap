@@ -13,6 +13,7 @@ export function useConnections(request: ApiRequest = api) {
     [busy, setBusy] = useState(''),
     [tested, setTested] = useState(false)
   const [id, setId] = useState<string | null>(null)
+  const [openError, setOpenError] = useState('')
   const opening = useRef(false)
   const [menu, setMenu] = useState<{ connection: Connection; x: number; y: number } | null>(null)
   const menuRow = useRef<HTMLElement | null>(null)
@@ -68,12 +69,13 @@ export function useConnections(request: ApiRequest = api) {
     opening.current = true
     setBusy(c.id)
     setError('')
+    setOpenError('')
 
     try {
       await request('open_connection', { id: c.id })
       setId(c.id)
     } catch (e) {
-      setError(String(e))
+      setOpenError(String(e))
     } finally {
       opening.current = false
       setBusy('')
@@ -148,6 +150,8 @@ export function useConnections(request: ApiRequest = api) {
     search,
     setSearch,
     error,
+    openError,
+    dismissOpenError: () => setOpenError(''),
     busy,
     tested,
     id,

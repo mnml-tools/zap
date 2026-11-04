@@ -325,8 +325,16 @@ pub async fn save_structure(
 
     let target = qualified(driver, table);
     let mut alterations = Vec::new();
+    let mut mysql_changes = std::collections::BTreeMap::<String, Vec<ColumnChange>>::new();
     let mut renames = Vec::new();
     for change in changes {
+        if driver == "mysql" && change.field != 0 {
+            mysql_changes
+                .entry(change.column.clone())
+                .or_default()
+                .push(change);
+            continue;
+        }
         let column = identifier(driver, &change.column)?;
         let value = change.value.as_deref();
         let required = || {
@@ -390,6 +398,7 @@ pub async fn save_structure(
     }
 
     let mut comments = Vec::new();
+    let mut mysql_addition_comments = Vec::new();
     for addition in additions {
         let column = identifier(driver, &addition.name)?;
         let kind = addition.kind.trim();
@@ -412,8 +421,12 @@ pub async fn save_structure(
         renames.push(clause);
 
         if let Some(comment) = addition.comment {
+            if driver == "mysql" {
+                mysql_addition_comments.push((renames.len() - 1, comment));
+                continue;
+            }
             if driver != "postgresql" {
-                return Err("Comments on new fields are supported for PostgreSQL.".into());
+                return Err("SQLite does not support column comments.".into());
             }
             let comment = comment.replace('\\', "\\\\").replace('\'', "''");
             comments.push(format!(
@@ -435,10 +448,40 @@ pub async fn save_structure(
     };
 
     if driver == "mysql" {
-        renames.extend(table_rename);
-        if !renames.is_empty() {
-            sqlx::query(&format!("ALTER TABLE {target} {}", renames.join(", ")))
-                .execute(pool)
+        let mut connection = pool.acquire().await.map_err(|error| error.to_string())?;
+        let mut clauses = Vec::new();
+        if !mysql_changes.is_empty() || !mysql_addition_comments.is_empty() {
+            let mode: String = sqlx::query_scalar("SELECT CAST(@@SESSION.sql_mode AS CHAR)")
+                .fetch_one(&mut *connection)
+                .await
+                .map_err(|error| error.to_string())?;
+            let no_backslash = mode.split(',').any(|mode| mode == "NO_BACKSLASH_ESCAPES");
+            for (index, comment) in mysql_addition_comments {
+                renames[index].push_str(&format!(
+                    " COMMENT {}",
+                    mysql_literal(&comment, no_backslash)?
+                ));
+            }
+            for (column, changes) in mysql_changes {
+                let quoted = identifier(driver, &column)?;
+                clauses.push(
+                    mysql_column_change(
+                        &mut connection,
+                        table,
+                        &column,
+                        &quoted,
+                        changes,
+                        no_backslash,
+                    )
+                    .await?,
+                );
+            }
+        }
+        clauses.extend(renames);
+        clauses.extend(table_rename);
+        if !clauses.is_empty() {
+            sqlx::query(&format!("ALTER TABLE {target} {}", clauses.join(", ")))
+                .execute(&mut *connection)
                 .await
                 .map_err(|error| error.to_string())?;
         }
@@ -463,4 +506,125 @@ pub async fn save_structure(
         .commit()
         .await
         .map_err(|error| error.to_string())
+}
+
+fn mysql_literal(value: &str, no_backslash: bool) -> Result<String, String> {
+    if value.contains('\0') {
+        return Err("SQL text cannot contain a NUL character.".into());
+    }
+    let value = value.replace('\'', "''");
+    let value = if no_backslash {
+        value
+    } else {
+        value.replace('\\', "\\\\")
+    };
+
+    Ok(format!("'{value}'"))
+}
+
+async fn mysql_column_change(
+    connection: &mut sqlx::AnyConnection,
+    table: &Table,
+    column: &str,
+    quoted: &str,
+    changes: Vec<ColumnChange>,
+    no_backslash: bool,
+) -> Result<String, String> {
+    use crate::editor::quote;
+
+    let row = sqlx::query(
+        "SELECT COLUMN_TYPE AS kind, DATA_TYPE AS base, IS_NULLABLE AS nullable,
+                CAST(COLUMN_DEFAULT AS CHAR) AS default_value, COLUMN_COMMENT AS comment,
+                EXTRA AS extra, CHARACTER_SET_NAME AS charset, COLLATION_NAME AS collation
+         FROM information_schema.columns WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?",
+    )
+    .bind(&table.schema).bind(&table.name).bind(column)
+    .fetch_one(connection).await.map_err(|error| error.to_string())?;
+
+    let read = |key| {
+        row.try_get::<String, _>(key)
+            .map_err(|error| error.to_string())
+    };
+    let optional = |key| {
+        row.try_get::<Option<String>, _>(key)
+            .map_err(|error| error.to_string())
+    };
+    let base = read("base")?;
+    let extra = read("extra")?;
+    if !extra.is_empty()
+        || matches!(
+            base.as_str(),
+            "bit"
+                | "geometry"
+                | "point"
+                | "linestring"
+                | "polygon"
+                | "multipoint"
+                | "multilinestring"
+                | "multipolygon"
+                | "geometrycollection"
+        )
+    {
+        return Err(format!("Column {column} has attributes that Zap cannot safely rewrite. Use SQL to alter this column."));
+    }
+
+    let mut kind = read("kind")?;
+    let mut nullable = read("nullable")? == "YES";
+    let mut default = optional("default_value")?
+        .map(|value| mysql_literal(&value, no_backslash))
+        .transpose()?;
+    let mut comment = read("comment")?;
+
+    for change in changes {
+        let fragment = |value: String| {
+            if value.trim().is_empty() || value.contains([';', '\0']) {
+                Err("Enter a valid SQL type or default expression.")
+            } else {
+                Ok(value)
+            }
+        };
+        match change.field {
+            1 => kind = fragment(change.value.unwrap_or_default())?,
+            2 => {
+                nullable = match change.value.as_deref() {
+                    Some("Yes") => true,
+                    Some("No") => false,
+                    _ => return Err("Nullable must be Yes or No.".into()),
+                }
+            }
+            3 => default = change.value.map(fragment).transpose()?,
+            4 => comment = change.value.unwrap_or_default(),
+            _ => return Err("Unknown column property.".into()),
+        }
+    }
+
+    let mut clause = format!("MODIFY COLUMN {quoted} {kind}");
+    let next_base = kind
+        .trim()
+        .split(|c: char| c.is_whitespace() || c == '(')
+        .next()
+        .unwrap_or_default()
+        .to_ascii_lowercase();
+    if matches!(
+        next_base.as_str(),
+        "char" | "varchar" | "text" | "tinytext" | "mediumtext" | "longtext" | "enum" | "set"
+    ) {
+        if let (Some(charset), Some(collation)) = (optional("charset")?, optional("collation")?) {
+            clause.push_str(&format!(
+                " CHARACTER SET {} COLLATE {}",
+                quote("mysql", &charset),
+                quote("mysql", &collation)
+            ));
+        }
+    }
+    clause.push_str(if nullable { " NULL" } else { " NOT NULL" });
+    if let Some(default) = default {
+        clause.push_str(&format!(" DEFAULT {default}"));
+    }
+    clause.push_str(&format!(
+        " COMMENT {}",
+        mysql_literal(&comment, no_backslash)?
+    ));
+
+    Ok(clause)
 }

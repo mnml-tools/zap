@@ -4,8 +4,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 
 type Options = {
   hasChanges: () => boolean
-  isBusy: () => boolean
-  onCloseRequested: () => void
+  onCloseRequested: (confirmClose: () => void) => void
   onError: (error: unknown) => void
 }
 
@@ -23,18 +22,21 @@ export function useUnsavedChanges(options: Options) {
 
     window.addEventListener('beforeunload', warn)
     let disposed = false
+    let closeConfirmed = false
     const subscription = isTauri()
       ? getCurrentWindow().onCloseRequested((event) => {
-          if (latest.current.isBusy()) {
-            event.preventDefault()
+          if (closeConfirmed || !latest.current.hasChanges()) return
 
-            return
-          }
-
-          if (latest.current.hasChanges()) {
-            event.preventDefault()
-            latest.current.onCloseRequested()
-          }
+          event.preventDefault()
+          latest.current.onCloseRequested(() => {
+            closeConfirmed = true
+            getCurrentWindow()
+              .close()
+              .catch((error) => {
+                closeConfirmed = false
+                latest.current.onError(error)
+              })
+          })
         })
       : null
     subscription

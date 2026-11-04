@@ -4,7 +4,12 @@ type Props = { message: string; onCancel: () => void; onConfirm: () => void }
 
 export function ConfirmDialog({ message, onCancel, onConfirm }: Props) {
   return (
-    <div className="overlay">
+    <div
+      className="overlay"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onCancel()
+      }}
+    >
       <section className="modal discard-dialog" role="alertdialog" aria-modal="true" aria-labelledby="discard-title">
         <div className="modal-heading">
           <h2 id="discard-title">Confirm action</h2>

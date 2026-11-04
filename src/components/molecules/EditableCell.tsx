@@ -10,11 +10,26 @@ type Props = {
   editing: boolean
   onBegin: () => void
   hint?: string
+  selected?: boolean
+  selectionEvents?: Pick<ComponentProps<'td'>, 'onPointerDown' | 'onPointerEnter' | 'onContextMenu'>
 } & ComponentProps<typeof CellEditorInput>
 
-export function EditableCell({ value, editable, modified, saving, editing, onBegin, hint, ...editor }: Props) {
+export function EditableCell({
+  value,
+  editable,
+  modified,
+  saving,
+  editing,
+  onBegin,
+  hint,
+  selected,
+  selectionEvents,
+  ...editor
+}: Props) {
   return (
     <td
+      {...(!editing ? selectionEvents : undefined)}
+      data-selected={selected}
       tabIndex={editable && !saving ? 0 : undefined}
       className={`${editable ? 'editable-cell' : ''} ${modified ? 'cell-edited' : ''} ${editing ? 'cell-editing' : ''}`}
       title={editable ? (hint ?? 'Double-click to edit') : (value ?? 'NULL')}

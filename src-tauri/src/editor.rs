@@ -40,11 +40,33 @@ pub(crate) fn qualified(driver: &str, table: &Table) -> String {
         )
     }
 }
-fn text(driver: &str, field: &str) -> String {
-    format!(
-        "CAST({field} AS {})",
-        if driver == "mysql" { "CHAR" } else { "TEXT" }
+fn mysql_binary(kind: &str) -> bool {
+    matches!(
+        kind,
+        "binary"
+            | "varbinary"
+            | "tinyblob"
+            | "blob"
+            | "mediumblob"
+            | "longblob"
+            | "bit"
+            | "geometry"
+            | "point"
+            | "polygon"
+            | "linestring"
+            | "multipoint"
+            | "multilinestring"
+            | "multipolygon"
+            | "geometrycollection"
     )
+}
+
+fn text(driver: &str, field: &str, column: &Column) -> String {
+    match driver {
+        "mysql" if mysql_binary(&column.kind) => format!("CONCAT('0x', HEX({field}))"),
+        "mysql" => format!("CAST({field} AS CHAR CHARACTER SET utf8mb4)"),
+        _ => format!("CAST({field} AS TEXT)"),
+    }
 }
 async fn metadata(pool: &AnyPool, driver: &str, table: &Table) -> Result<Metadata, String> {
     let columns = match driver {
@@ -75,20 +97,7 @@ async fn metadata(pool: &AnyPool, driver: &str, table: &Table) -> Result<Metadat
                         name: r.try_get("name").map_err(|e| e.to_string())?,
                         writable: !extra.contains("VIRTUAL GENERATED")
                             && !extra.contains("STORED GENERATED")
-                            && ![
-                                "binary",
-                                "varbinary",
-                                "tinyblob",
-                                "blob",
-                                "mediumblob",
-                                "longblob",
-                                "bit",
-                                "geometry",
-                                "point",
-                                "polygon",
-                                "linestring",
-                            ]
-                            .contains(&kind.as_str()),
+                            && !mysql_binary(&kind),
                         kind,
                         primary: if key == "PRI" { 1 } else { 0 },
                     })
@@ -182,13 +191,14 @@ pub async fn page_sorted(
         .filter(|(_, c)| c.primary > 0)
         .map(|(i, _)| i)
         .collect::<Vec<_>>();
-    let fields = columns
+    let fields = meta
+        .columns
         .iter()
         .map(|c| {
             format!(
                 "{} AS {}",
-                text(driver, &format!("zap_row.{}", quote(driver, c))),
-                quote(driver, c)
+                text(driver, &format!("zap_row.{}", quote(driver, &c.name)), c),
+                quote(driver, &c.name)
             )
         })
         .collect::<Vec<_>>()
@@ -249,7 +259,20 @@ pub async fn page_sorted(
         .iter()
         .map(|r| {
             (0..columns.len())
-                .map(|i| r.try_get::<Option<String>, _>(i).map_err(|e| e.to_string()))
+                .map(|i| match r.try_get::<Option<String>, _>(i) {
+                    Ok(value) => Ok(value),
+                    Err(error) if driver == "mysql" => {
+                        // Long text expressions can use MySQL's BLOB protocol type.
+                        let bytes = r
+                            .try_get::<Option<Vec<u8>>, _>(i)
+                            .map_err(|_| error.to_string())?;
+                        bytes
+                            .map(String::from_utf8)
+                            .transpose()
+                            .map_err(|e| e.to_string())
+                    }
+                    Err(error) => Err(error.to_string()),
+                })
                 .collect()
         })
         .collect::<Result<Vec<_>, _>>()?;
@@ -311,7 +334,7 @@ pub async fn save(
             // deleted row fails the entire transaction rather than overwriting it.
             let mut predicates=vec![];
             for (i,column) in columns.iter().enumerate() {
-                let field=text(driver,&quote(driver,column));
+                let field=text(driver,&quote(driver,column),&meta.columns[i]);
                 if let Some(value)=&edit.original[i] {
                     bindings.push(Some(value.clone()));
                     let parameter=if driver=="postgresql"{format!("${}",bindings.len())}else{"?".into()};

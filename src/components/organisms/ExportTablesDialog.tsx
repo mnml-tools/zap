@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { tableKey } from '../../lib/tableState'
 import type { Table } from '../../types/table'
+import { isDialogBackdropClick } from '../../lib/dialog'
 import { Button } from '../atoms/Button'
 
 type Props = { tables: Table[]; onCancel: () => void; onExport: (tables: Table[], includeData: boolean) => void }
@@ -23,6 +24,9 @@ export function ExportTablesDialog({ tables, onCancel, onExport }: Props) {
       ref={dialog}
       className="modal error-dialog export-dialog"
       aria-labelledby="export-tables-title"
+      onClick={(event) => {
+        if (isDialogBackdropClick(event)) onCancel()
+      }}
       onCancel={(event) => {
         event.preventDefault()
         onCancel()

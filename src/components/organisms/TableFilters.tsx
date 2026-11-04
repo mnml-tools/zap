@@ -63,6 +63,7 @@ export function TableFilters({
             columns={columns}
             disabled={disabled}
             canAdd={rows.length < 50}
+            canRemove={rows.length > 1}
             onChange={(patch) => update(row.id, patch)}
             onApply={() => applyOne(row)}
             onRemove={() => onRemove(row.id)}
