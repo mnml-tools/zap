@@ -10,6 +10,8 @@
 
 Zap lets you browse tables, edit data, and save SQL queries in one workspace. It’s built with Tauri, React, TypeScript, and Rust.
 
+![Zap browsing a sample PostgreSQL workspace with the events and people tables open](docs/zap-workspace.jpg)
+
 ## What you can do
 
 - **Connect** to PostgreSQL or MySQL directly or over SSH, or pick an existing SQLite file. Saved passwords stay in your operating system’s credential store.
