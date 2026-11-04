@@ -102,6 +102,7 @@ export function TableDataView(props: Props) {
           data &&
           (visibleColumns.length ? (
             <EditableTable
+              key={props.active}
               visibleColumns={visibleColumns}
               data={data}
               page={props.page}

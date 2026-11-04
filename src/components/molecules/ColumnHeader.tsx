@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react'
 import { ArrowUp, ArrowDown } from 'lucide-react'
 import type { TableSort } from '../../types/table'
 import { Button } from '../atoms/Button'
@@ -7,15 +8,17 @@ type Props = {
   primary: boolean
   sort?: TableSort
   disabled: boolean
+  onContextMenu: (event: MouseEvent<HTMLButtonElement>) => void
   onSort: (column: string) => void
 }
 
-export function ColumnHeader({ column, primary, sort, disabled, onSort }: Props) {
+export function ColumnHeader({ column, primary, sort, disabled, onSort, onContextMenu }: Props) {
   return (
     <th aria-sort={sort?.column === column ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
       <Button
         className="column-sort"
         disabled={disabled}
+        onContextMenu={onContextMenu}
         onClick={() => onSort(column)}
         title={
           sort?.column === column && sort.direction === 'desc'

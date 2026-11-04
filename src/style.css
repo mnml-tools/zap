@@ -1081,7 +1081,7 @@ header .theme-toggle svg {
 .view-switch button:hover {
   background: var(--hover);
 }
-.view-switch button[aria-selected='true'],
+.view-switch button[data-selected='true'],
 .view-switch button[aria-pressed='true'] {
   background: var(--background);
   color: var(--text);
@@ -1808,4 +1808,8 @@ th[aria-sort='descending'] {
 .window-controls .window-close:hover {
   background: #bd3030;
   color: #fff;
+}
+
+.selectable-table td[data-selected='true']:not(.cell-editing) {
+  background: color-mix(in srgb, var(--focus) 20%, var(--background));
 }
