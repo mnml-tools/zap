@@ -19,7 +19,7 @@ Zap lets you browse tables, edit data, and save SQL queries in one workspace. It
 - **Edit** cells and stage changes before saving. In Structure, you can rename tables and add fields. Available edits depend on the database driver and permissions.
 - **Run SQL** with a syntax-highlighted editor. Save queries per connection and revisit them in their own tabs.
 - **Import and export SQL** from the sidebar’s **⋯** menu. Export one table or a selection, with rows or structure only.
-- **Make it yours** with System, Light, or Dark mode and five accent colours. Zap remembers your appearance settings, sidebar width, and window size.
+- **Make it yours** with Light or Dark mode and five accent colours. Zap remembers your appearance settings, sidebar width, and window size.
 
 ## Run locally
 

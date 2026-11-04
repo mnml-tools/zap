@@ -3,6 +3,7 @@ import type { useConnections } from '../hooks/useConnections'
 import { AppShell } from '../components/templates/AppShell'
 import { Button } from '../components/atoms/Button'
 import { ErrorMessage } from '../components/atoms/ErrorMessage'
+import { ErrorDialog } from '../components/molecules/ErrorDialog'
 import { SearchField } from '../components/molecules/SearchField'
 import { ConnectionContextMenu } from '../components/molecules/ConnectionContextMenu'
 import { ConnectionsList } from '../components/organisms/ConnectionsList'
@@ -20,6 +21,9 @@ export function ConnectionsPage({ connections: c }: Props) {
       footerRight="PostgreSQL · MySQL · SQLite"
       dialogs={
         <>
+          {c.openError && (
+            <ErrorDialog title="Could not open connection" message={c.openError} onDismiss={c.dismissOpenError} />
+          )}
           {c.menu && (
             <ConnectionContextMenu
               {...c.menu}

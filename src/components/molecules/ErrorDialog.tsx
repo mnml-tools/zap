@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from 'react'
+import { isDialogBackdropClick } from '../../lib/dialog'
 import { Button } from '../atoms/Button'
 
 type Props = { title: string; message: string; onDismiss: () => void }
@@ -22,6 +23,9 @@ export function ErrorDialog({ title, message, onDismiss }: Props) {
       role="alertdialog"
       aria-labelledby={titleId}
       aria-describedby={messageId}
+      onClick={(event) => {
+        if (isDialogBackdropClick(event)) onDismiss()
+      }}
       onCancel={(event) => {
         event.preventDefault()
         onDismiss()

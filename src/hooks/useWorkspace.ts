@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { getCurrentWindow } from '@tauri-apps/api/window'
 import { api } from '../services/api'
 import type { ApiRequest } from '../services/api'
 import type { Connection, Table, QueryDocument, TableFilter } from '../types'
@@ -114,25 +113,10 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
       !!edits.editorRef.current ||
       anyStructureDirty ||
       Object.values(queries.dirtyRef.current).some(Boolean),
-    isBusy: () =>
-      tableActionBusy ||
-      structureSaving ||
-      edits.savingRef.current ||
-      Object.values(queries.busyRef.current).some(Boolean),
     onError: (error) => setError(String(error)),
-    onCloseRequested: () => {
+    onCloseRequested: (confirmClose) => {
       edits.stage()
-      setConfirm({
-        message: 'Discard all pending changes and quit Zap?',
-        action: () => {
-          edits.clearAll()
-          setStructures({})
-          queries.dirtyRef.current = {}
-          getCurrentWindow()
-            .close()
-            .catch((error) => setError(String(error)))
-        }
-      })
+      setConfirm({ message: 'Discard all pending changes and quit Zap?', action: confirmClose })
     }
   })
 

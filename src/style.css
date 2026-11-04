@@ -71,6 +71,12 @@
 * {
   box-sizing: border-box;
 }
+html,
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
 }
@@ -750,12 +756,13 @@ nav small {
 .grid-wrap {
   flex: 1;
   overflow: auto;
+  overscroll-behavior-x: none;
   position: relative;
 }
 table {
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 100%;
+  width: max-content;
   text-align: left;
   font: 11px var(--mono);
 }
@@ -1775,4 +1782,30 @@ th[aria-sort='descending'] {
 
 .columns-dialog-body > .search {
   margin-bottom: 9px;
+}
+
+.window-controls {
+  display: flex;
+  align-items: stretch;
+  align-self: stretch;
+  gap: 1px;
+  margin-left: 4px;
+  pointer-events: auto;
+}
+
+.window-controls button {
+  width: 29px;
+  min-height: 26px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.window-controls button:hover {
+  background: var(--hover);
+}
+
+.window-controls .window-close:hover {
+  background: #bd3030;
+  color: #fff;
 }

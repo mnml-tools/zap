@@ -564,6 +564,9 @@ fn main() {
         .manage(Store::default())
         .setup(|app| {
             if let Some(window) = app.get_webview_window("main") {
+                #[cfg(target_os = "linux")]
+                window.set_decorations(false)?;
+
                 window_size::restore_and_track(window);
             }
             Ok(())

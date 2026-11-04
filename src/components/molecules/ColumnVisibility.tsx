@@ -1,5 +1,6 @@
 import { Columns3 } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
+import { isDialogBackdropClick } from '../../lib/dialog'
 import { Button } from '../atoms/Button'
 import { SearchField } from './SearchField'
 
@@ -32,6 +33,9 @@ export function ColumnVisibility({ columns, hidden, disabled, onChange }: Props)
         ref={dialog}
         className="modal error-dialog columns-dialog"
         aria-labelledby={title}
+        onClick={(event) => {
+          if (isDialogBackdropClick(event)) event.currentTarget.close()
+        }}
         onClose={() => {
           setOpen(false)
           setSearch('')
