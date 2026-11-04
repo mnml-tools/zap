@@ -71,7 +71,7 @@ export function useTableViewState({ id, active, table, request, onError }: Optio
       [active]: {
         ...current,
         open: !current.open,
-        draft: !filters[active] ? [newFilter(columns)] : current.draft
+        draft: current.draft.length ? current.draft : [newFilter(columns)]
       }
     }))
   }
@@ -91,13 +91,16 @@ export function useTableViewState({ id, active, table, request, onError }: Optio
   }
 
   const clearFilters = () => {
-    setFilters((all) => ({ ...all, [active]: { ...state(), draft: [], applied: [] } }))
+    setFilters((all) => ({ ...all, [active]: { ...state(), draft: [newFilter(columns)], applied: [] } }))
     firstPage()
     reload()
   }
 
   const removeFilter = (id: string) => {
     const current = state()
+
+    if (current.draft.length <= 1) return
+
     setFilters((all) => ({
       ...all,
       [active]: {
