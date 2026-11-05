@@ -37,6 +37,11 @@ type Props = Pick<
   | 'sort'
   | 'toggleSort'
   | 'beginEdit'
+  | 'removeRows'
+  | 'duplicateSelectedRows'
+  | 'addRow'
+  | 'beginNewEdit'
+  | 'removeNewRow'
   | 'setCellValue'
   | 'commitCell'
   | 'cancelCell'
@@ -60,6 +65,11 @@ export function TableDataView(props: Props) {
         filtersOpen={!!currentFilters?.open}
         filterCount={props.enabledFilters}
         canFilter={!!props.columns.length}
+        canInsert={!!data && !data.readOnlyReason}
+        onAddRow={() => {
+          if (!visibleColumns.length) props.setHiddenColumns([])
+          props.addRow()
+        }}
         columnPicker={
           <ColumnVisibility
             key={props.active}
@@ -113,6 +123,11 @@ export function TableDataView(props: Props) {
               sort={props.sort}
               onSort={props.toggleSort}
               onBegin={props.beginEdit}
+              onRemoveRows={props.removeRows}
+              onDuplicateRows={props.duplicateSelectedRows}
+              onBeginNew={props.beginNewEdit}
+              onBeginBlank={props.addRow}
+              onRemoveNew={props.removeNewRow}
               onValueChange={props.setCellValue}
               onCommit={props.commitCell}
               onCancel={props.cancelCell}
@@ -122,11 +137,14 @@ export function TableDataView(props: Props) {
             <div className="table-message">No columns are visible. Use Columns to show fields.</div>
           ))
         )}
-        {!loading && visibleColumns.length > 0 && data?.rows.length === 0 && (
-          <div className="table-message">
-            {props.enabledFilters ? 'No rows match the active filters.' : 'This table has no rows on this page.'}
-          </div>
-        )}
+        {!loading &&
+          visibleColumns.length > 0 &&
+          data?.rows.length === 0 &&
+          !Object.values(props.pending[props.active]?.rows ?? {}).some((row) => row.inserted) && (
+            <div className="table-message">
+              {props.enabledFilters ? 'No rows match the active filters.' : 'This table has no rows on this page.'}
+            </div>
+          )}
       </div>
       <TablePagination
         total={data?.total}
