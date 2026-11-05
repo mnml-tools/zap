@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { ApiRequest } from '../services/api'
 import type { Table, Page, TableDraft, CellEditor } from '../types/table'
-import { stageCell, rowKey, countChanges } from '../lib/tableState'
+import { stageCell, rowKey, countChanges, toggleRowsRemoval } from '../lib/tableState'
 
 type Options = {
   id: string
@@ -61,7 +61,8 @@ export function useTableDrafts({ id, active, table, data, request, onError, onSa
         columns: draft.columns,
         edits: Object.values(draft.rows).map((row) => ({
           original: row.original,
-          changes: Object.entries(row.changes).map(([index, value]) => ({
+          deleted: !!row.deleted,
+          changes: Object.entries(row.deleted ? {} : row.changes).map(([index, value]) => ({
             column: draft.columns[Number(index)],
             value
           }))
@@ -86,6 +87,9 @@ export function useTableDrafts({ id, active, table, data, request, onError, onSa
     stage()
     const key = rowKey(row, data),
       draft = draftsRef.current[active]?.rows[key]
+
+    if (draft?.deleted) return
+
     cancelEdit.current = false
     editCell({
       tab: active,
@@ -95,6 +99,14 @@ export function useTableDrafts({ id, active, table, data, request, onError, onSa
       value: draft && Object.hasOwn(draft.changes, column) ? draft.changes[column] : row[column],
       columns: data.columns
     })
+  }
+
+  const removeRows = (rows: (string | null)[][]) => {
+    if (!data || data.readOnlyReason || !data.primaryKeys.length || savingRef.current) return
+    if (rows.some((row) => data.primaryKeys.some((index) => row[index] === null))) return
+
+    const staged = stage()
+    setAll(toggleRowsRemoval(staged, active, rows, data))
   }
 
   const setCellValue = (value: string | null) => {
@@ -143,6 +155,7 @@ export function useTableDrafts({ id, active, table, data, request, onError, onSa
     stage,
     save,
     beginEdit,
+    removeRows,
     setCellValue,
     commitCell,
     cancelCell,

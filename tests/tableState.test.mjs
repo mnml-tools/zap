@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { stageCell, countChanges, nextSort } from '../src/lib/tableState.ts'
+import { stageCell, countChanges, nextSort, toggleRowRemoval, toggleRowsRemoval } from '../src/lib/tableState.ts'
 const cell = (overrides = {}) => ({
   tab: 'people',
   rowKey: '[1]',
@@ -37,4 +37,42 @@ test('sorting cycles ascending, descending, none and restarts for another column
   assert.deepEqual(desc, { column: 'id', direction: 'desc' })
   assert.equal(nextSort(desc, 'id'), undefined)
   assert.deepEqual(nextSort(desc, 'name'), { column: 'name', direction: 'asc' })
+})
+
+test('row removal preserves edits for restore and cannot be overwritten by cell commits', () => {
+  const page = { primaryKeys: [0], columns: cell().columns }
+  const edited = stageCell({}, cell({ rowKey: '["1"]' }))
+  const removed = toggleRowRemoval(edited, 'people', cell().row, page)
+  assert.equal(edited.people.rows['["1"]'].deleted, undefined)
+  assert.equal(removed.people.rows['["1"]'].deleted, true)
+  assert.equal(countChanges(removed.people), 1)
+  assert.equal(stageCell(removed, cell({ rowKey: '["1"]', value: 'Late blur' })), removed)
+  const restored = toggleRowRemoval(removed, 'people', cell().row, page)
+  assert.equal(restored.people.rows['["1"]'].changes[1], 'After')
+  assert.equal(restored.people.rows['["1"]'].deleted, false)
+})
+
+test('restoring an unedited row clears its draft and leaves other tabs intact', () => {
+  const page = { primaryKeys: [0, 1], columns: cell().columns }
+  const existing = stageCell({}, cell({ tab: 'events' }))
+  const removed = toggleRowRemoval(existing, 'people', cell().row, page)
+  assert.equal(countChanges(removed.people), 1)
+  const restored = toggleRowRemoval(removed, 'people', cell().row, page)
+  assert.deepEqual(restored, existing)
+})
+
+test('removing a mixed selection marks every row and restoring preserves edits', () => {
+  const page = { primaryKeys: [0], columns: cell().columns }
+  const rows = [cell().row, ['2', 'Second', null], ['3', 'Third', null]]
+  const edited = stageCell({}, cell({ rowKey: '["1"]' }))
+  const partiallyRemoved = toggleRowRemoval(edited, 'people', rows[1], page)
+  const removed = toggleRowsRemoval(partiallyRemoved, 'people', rows, page)
+  assert.equal(countChanges(removed.people), 3)
+  assert.ok(rows.every((row) => removed.people.rows[JSON.stringify([row[0]])].deleted))
+  assert.equal(partiallyRemoved.people.rows['["1"]'].deleted, undefined)
+  const restored = toggleRowsRemoval(removed, 'people', rows, page)
+  assert.equal(countChanges(restored.people), 1)
+  assert.equal(restored.people.rows['["1"]'].changes[1], 'After')
+  assert.equal(restored.people.rows['["2"]'], undefined)
+  assert.equal(restored.people.rows['["3"]'], undefined)
 })

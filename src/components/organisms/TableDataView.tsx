@@ -37,6 +37,7 @@ type Props = Pick<
   | 'sort'
   | 'toggleSort'
   | 'beginEdit'
+  | 'removeRows'
   | 'setCellValue'
   | 'commitCell'
   | 'cancelCell'
@@ -113,6 +114,7 @@ export function TableDataView(props: Props) {
               sort={props.sort}
               onSort={props.toggleSort}
               onBegin={props.beginEdit}
+              onRemoveRows={props.removeRows}
               onValueChange={props.setCellValue}
               onCommit={props.commitCell}
               onCancel={props.cancelCell}

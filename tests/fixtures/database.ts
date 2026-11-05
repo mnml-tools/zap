@@ -133,8 +133,15 @@ export const request: ApiRequest = async <T>(command: string, args?: Record<stri
     }
     for (const row of args!.edits as {
       original: (string | null)[]
+      deleted?: boolean
       changes: { column: string; value: string | null }[]
     }[]) {
+      if (row.deleted) {
+        const index = rows.findIndex((r) => r[0] === row.original[0])
+        if (index >= 0) rows.splice(index, 1)
+        continue
+      }
+
       const target = rows.find((r) => r[0] === row.original[0])!
       for (const change of row.changes) target[['id', 'name', 'email'].indexOf(change.column)] = change.value
     }

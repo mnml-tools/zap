@@ -918,6 +918,13 @@ header[data-tauri-drag-region] > * {
   color: var(--secondary);
   border-bottom: 1px solid var(--border);
 }
+tr.row-deleted td,
+tr.row-deleted:hover td {
+  background: color-mix(in srgb, #c34b45 12%, var(--background));
+  text-decoration: line-through;
+  opacity: 0.65;
+}
+
 tr.row-edited td,
 tr.row-edited:hover td {
   background: var(--edited-bg);
@@ -1810,6 +1817,27 @@ th[aria-sort='descending'] {
   color: #fff;
 }
 
+/* Rows use a quiet band; cells selected for copying have a stronger fill and outline. */
+.selectable-table tr[data-row-selected='true']:not(.row-deleted):not(.row-edited) td:not(.cell-editing) {
+  background: color-mix(in srgb, var(--accent) 7%, var(--background));
+}
+
+.selectable-table tr[data-row-selected='true'] .row-selector {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 13%, var(--background));
+  box-shadow: inset 2px 0 var(--accent);
+}
+
+.selectable-table .row-selector {
+  cursor: pointer;
+  user-select: none;
+}
+
 .selectable-table td[data-selected='true']:not(.cell-editing) {
-  background: color-mix(in srgb, var(--focus) 20%, var(--background));
+  background: color-mix(in srgb, var(--accent) 22%, var(--background));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.selectable-table tr[data-row-selected='true'] td[data-selected='true']:not(.cell-editing) {
+  background: color-mix(in srgb, var(--accent) 22%, var(--background));
 }

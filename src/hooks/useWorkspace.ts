@@ -369,6 +369,7 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
     saving: edits.saving,
     save: edits.save,
     beginEdit: edits.beginEdit,
+    removeRows: edits.removeRows,
     setCellValue: edits.setCellValue,
     commitCell: edits.commitCell,
     cancelCell: edits.cancelCell,

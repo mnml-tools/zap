@@ -17,6 +17,7 @@ type Props = {
   saving: boolean
   sort?: TableSort
   onSort: (column: string) => void
+  onRemoveRows: (rows: (string | null)[][]) => void
 } & Pick<ComponentProps<typeof EditableTableRow>, 'onBegin' | 'onValueChange' | 'onCommit' | 'onCancel' | 'onNull'>
 
 export function EditableTable({
@@ -29,10 +30,17 @@ export function EditableTable({
   saving,
   sort,
   onSort,
+  onRemoveRows,
   ...actions
 }: Props) {
   const selection = useColumnSelection(data, draft)
   const { menu } = selection
+  const menuRows =
+    menu?.row === undefined
+      ? []
+      : data.rows.slice(Math.min(menu.range.anchor, menu.range.end), Math.max(menu.range.anchor, menu.range.end) + 1)
+  const restoreRows = menuRows.every((row) => draft?.rows[rowKey(row, data)]?.deleted)
+  const rowLabel = menuRows.length === 1 ? 'Row' : `${menuRows.length} Rows`
 
   return (
     <>
@@ -84,7 +92,27 @@ export function EditableTable({
           y={menu.y}
           trigger={menu.trigger}
           onDismiss={selection.dismissMenu}
-          actions={[{ label: 'Copy All Column Values', disabled: !data.rows.length, run: selection.copy }]}
+          actions={[
+            ...(menu.range.mode === 'cells'
+              ? [{ label: 'Copy All Column Values', disabled: !data.rows.length, run: selection.copy }]
+              : []),
+            ...(menuRows.length
+              ? [
+                  {
+                    label: `${restoreRows ? 'Restore' : 'Remove'} ${rowLabel}`,
+                    disabled:
+                      saving ||
+                      !!data.readOnlyReason ||
+                      !data.primaryKeys.length ||
+                      menuRows.some((row) => data.primaryKeys.some((index) => row[index] === null)),
+                    run: () => {
+                      onRemoveRows(menuRows)
+                      selection.dismissMenu()
+                    }
+                  }
+                ]
+              : [])
+          ]}
         />
       )}
       {selection.error && (
