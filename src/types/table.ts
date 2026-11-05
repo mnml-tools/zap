@@ -11,7 +11,12 @@ export type Page = {
 
 export type TableSort = { column: string; direction: 'asc' | 'desc' }
 
-export type DraftRow = { original: (string | null)[]; changes: Record<number, string | null>; deleted?: boolean }
+export type DraftRow = {
+  original: (string | null)[]
+  changes: Record<number, string | null>
+  deleted?: boolean
+  inserted?: boolean
+}
 
 export type TableDraft = { columns: string[]; rows: Record<string, DraftRow> }
 

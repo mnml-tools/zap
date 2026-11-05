@@ -9,7 +9,9 @@ type Props = {
   saving: boolean
   editing: boolean
   onBegin: () => void
+  editOnClick?: boolean
   hint?: string
+  emptyLabel?: string
   selected?: boolean
   selectionEvents?: Pick<ComponentProps<'td'>, 'onPointerDown' | 'onPointerEnter' | 'onContextMenu'>
 } & ComponentProps<typeof CellEditorInput>
@@ -21,7 +23,9 @@ export function EditableCell({
   saving,
   editing,
   onBegin,
+  editOnClick = false,
   hint,
+  emptyLabel,
   selected,
   selectionEvents,
   ...editor
@@ -33,7 +37,8 @@ export function EditableCell({
       tabIndex={editable && !saving ? 0 : undefined}
       className={`${editable ? 'editable-cell' : ''} ${modified ? 'cell-edited' : ''} ${editing ? 'cell-editing' : ''}`}
       title={editable ? (hint ?? 'Double-click to edit') : (value ?? 'NULL')}
-      onDoubleClick={onBegin}
+      onClick={editOnClick && editable && !saving && !editing ? onBegin : undefined}
+      onDoubleClick={!editOnClick && editable && !saving && !editing ? onBegin : undefined}
       onKeyDown={(event) => {
         if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === 'F2')) {
           event.preventDefault()
@@ -41,7 +46,17 @@ export function EditableCell({
         }
       }}
     >
-      {editing ? <CellEditorInput value={value} {...editor} /> : value === null ? <NullValue /> : value}
+      {editing ? (
+        <CellEditorInput value={value} {...editor} />
+      ) : value === null ? (
+        emptyLabel ? (
+          <span className="null">{emptyLabel}</span>
+        ) : (
+          <NullValue />
+        )
+      ) : (
+        value
+      )}
     </td>
   )
 }

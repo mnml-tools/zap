@@ -6,6 +6,7 @@ import { ErrorDialog } from '../molecules/ErrorDialog'
 import { rowKey } from '../../lib/tableState'
 import { ColumnHeader } from '../molecules/ColumnHeader'
 import { EditableTableRow } from '../molecules/EditableTableRow'
+import { NewTableRow } from '../molecules/NewTableRow'
 
 type Props = {
   data: Page
@@ -17,6 +18,9 @@ type Props = {
   saving: boolean
   sort?: TableSort
   onSort: (column: string) => void
+  onBeginBlank: (column: number) => void
+  onBeginNew: (key: string, column: number) => void
+  onRemoveNew: (key: string) => void
   onRemoveRows: (rows: (string | null)[][]) => void
 } & Pick<ComponentProps<typeof EditableTableRow>, 'onBegin' | 'onValueChange' | 'onCommit' | 'onCancel' | 'onNull'>
 
@@ -31,6 +35,9 @@ export function EditableTable({
   sort,
   onSort,
   onRemoveRows,
+  onBeginNew,
+  onBeginBlank,
+  onRemoveNew,
   ...actions
 }: Props) {
   const selection = useColumnSelection(data, draft)
@@ -83,6 +90,39 @@ export function EditableTable({
               />
             )
           })}
+          {Object.entries(draft?.rows ?? {})
+            .filter(([, row]) => row.inserted)
+            .map(([key, row]) => (
+              <NewTableRow
+                key={key}
+                draft={row}
+                data={data}
+                visibleColumns={visibleColumns}
+                editor={editor?.tab === active && editor.rowKey === key ? editor : null}
+                saving={saving}
+                onBegin={(column) => onBeginNew(key, column)}
+                onRemove={() => onRemoveNew(key)}
+                onValueChange={actions.onValueChange}
+                onCommit={actions.onCommit}
+                onCancel={actions.onCancel}
+                onNull={actions.onNull}
+              />
+            ))}
+          <NewTableRow
+            key="blank-row"
+            placeholder
+            draft={{ original: data.columns.map(() => null), changes: {} }}
+            data={data}
+            visibleColumns={visibleColumns}
+            editor={null}
+            saving={saving || !!data.readOnlyReason}
+            onBegin={onBeginBlank}
+            onRemove={() => {}}
+            onValueChange={actions.onValueChange}
+            onCommit={actions.onCommit}
+            onCancel={actions.onCancel}
+            onNull={actions.onNull}
+          />
         </tbody>
       </table>
       {menu && (

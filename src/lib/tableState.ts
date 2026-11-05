@@ -6,7 +6,7 @@ export const rowKey = (row: (string | null)[], page: Page) => JSON.stringify(pag
 
 export const countChanges = (draft?: TableDraft) =>
   Object.values(draft?.rows || {}).reduce(
-    (count, row) => count + (row.deleted ? 1 : Object.keys(row.changes).length),
+    (count, row) => count + (row.deleted || row.inserted ? 1 : Object.keys(row.changes).length),
     0
   )
 
@@ -21,12 +21,13 @@ export function stageCell(drafts: Record<string, TableDraft>, cell: CellEditor |
   const original = draft?.rows[cell.rowKey]?.original || cell.row
   const changes = { ...draft?.rows[cell.rowKey]?.changes }
 
-  if (cell.value === original[cell.column]) delete changes[cell.column]
+  if (!draft?.rows[cell.rowKey]?.inserted && cell.value === original[cell.column]) delete changes[cell.column]
   else changes[cell.column] = cell.value
 
   const rows = { ...draft?.rows }
 
-  if (Object.keys(changes).length) rows[cell.rowKey] = { original, changes }
+  if (Object.keys(changes).length || draft?.rows[cell.rowKey]?.inserted)
+    rows[cell.rowKey] = { ...draft?.rows[cell.rowKey], original, changes }
   else delete rows[cell.rowKey]
 
   if (Object.keys(rows).length) next[cell.tab] = { columns: cell.columns, rows }

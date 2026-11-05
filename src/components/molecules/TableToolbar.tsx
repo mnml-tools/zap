@@ -1,4 +1,4 @@
-import { SlidersHorizontal, Check, RefreshCw } from 'lucide-react'
+import { SlidersHorizontal, Check, RefreshCw, Plus } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Table } from '../../types/table'
 import { Button } from '../atoms/Button'
@@ -9,6 +9,8 @@ type Props = {
   filtersOpen: boolean
   filterCount: number
   canFilter: boolean
+  canInsert: boolean
+  onAddRow: () => void
   columnPicker: ReactNode
   saving: boolean
   loading: boolean
@@ -24,6 +26,8 @@ export function TableToolbar({
   filtersOpen,
   filterCount,
   canFilter,
+  canInsert,
+  onAddRow,
   columnPicker,
   saving,
   loading,
@@ -40,6 +44,10 @@ export function TableToolbar({
         <h2>{table.name}</h2>
       </div>
       <div className="table-actions">
+        <Button disabled={saving || loading || !canInsert} onClick={onAddRow}>
+          <Plus size={13} />
+          Add Row
+        </Button>
         <Button
           className={filtersOpen || filterCount ? 'filters-toggle active' : 'filters-toggle'}
           aria-expanded={filtersOpen}

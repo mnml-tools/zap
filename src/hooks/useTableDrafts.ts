@@ -62,6 +62,7 @@ export function useTableDrafts({ id, active, table, data, request, onError, onSa
         edits: Object.values(draft.rows).map((row) => ({
           original: row.original,
           deleted: !!row.deleted,
+          inserted: !!row.inserted,
           changes: Object.entries(row.deleted ? {} : row.changes).map(([index, value]) => ({
             column: draft.columns[Number(index)],
             value
@@ -99,6 +100,70 @@ export function useTableDrafts({ id, active, table, data, request, onError, onSa
       value: draft && Object.hasOwn(draft.changes, column) ? draft.changes[column] : row[column],
       columns: data.columns
     })
+  }
+
+  const addRow = (column?: number) => {
+    if (!data || data.readOnlyReason || savingRef.current) return
+
+    const staged = stage()
+    const key = `new:${crypto.randomUUID()}`
+    const draft = staged[active]
+    setAll({
+      ...staged,
+      [active]: {
+        columns: data.columns,
+        rows: { ...draft?.rows, [key]: { original: data.columns.map(() => null), changes: {}, inserted: true } }
+      }
+    })
+
+    if (column !== undefined && data.editable[column]) {
+      cancelEdit.current = false
+      editCell({
+        tab: active,
+        rowKey: key,
+        row: data.columns.map(() => null),
+        column,
+        value: null,
+        columns: data.columns
+      })
+    }
+  }
+
+  const beginNewEdit = (key: string, column: number) => {
+    if (!data || !data.editable[column] || savingRef.current) return
+
+    stage()
+    const row = draftsRef.current[active]?.rows[key]
+
+    if (!row?.inserted) return
+
+    cancelEdit.current = false
+    editCell({
+      tab: active,
+      rowKey: key,
+      row: row.original,
+      column,
+      value: row.changes[column] ?? null,
+      columns: data.columns
+    })
+  }
+
+  const removeNewRow = (key: string) => {
+    if (savingRef.current) return
+
+    const staged = stage()
+    const draft = staged[active]
+
+    if (!draft?.rows[key]?.inserted) return
+
+    const rows = { ...draft.rows }
+    delete rows[key]
+    const next = { ...staged }
+
+    if (Object.keys(rows).length) next[active] = { ...draft, rows }
+    else delete next[active]
+
+    setAll(next)
   }
 
   const removeRows = (rows: (string | null)[][]) => {
@@ -155,6 +220,9 @@ export function useTableDrafts({ id, active, table, data, request, onError, onSa
     stage,
     save,
     beginEdit,
+    addRow,
+    beginNewEdit,
+    removeNewRow,
     removeRows,
     setCellValue,
     commitCell,

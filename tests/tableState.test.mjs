@@ -76,3 +76,22 @@ test('removing a mixed selection marks every row and restoring preserves edits',
   assert.equal(restored.people.rows['["2"]'], undefined)
   assert.equal(restored.people.rows['["3"]'], undefined)
 })
+
+test('new rows remain pending with defaults and preserve explicit NULL values', () => {
+  const original = {
+    people: {
+      columns: cell().columns,
+      rows: {
+        'new:one': { original: [null, null, null], changes: {}, inserted: true },
+        'new:two': { original: [null, null, null], changes: {}, inserted: true }
+      }
+    }
+  }
+  assert.equal(countChanges(original.people), 2)
+  const staged = stageCell(original, cell({ rowKey: 'new:one', row: [null, null, null], value: null }))
+  assert.equal(staged.people.rows['new:one'].inserted, true)
+  assert.deepEqual(staged.people.rows['new:one'].changes, { 1: null })
+  assert.deepEqual(staged.people.rows['new:two'].changes, {})
+  assert.equal(countChanges(staged.people), 2)
+  assert.deepEqual(original.people.rows['new:one'].changes, {})
+})
