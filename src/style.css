@@ -1976,3 +1976,26 @@ th[aria-sort='descending'] {
   align-items: center;
   gap: 6px;
 }
+
+aside .table-filter-search:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+
+.search .search-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 2px 4px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--muted);
+  background: var(--soft);
+  font: 9px var(--mono);
+  white-space: nowrap;
+}
+
+.table-filter-search input {
+  text-overflow: ellipsis;
+}

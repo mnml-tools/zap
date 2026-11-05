@@ -3,7 +3,11 @@ export type Shortcut = {
   primary?: boolean
   shift?: boolean
   alt?: boolean
+  doubleTap?: boolean
+  allowInInputs?: boolean
 }
+
+export const filterTablesShortcut: Shortcut = { key: 'Shift', doubleTap: true, allowInInputs: true }
 
 export const duplicateRowsShortcut: Shortcut = { key: 'd', primary: true }
 
@@ -29,4 +33,49 @@ export function formatShortcut(shortcut: Shortcut, mac = /Mac/.test(navigator.pl
   const key = shortcut.key === 'Backspace' ? (mac ? '⌫' : 'Backspace') : shortcut.key.toUpperCase()
 
   return [...modifiers, key].join(mac ? '' : '+')
+}
+
+export function createDoubleShiftDetector() {
+  let pressedAt: number | null = null
+  let firstTap: number | null = null
+
+  const reset = () => {
+    pressedAt = null
+    firstTap = null
+  }
+
+  const handle = (
+    event: Pick<KeyboardEvent, 'type' | 'key' | 'timeStamp' | 'repeat' | 'ctrlKey' | 'metaKey' | 'altKey'>
+  ) => {
+    if (event.key !== 'Shift' || event.ctrlKey || event.metaKey || event.altKey || event.repeat) {
+      reset()
+      return false
+    }
+
+    if (event.type === 'keydown') {
+      if (pressedAt !== null) {
+        reset()
+        return false
+      }
+
+      pressedAt = event.timeStamp
+      return false
+    }
+
+    if (pressedAt === null || event.timeStamp - pressedAt > 300) {
+      reset()
+      return false
+    }
+
+    pressedAt = null
+    if (firstTap !== null && event.timeStamp - firstTap <= 400) {
+      reset()
+      return true
+    }
+
+    firstTap = event.timeStamp
+    return false
+  }
+
+  return { handle, reset }
 }
