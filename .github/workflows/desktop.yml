@@ -1,0 +1,107 @@
+name: Desktop builds
+
+on:
+  push:
+    branches: [main]
+    tags: ['v[0-9]*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux-x86_64
+            os: ubuntu-22.04
+            args: --bundles appimage
+          - platform: macos-universal
+            os: macos-14
+            args: --target universal-apple-darwin --bundles app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ runner.os == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          key: ${{ matrix.platform }}
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential pkg-config libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev librsvg2-dev libssl-dev \
+            libdbus-1-dev patchelf libfuse2 file xdg-utils
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Run frontend tests
+        run: npm test
+      - name: Run Tauri tests
+        run: cargo test --manifest-path src-tauri/Cargo.toml --locked --all-targets
+      - name: Generate icons
+        run: npm run icons
+      - name: Build desktop package
+        run: npm run tauri build -- --ci ${{ matrix.args }} -- --locked
+      - name: Collect AppImage
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p artifacts
+          cp src-tauri/target/release/bundle/appimage/*.AppImage artifacts/
+      - name: Archive macOS app
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p artifacts
+          ditto -c -k --sequesterRsrc --keepParent \
+            src-tauri/target/universal-apple-darwin/release/bundle/macos/Zap.app \
+            artifacts/Zap-macos-universal.app.zip
+      - name: Upload desktop package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zap-${{ matrix.platform }}-${{ github.sha }}
+          path: artifacts/*
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: Publish version release
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download desktop packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: Zap-*-${{ github.sha }}
+          path: artifacts
+          merge-multiple: true
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" artifacts/* --clobber
+          else
+            gh release create "$RELEASE_TAG" artifacts/* \
+              --verify-tag --title "Zap $RELEASE_TAG" --generate-notes
+          fi

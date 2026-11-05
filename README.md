@@ -62,6 +62,32 @@ npm run tauri build -- --bundles appimage
 
 Find the package in `src-tauri/target/release/bundle/appimage/` in your Linux checkout. See [Tauri’s AppImage guide](https://v2.tauri.app/distribute/appimage/) for distribution details.
 
+## Automated desktop builds
+
+The **Desktop builds** GitHub Actions workflow runs on every push to `main`,
+on version tags matching `v[0-9]*`, and through **Run workflow** in the Actions tab.
+It runs the frontend and Rust tests, then builds a Linux x86_64 AppImage and a
+universal macOS `.app` for Apple Silicon and Intel Macs.
+
+Download the packages from the workflow run's **Artifacts** section. Artifact
+names include the commit SHA and downloads are retained for 14 days. Extract
+`Zap-macos-universal.app.zip` to get `Zap.app`.
+
+To publish a GitHub Release, update the versions in `package.json`,
+`package-lock.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, and
+`src-tauri/tauri.conf.json`, commit the changes, then push a matching tag:
+
+```sh
+git tag v0.3.0
+git push origin v0.3.0
+```
+
+The release is published after both platform builds pass, with both packages
+attached. The workflow uses GitHub's built-in token; no extra secrets are needed.
+macOS builds are not Developer ID signed or notarized, so downloaded apps may
+require approval in macOS security settings. For public distribution, configure
+[macOS signing and notarization](https://v2.tauri.app/distribute/sign/macos/).
+
 ## Development checks
 
 ```sh
