@@ -9,6 +9,8 @@ import { useTableViewState } from './useTableViewState'
 import { useTableDrafts } from './useTableDrafts'
 import { useSavedQueries } from './useSavedQueries'
 import { useUnsavedChanges } from './useUnsavedChanges'
+import { useReferencePanel } from './useReferencePanel'
+import { referenceFilters } from '../lib/relations'
 
 export type WorkspaceOptions = {
   id: string
@@ -45,6 +47,7 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
     onError: setError,
     onSaved: view.reload
   })
+  const references = useReferencePanel({ id, request })
   const queries = useSavedQueries({
     id,
     request,
@@ -300,6 +303,17 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
   const deleteQuery = (query: QueryDocument) =>
     guard('Delete this saved query and discard its unsaved changes?', () => queries.remove(query), true)
 
+  const openReferenceInTab = () => {
+    const reference = references.current?.reference
+
+    if (!reference) return
+
+    beforeViewChange(() => {
+      view.presetFilters(tableKey(reference.key.target), referenceFilters(reference))
+      tabs.openTable(reference.key.target)
+    })
+  }
+
   const toggleSort = (column: string) => beforeViewChange(() => view.toggleSort(column))
 
   const applyFilters = (rows: TableFilter[]) => beforeViewChange(() => view.applyFilters(rows))
@@ -378,6 +392,14 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
     commitCell: edits.commitCell,
     cancelCell: edits.cancelCell,
     nullCell: edits.nullCell,
+    reference: references.current,
+    referenceDepth: references.depth,
+    referenceOrigin: references.origin,
+    openReference: references.open,
+    followReference: references.follow,
+    backReference: references.back,
+    closeReference: references.close,
+    openReferenceInTab,
     discard,
     refresh,
     closeConnection,

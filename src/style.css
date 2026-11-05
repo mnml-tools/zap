@@ -1066,6 +1066,177 @@ header .theme-toggle svg {
   cursor: col-resize !important;
   user-select: none !important;
 }
+.sidebar-resizer.left-edge {
+  right: auto;
+  left: -3px;
+}
+td.reference-cell {
+  position: relative;
+  padding-right: 26px;
+}
+td.reference-active {
+  box-shadow: inset 0 0 0 1px var(--focus);
+}
+.reference-open {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  min-height: 0;
+  padding: 2px;
+  border: 0;
+  background: transparent;
+  color: var(--faint);
+  opacity: 0;
+}
+tr:hover .reference-open,
+td:focus-within .reference-open,
+td.reference-active .reference-open,
+.reference-open:focus-visible {
+  opacity: 1;
+}
+.reference-open:hover,
+.reference-open:focus-visible {
+  color: var(--text);
+  background: var(--hover-strong);
+}
+.reference-panel {
+  position: relative;
+  min-width: 240px;
+  max-width: 640px;
+  border-right: 0;
+  border-left: 1px solid var(--border);
+  outline: none;
+}
+.reference-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 37px;
+  padding: 4px 8px 4px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.reference-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+  font-size: 11px;
+  font-weight: 600;
+}
+.reference-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 12px;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  font: 11px var(--mono);
+}
+.reference-summary > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.reference-table-badge {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font: 11px var(--mono);
+  justify-self: start;
+  max-width: 100%;
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--soft);
+  font-weight: 500;
+}
+.reference-record {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.reference-record > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.reference-record .icon-button {
+  flex-shrink: 0;
+}
+.reference-summary-label {
+  color: var(--muted);
+}
+.icon-button {
+  min-height: 24px;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--icon);
+}
+.reference-body {
+  flex: 1;
+  overflow: auto;
+}
+.reference-fields {
+  width: 100%;
+  table-layout: auto;
+  font: 11px var(--mono);
+}
+.reference-fields th,
+.reference-fields td {
+  padding: 8px 12px;
+  vertical-align: top;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.reference-fields th:first-child {
+  width: 1%;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+.reference-fields th:last-child,
+.reference-fields td:last-child {
+  border-right: 0;
+}
+.reference-fields td {
+  background: var(--background);
+}
+.reference-fields tbody th {
+  position: static;
+  background: transparent;
+  color: var(--muted);
+}
+.reference-fields tbody tr:hover > th,
+.reference-fields tbody tr:hover > td {
+  background: var(--soft);
+}
+.reference-fields .key-label {
+  margin-left: 6px;
+}
+.reference-value {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--text);
+}
+.reference-value > span {
+  flex: 1;
+  min-width: 0;
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.reference-value .reference-open {
+  position: static;
+  flex: none;
+  transform: none;
+  opacity: 1;
+}
+.reference-note {
+  padding: 8px 12px;
+  color: var(--muted);
+  font-size: 10px;
+}
 .sidebar-switch {
   margin: 9px 9px 11px;
 }

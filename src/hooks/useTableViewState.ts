@@ -96,6 +96,13 @@ export function useTableViewState({ id, active, table, request, onError }: Optio
     reload()
   }
 
+  // Opening a reference in its tab replaces that tab's filters and returns it to the first page.
+  const presetFilters = (key: string, rows: TableFilter[]) => {
+    setFilters((all) => ({ ...all, [key]: { open: true, draft: rows, applied: rows.map((row) => ({ ...row })) } }))
+    setPages((all) => ({ ...all, [key]: 0 }))
+    reload()
+  }
+
   const removeFilter = (id: string) => {
     const current = state()
 
@@ -166,6 +173,7 @@ export function useTableViewState({ id, active, table, request, onError }: Optio
     changeFilters,
     applyFilters,
     clearFilters,
+    presetFilters,
     removeFilter,
     toggleSort,
     previousPage,

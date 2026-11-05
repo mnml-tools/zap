@@ -11,6 +11,7 @@ pub struct Page {
     pub primary_keys: Vec<usize>,
     pub editable: Vec<bool>,
     pub read_only_reason: Option<String>,
+    pub foreign_keys: Vec<crate::relations::ForeignKey>,
 }
 struct Column {
     name: String,
@@ -281,6 +282,10 @@ pub async fn page_sorted(
         .iter()
         .map(|c| c.writable && meta.reason.is_none())
         .collect();
+    // Relations are a browsing aid; a catalog the user cannot read must not hide the rows.
+    let foreign_keys = crate::relations::outgoing(pool, driver, table, &columns)
+        .await
+        .unwrap_or_default();
     Ok(Page {
         columns,
         rows,
@@ -288,6 +293,7 @@ pub async fn page_sorted(
         primary_keys,
         editable,
         read_only_reason: meta.reason,
+        foreign_keys,
     })
 }
 #[derive(Deserialize)]

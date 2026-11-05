@@ -46,6 +46,9 @@ type Props = Pick<
   | 'commitCell'
   | 'cancelCell'
   | 'nullCell'
+  | 'referenceOrigin'
+  | 'openReference'
+  | 'closeReference'
   | 'previousPage'
   | 'nextPage'
 >
@@ -132,6 +135,9 @@ export function TableDataView(props: Props) {
               onCommit={props.commitCell}
               onCancel={props.cancelCell}
               onNull={props.nullCell}
+              referenceOrigin={props.referenceOrigin}
+              onOpenReference={props.openReference}
+              onCloseReference={props.closeReference}
             />
           ) : (
             <div className="table-message">No columns are visible. Use Columns to show fields.</div>

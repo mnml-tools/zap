@@ -11,6 +11,7 @@ mod editor;
 mod filters;
 mod postgres_export;
 mod queries;
+mod relations;
 mod sql_import;
 mod ssh;
 mod table_export;
@@ -262,7 +263,7 @@ fn pool(state: &Store, id: &str) -> Result<AnyPool, String> {
         .map(|session| session.pool.clone())
         .ok_or("Connection is closed".into())
 }
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 struct Table {
     schema: String,
     name: String,
