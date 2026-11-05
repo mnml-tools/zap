@@ -1999,3 +1999,7 @@ aside .table-filter-search:focus-within {
 .table-filter-search input {
   text-overflow: ellipsis;
 }
+
+.linux-window {
+  border: 1px solid var(--border);
+}
