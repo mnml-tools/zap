@@ -1,5 +1,8 @@
 import type { Page, CellEditor, DraftRow } from '../../types/table'
 import type { useColumnSelection } from '../../hooks/useColumnSelection'
+import type { ReferenceOrigin } from '../../hooks/useReferencePanel'
+import type { Reference } from '../../lib/relations'
+import { foreignKeyFor, referenceFrom, referenceTitle } from '../../lib/relations'
 import { EditableCell } from './EditableCell'
 
 type Props = {
@@ -19,6 +22,8 @@ type Props = {
   onCommit: () => void
   onCancel: () => void
   onNull: () => void
+  referenceOrigin: ReferenceOrigin | null
+  onOpenReference: (reference: Reference, origin: ReferenceOrigin) => void
 }
 
 export function EditableTableRow({
@@ -37,8 +42,16 @@ export function EditableTableRow({
   onValueChange,
   onCommit,
   onCancel,
-  onNull
+  onNull,
+  referenceOrigin,
+  onOpenReference
 }: Props) {
+  // References follow the values on screen, including staged edits.
+  const shown = row.map((value, column) =>
+    draft && Object.hasOwn(draft.changes, column) ? draft.changes[column] : value
+  )
+  const activeOrigin = referenceOrigin?.tab === active && referenceOrigin.rowKey === rowKey ? referenceOrigin : null
+
   return (
     <tr className={draft ? 'row-edited' : undefined}>
       <td className="row-number">{rowNumber}</td>
@@ -47,6 +60,8 @@ export function EditableTableRow({
         const modified = !!draft && Object.hasOwn(draft.changes, column),
           value = modified ? draft!.changes[column] : original
         const editing = editor?.tab === active && editor.rowKey === rowKey && editor.column === column
+        const key = foreignKeyFor(data, column)
+        const reference = key && referenceFrom(key, shown)
 
         return (
           <EditableCell
@@ -69,6 +84,15 @@ export function EditableTableRow({
             onCommit={onCommit}
             onCancel={onCancel}
             onNull={onNull}
+            reference={
+              key && reference
+                ? {
+                    title: referenceTitle(key),
+                    active: !!activeOrigin?.columns.includes(column),
+                    onOpen: () => onOpenReference(reference, { tab: active, rowKey, columns: key.columns })
+                  }
+                : undefined
+            }
           />
         )
       })}

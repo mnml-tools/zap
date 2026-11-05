@@ -4,6 +4,7 @@ import { useColumnSelection } from '../../hooks/useColumnSelection'
 import { ActionContextMenu } from '../molecules/ActionContextMenu'
 import { ErrorDialog } from '../molecules/ErrorDialog'
 import { rowKey } from '../../lib/tableState'
+import { foreignKeyFor, referenceTitle } from '../../lib/relations'
 import { ColumnHeader } from '../molecules/ColumnHeader'
 import { EditableTableRow } from '../molecules/EditableTableRow'
 
@@ -17,7 +18,10 @@ type Props = {
   saving: boolean
   sort?: TableSort
   onSort: (column: string) => void
-} & Pick<ComponentProps<typeof EditableTableRow>, 'onBegin' | 'onValueChange' | 'onCommit' | 'onCancel' | 'onNull'>
+} & Pick<
+  ComponentProps<typeof EditableTableRow>,
+  'onBegin' | 'onValueChange' | 'onCommit' | 'onCancel' | 'onNull' | 'referenceOrigin' | 'onOpenReference'
+>
 
 export function EditableTable({
   data,
@@ -40,17 +44,22 @@ export function EditableTable({
         <thead>
           <tr>
             <th className="row-number">#</th>
-            {visibleColumns.map((index) => (
-              <ColumnHeader
-                key={index}
-                column={data.columns[index]}
-                primary={data.primaryKeys.includes(index)}
-                sort={sort}
-                disabled={saving}
-                onSort={onSort}
-                onContextMenu={(event) => selection.openMenu(event, index)}
-              />
-            ))}
+            {visibleColumns.map((index) => {
+              const reference = foreignKeyFor(data, index)
+
+              return (
+                <ColumnHeader
+                  key={index}
+                  column={data.columns[index]}
+                  primary={data.primaryKeys.includes(index)}
+                  reference={reference && referenceTitle(reference)}
+                  sort={sort}
+                  disabled={saving}
+                  onSort={onSort}
+                  onContextMenu={(event) => selection.openMenu(event, index)}
+                />
+              )
+            })}
           </tr>
         </thead>
         <tbody>

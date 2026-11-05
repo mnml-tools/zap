@@ -12,6 +12,7 @@ import { WorkspaceTabs } from '../components/organisms/WorkspaceTabs'
 import { TableView } from '../components/organisms/TableView'
 import { ExportTablesDialog } from '../components/organisms/ExportTablesDialog'
 import { QueryEditor } from '../components/organisms/QueryEditor'
+import { ReferencePanel } from '../components/organisms/ReferencePanel'
 
 export function WorkspacePage(options: WorkspaceOptions) {
   const model = useWorkspace(options)
@@ -78,6 +79,7 @@ export function WorkspacePage(options: WorkspaceOptions) {
             </div>
           ))}
         </section>
+        <ReferencePanel {...model} />
       </div>
     </AppShell>
   )

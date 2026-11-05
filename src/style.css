@@ -1059,6 +1059,140 @@ header .theme-toggle svg {
   cursor: col-resize !important;
   user-select: none !important;
 }
+.sidebar-resizer.left-edge {
+  right: auto;
+  left: -3px;
+}
+td.reference-cell {
+  position: relative;
+  padding-right: 26px;
+}
+td.reference-active {
+  box-shadow: inset 0 0 0 1px var(--focus);
+}
+.reference-open {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  min-height: 0;
+  padding: 2px;
+  border: 0;
+  background: transparent;
+  color: var(--faint);
+  opacity: 0;
+}
+tr:hover .reference-open,
+td:focus-within .reference-open,
+td.reference-active .reference-open,
+.reference-open:focus-visible {
+  opacity: 1;
+}
+.reference-open:hover,
+.reference-open:focus-visible {
+  color: var(--text);
+  background: var(--hover-strong);
+}
+.reference-panel {
+  position: relative;
+  min-width: 240px;
+  max-width: 640px;
+  border-right: 0;
+  border-left: 1px solid var(--border);
+  outline: none;
+}
+.reference-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 37px;
+  padding: 4px 8px 4px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.reference-title {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  font: 11px var(--mono);
+}
+.reference-title strong,
+.reference-title span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reference-title strong {
+  font-weight: 500;
+  color: var(--text);
+}
+.reference-title span {
+  font-size: 10px;
+  color: var(--muted);
+}
+.icon-button {
+  min-height: 24px;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--icon);
+}
+.reference-body {
+  flex: 1;
+  overflow: auto;
+}
+.reference-fields {
+  margin: 0;
+  font: 11px var(--mono);
+}
+.reference-fields > div {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--hover);
+}
+.reference-fields dt {
+  color: var(--muted);
+  font-size: 10px;
+}
+.reference-fields dt .key-label {
+  margin-left: 6px;
+}
+.reference-fields dd {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 2px 0 0;
+  color: var(--text);
+}
+.reference-fields dd > span {
+  flex: 1;
+  min-width: 0;
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.reference-fields dd .reference-open {
+  position: static;
+  flex: none;
+  transform: none;
+  opacity: 1;
+}
+.reference-note {
+  padding: 8px 12px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.reference-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 7px 10px;
+  border-top: 1px solid var(--border);
+}
+.reference-footer button {
+  min-height: 24px;
+  padding: 3px 7px;
+  font-size: 11px;
+}
 .sidebar-switch {
   margin: 9px 9px 11px;
 }
