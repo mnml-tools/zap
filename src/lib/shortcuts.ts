@@ -7,6 +7,8 @@ export type Shortcut = {
 
 export const duplicateRowsShortcut: Shortcut = { key: 'd', primary: true }
 
+export const removeRowsShortcut: Shortcut = { key: 'Backspace', primary: true }
+
 export function matchesShortcut(event: KeyboardEvent, shortcut: Shortcut, mac: boolean) {
   return (
     event.key.toLowerCase() === shortcut.key.toLowerCase() &&
@@ -24,5 +26,7 @@ export function formatShortcut(shortcut: Shortcut, mac = /Mac/.test(navigator.pl
     shortcut.shift ? (mac ? '⇧' : 'Shift') : ''
   ].filter(Boolean)
 
-  return [...modifiers, shortcut.key.toUpperCase()].join(mac ? '' : '+')
+  const key = shortcut.key === 'Backspace' ? (mac ? '⌫' : 'Backspace') : shortcut.key.toUpperCase()
+
+  return [...modifiers, key].join(mac ? '' : '+')
 }

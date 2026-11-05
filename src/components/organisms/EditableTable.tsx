@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 import type { Page, TableDraft, TableSort, CellEditor } from '../../types/table'
 import { useShortcut } from '../../hooks/useShortcut'
-import { duplicateRowsShortcut, formatShortcut } from '../../lib/shortcuts'
+import { duplicateRowsShortcut, removeRowsShortcut, formatShortcut } from '../../lib/shortcuts'
 import { useTableNavigation } from '../../hooks/useTableNavigation'
 import { useColumnSelection } from '../../hooks/useColumnSelection'
 import { ActionContextMenu } from '../molecules/ActionContextMenu'
@@ -65,14 +65,24 @@ export function EditableTable({
       : data.rows.slice(Math.min(menu.range.anchor, menu.range.end), Math.max(menu.range.anchor, menu.range.end) + 1)
   const restoreRows = menuRows.every((row) => draft?.rows[rowKey(row, data)]?.deleted)
   const rowLabel = menuRows.length === 1 ? 'Row' : `${menuRows.length} Rows`
-  const rowsToDuplicate = menu ? menuRows : selection.selectedRows
-  const canDuplicate = !saving && !data.readOnlyReason && rowsToDuplicate.length > 0
+  const selectedRows = menu ? menuRows : selection.selectedRows
+  const canDuplicate = !saving && !data.readOnlyReason && selectedRows.length > 0
   const duplicate = () => {
-    onDuplicateRows(rowsToDuplicate)
+    onDuplicateRows(selectedRows)
+    selection.dismissMenu()
+  }
+
+  const canRemove =
+    canDuplicate &&
+    !!data.primaryKeys.length &&
+    !selectedRows.some((row) => data.primaryKeys.some((index) => row[index] === null))
+  const remove = () => {
+    onRemoveRows(selectedRows)
     selection.dismissMenu()
   }
 
   useShortcut(duplicateRowsShortcut, canDuplicate, duplicate)
+  useShortcut(removeRowsShortcut, canRemove, remove)
 
   return (
     <>
@@ -169,15 +179,9 @@ export function EditableTable({
                   },
                   {
                     label: `${restoreRows ? 'Restore' : 'Remove'} ${rowLabel}`,
-                    disabled:
-                      saving ||
-                      !!data.readOnlyReason ||
-                      !data.primaryKeys.length ||
-                      menuRows.some((row) => data.primaryKeys.some((index) => row[index] === null)),
-                    run: () => {
-                      onRemoveRows(menuRows)
-                      selection.dismissMenu()
-                    }
+                    shortcut: formatShortcut(removeRowsShortcut),
+                    disabled: !canRemove,
+                    run: remove
                   }
                 ]
               : [])
