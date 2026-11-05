@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src-tauri/icons/icon.png" width="112" height="112" alt="Zap app icon">
+  <img src="src/assets/AppIcon.png" width="112" height="112" alt="Zap app icon">
 </p>
 
 <h1 align="center">Zap</h1>
