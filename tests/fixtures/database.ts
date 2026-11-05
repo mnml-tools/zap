@@ -153,8 +153,24 @@ export const request: ApiRequest = async <T>(command: string, args?: Record<stri
     const table = fixtureTables[(args!.table as Table).name]
     for (const row of args!.edits as {
       original: (string | null)[]
+      inserted?: boolean
+      deleted?: boolean
       changes: { column: string; value: string | null }[]
     }[]) {
+      if (row.inserted) {
+        const values = table.columns.map((): string | null => null)
+        values[0] = String(Math.max(0, ...table.rows.map((value) => Number(value[0]))) + 1)
+        for (const change of row.changes) values[table.columns.indexOf(change.column)] = change.value
+        table.rows.push(values)
+        continue
+      }
+
+      if (row.deleted) {
+        const index = table.rows.findIndex((r) => r[0] === row.original[0])
+        if (index >= 0) table.rows.splice(index, 1)
+        continue
+      }
+
       const target = table.rows.find((r) => r[0] === row.original[0])!
       for (const change of row.changes) target[table.columns.indexOf(change.column)] = change.value
     }

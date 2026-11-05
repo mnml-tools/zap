@@ -303,6 +303,10 @@ pub struct CellChange {
 }
 #[derive(Deserialize)]
 pub struct RowChange {
+    #[serde(default)]
+    pub inserted: bool,
+    #[serde(default)]
+    pub deleted: bool,
     pub original: Vec<Option<String>>,
     pub changes: Vec<CellChange>,
 }
@@ -324,7 +328,28 @@ pub async fn save(
         if columns!=meta.columns.iter().map(|c|c.name.clone()).collect::<Vec<_>>(){return Err("Table structure changed. Reload the table before editing.".into())}
         let name=qualified(driver,table);
         for edit in edits {
-            if edit.original.len()!=columns.len()||edit.changes.is_empty(){return Err("Invalid row change".into())}
+            if edit.inserted {
+                if edit.deleted || edit.original.len() != columns.len() { return Err("Invalid new row".into()); }
+                let mut fields = Vec::new();
+                let mut placeholders = Vec::new();
+                let mut values = Vec::new();
+                let mut seen = std::collections::HashSet::new();
+                for change in &edit.changes {
+                    let col = meta.columns.iter().find(|c| c.name == change.column).ok_or("Unknown column")?;
+                    if !col.writable || !seen.insert(&col.name) { return Err("Column is not editable or appears twice.".into()); }
+                    fields.push(quote(driver, &col.name));
+                    values.push(change.value.clone());
+                    placeholders.push(if driver == "postgresql" { format!("CAST(CAST(${} AS TEXT) AS {})", values.len(), col.kind) } else { "?".into() });
+                }
+                let sql = if fields.is_empty() {
+                    if driver == "mysql" { format!("INSERT INTO {name} () VALUES ()") } else { format!("INSERT INTO {name} DEFAULT VALUES") }
+                } else { format!("INSERT INTO {name} ({}) VALUES ({})", fields.join(","), placeholders.join(",")) };
+                let mut query = sqlx::query(&sql);
+                for value in values { query = query.bind(value); }
+                query.execute(&mut *tx).await.map_err(|e| e.to_string())?;
+                continue;
+            }
+            if edit.original.len()!=columns.len()||(!edit.deleted && edit.changes.is_empty())||(edit.deleted && !edit.changes.is_empty()){return Err("Invalid row change".into())}
             if meta.columns.iter().enumerate().any(|(i,c)|c.primary>0 && edit.original[i].is_none()){return Err("Rows with a NULL primary key cannot be edited.".into())}
             let mut bindings:Vec<Option<String>>=vec![];
             let mut assignments=vec![];
@@ -347,7 +372,7 @@ pub async fn save(
                     predicates.push(if driver=="mysql"{format!("BINARY {field} = BINARY {parameter}")}else if driver=="sqlite"{format!("{field} COLLATE BINARY = {parameter}")}else{format!("{field} = {parameter}")});
                 }else{predicates.push(format!("{field} IS NULL"))}
             }
-            let sql=format!("UPDATE {name} SET {} WHERE {}",assignments.join(","),predicates.join(" AND "));
+            let sql=if edit.deleted {format!("DELETE FROM {name} WHERE {}",predicates.join(" AND "))} else {format!("UPDATE {name} SET {} WHERE {}",assignments.join(","),predicates.join(" AND "))};
             let mut query=sqlx::query(&sql);
             for value in bindings {query=query.bind(value);}
             let affected=query.execute(&mut *tx).await.map_err(|e|e.to_string())?.rows_affected();
@@ -386,6 +411,8 @@ mod tests {
     }
     fn change(original: &[Option<String>], column: &str, value: Option<&str>) -> RowChange {
         RowChange {
+            inserted: false,
+            deleted: false,
             original: original.to_vec(),
             changes: vec![CellChange {
                 column: column.into(),
@@ -393,6 +420,159 @@ mod tests {
             }],
         }
     }
+    #[tokio::test]
+    async fn inserts_use_defaults_and_preserve_explicit_null() {
+        let (pool, _) = fixture().await;
+        sqlx::query("CREATE TABLE new_rows (id INTEGER PRIMARY KEY, value TEXT DEFAULT 'default', computed TEXT GENERATED ALWAYS AS (value || '!') VIRTUAL)").execute(&pool).await.unwrap();
+        let table = Table {
+            schema: String::new(),
+            name: "new_rows".into(),
+        };
+        let before = page(&pool, "sqlite", &table, 0, &[]).await.unwrap();
+        let insert = |changes| RowChange {
+            inserted: true,
+            deleted: false,
+            original: vec![None, None, None],
+            changes,
+        };
+        save(
+            &pool,
+            "sqlite",
+            &table,
+            &before.columns,
+            &[
+                insert(vec![]),
+                insert(vec![CellChange {
+                    column: "value".into(),
+                    value: None,
+                }]),
+                insert(vec![CellChange {
+                    column: "value".into(),
+                    value: Some("O'Reilly".into()),
+                }]),
+            ],
+        )
+        .await
+        .unwrap();
+        let after = page(&pool, "sqlite", &table, 0, &[]).await.unwrap();
+        assert_eq!(after.total, 3);
+        assert_eq!(after.rows[0][1].as_deref(), Some("default"));
+        assert_eq!(after.rows[0][2].as_deref(), Some("default!"));
+        assert_eq!(after.rows[1][1], None);
+        assert_eq!(after.rows[2][1].as_deref(), Some("O'Reilly"));
+        assert!(save(
+            &pool,
+            "sqlite",
+            &table,
+            &before.columns,
+            &[
+                insert(vec![]),
+                insert(vec![CellChange {
+                    column: "computed".into(),
+                    value: Some("invalid".into())
+                }]),
+            ]
+        )
+        .await
+        .is_err());
+        assert_eq!(
+            page(&pool, "sqlite", &table, 0, &[]).await.unwrap().total,
+            3
+        );
+    }
+
+    fn removal(original: &[Option<String>]) -> RowChange {
+        RowChange {
+            inserted: false,
+            deleted: true,
+            original: original.to_vec(),
+            changes: vec![],
+        }
+    }
+
+    #[tokio::test]
+    async fn removes_only_the_selected_composite_key_row() {
+        let (pool, table) = fixture().await;
+        let before = page(&pool, "sqlite", &table, 0, &[]).await.unwrap();
+        save(
+            &pool,
+            "sqlite",
+            &table,
+            &before.columns,
+            &[removal(&before.rows[1])],
+        )
+        .await
+        .unwrap();
+        let after = page(&pool, "sqlite", &table, 0, &[]).await.unwrap();
+        assert_eq!(after.total, 1);
+        assert_eq!(after.rows[0], before.rows[0]);
+    }
+
+    #[tokio::test]
+    async fn stale_removal_rolls_back_deletions_and_edits() {
+        let (pool, table) = fixture().await;
+        let before = page(&pool, "sqlite", &table, 0, &[]).await.unwrap();
+        sqlx::query("UPDATE \"order details\" SET amount=21 WHERE id=2")
+            .execute(&pool)
+            .await
+            .unwrap();
+        for first in [
+            removal(&before.rows[0]),
+            change(&before.rows[0], "value", Some("local")),
+        ] {
+            let error = save(
+                &pool,
+                "sqlite",
+                &table,
+                &before.columns,
+                &[first, removal(&before.rows[1])],
+            )
+            .await
+            .unwrap_err();
+            assert!(error.contains("No changes were saved"));
+            let after = page(&pool, "sqlite", &table, 0, &[]).await.unwrap();
+            assert_eq!(after.total, 2);
+            assert_eq!(after.rows[0], before.rows[0]);
+        }
+    }
+
+    #[tokio::test]
+    async fn removal_rejects_rows_without_a_valid_primary_key() {
+        let (pool, _) = fixture().await;
+        for definition in ["value TEXT", "value TEXT PRIMARY KEY"] {
+            sqlx::query("DROP TABLE IF EXISTS unsafe_rows")
+                .execute(&pool)
+                .await
+                .unwrap();
+            sqlx::query(&format!("CREATE TABLE unsafe_rows ({definition})"))
+                .execute(&pool)
+                .await
+                .unwrap();
+            sqlx::query("INSERT INTO unsafe_rows VALUES (NULL)")
+                .execute(&pool)
+                .await
+                .unwrap();
+            let table = Table {
+                schema: String::new(),
+                name: "unsafe_rows".into(),
+            };
+            let before = page(&pool, "sqlite", &table, 0, &[]).await.unwrap();
+            assert!(save(
+                &pool,
+                "sqlite",
+                &table,
+                &before.columns,
+                &[removal(&before.rows[0])]
+            )
+            .await
+            .is_err());
+            assert_eq!(
+                page(&pool, "sqlite", &table, 0, &[]).await.unwrap().total,
+                1
+            );
+        }
+    }
+
     #[tokio::test]
     async fn edits_target_composite_key_and_preserve_literal_values_and_nulls() {
         let (pool, table) = fixture().await;

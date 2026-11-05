@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { ApiRequest } from '../services/api'
 import type { Table, Page, TableDraft, CellEditor } from '../types/table'
-import { stageCell, rowKey, countChanges } from '../lib/tableState'
+import { stageCell, rowKey, countChanges, toggleRowsRemoval, duplicateRows } from '../lib/tableState'
 
 type Options = {
   id: string
@@ -61,7 +61,9 @@ export function useTableDrafts({ id, active, table, data, request, onError, onSa
         columns: draft.columns,
         edits: Object.values(draft.rows).map((row) => ({
           original: row.original,
-          changes: Object.entries(row.changes).map(([index, value]) => ({
+          deleted: !!row.deleted,
+          inserted: !!row.inserted,
+          changes: Object.entries(row.deleted ? {} : row.changes).map(([index, value]) => ({
             column: draft.columns[Number(index)],
             value
           }))
@@ -86,6 +88,9 @@ export function useTableDrafts({ id, active, table, data, request, onError, onSa
     stage()
     const key = rowKey(row, data),
       draft = draftsRef.current[active]?.rows[key]
+
+    if (draft?.deleted) return
+
     cancelEdit.current = false
     editCell({
       tab: active,
@@ -95,6 +100,84 @@ export function useTableDrafts({ id, active, table, data, request, onError, onSa
       value: draft && Object.hasOwn(draft.changes, column) ? draft.changes[column] : row[column],
       columns: data.columns
     })
+  }
+
+  const addRow = (column?: number) => {
+    if (!data || data.readOnlyReason || savingRef.current) return
+
+    const staged = stage()
+    const key = `new:${crypto.randomUUID()}`
+    const draft = staged[active]
+    setAll({
+      ...staged,
+      [active]: {
+        columns: data.columns,
+        rows: { ...draft?.rows, [key]: { original: data.columns.map(() => null), changes: {}, inserted: true } }
+      }
+    })
+
+    if (column !== undefined && data.editable[column]) {
+      cancelEdit.current = false
+      editCell({
+        tab: active,
+        rowKey: key,
+        row: data.columns.map(() => null),
+        column,
+        value: null,
+        columns: data.columns
+      })
+    }
+  }
+
+  const beginNewEdit = (key: string, column: number) => {
+    if (!data || !data.editable[column] || savingRef.current) return
+
+    stage()
+    const row = draftsRef.current[active]?.rows[key]
+
+    if (!row?.inserted) return
+
+    cancelEdit.current = false
+    editCell({
+      tab: active,
+      rowKey: key,
+      row: row.original,
+      column,
+      value: row.changes[column] ?? null,
+      columns: data.columns
+    })
+  }
+
+  const removeNewRow = (key: string) => {
+    if (savingRef.current) return
+
+    const staged = stage()
+    const draft = staged[active]
+
+    if (!draft?.rows[key]?.inserted) return
+
+    const rows = { ...draft.rows }
+    delete rows[key]
+    const next = { ...staged }
+
+    if (Object.keys(rows).length) next[active] = { ...draft, rows }
+    else delete next[active]
+
+    setAll(next)
+  }
+
+  const removeRows = (rows: (string | null)[][]) => {
+    if (!data || data.readOnlyReason || !data.primaryKeys.length || savingRef.current) return
+    if (rows.some((row) => data.primaryKeys.some((index) => row[index] === null))) return
+
+    const staged = stage()
+    setAll(toggleRowsRemoval(staged, active, rows, data))
+  }
+
+  const duplicateSelectedRows = (rows: (string | null)[][]) => {
+    if (!data || data.readOnlyReason || savingRef.current || !rows.length) return
+
+    setAll(duplicateRows(stage(), active, rows, data))
   }
 
   const setCellValue = (value: string | null) => {
@@ -143,6 +226,11 @@ export function useTableDrafts({ id, active, table, data, request, onError, onSa
     stage,
     save,
     beginEdit,
+    addRow,
+    beginNewEdit,
+    removeNewRow,
+    removeRows,
+    duplicateSelectedRows,
     setCellValue,
     commitCell,
     cancelCell,

@@ -21,4 +21,6 @@ export const newConnection = (): Connection => ({
 })
 
 export const matchesConnection = (connection: Connection, search: string) =>
-  `${connection.title} ${connection.database} ${connection.driver}`.toLowerCase().includes(search.toLowerCase())
+  `${connection.title} ${connection.database} ${connection.driver} ${connection.environment ?? ''}`
+    .toLowerCase()
+    .includes(search.toLowerCase())

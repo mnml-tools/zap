@@ -1,8 +1,13 @@
 <p align="center">
-  <img src="src-tauri/icons/icon.png" width="112" height="112" alt="Zap app icon">
+  <img src="src/assets/AppIcon.png" width="112" height="112" alt="Zap app icon">
 </p>
 
 <h1 align="center">Zap</h1>
+
+<p align="center">
+  <a href="https://github.com/rafmst/zap/actions/workflows/rust.yml"><img src="https://github.com/rafmst/zap/actions/workflows/rust.yml/badge.svg?branch=main" alt="Tauri tests status"></a>
+  <a href="https://github.com/rafmst/zap/actions/workflows/desktop.yml"><img src="https://github.com/rafmst/zap/actions/workflows/desktop.yml/badge.svg?branch=main" alt="Desktop builds status"></a>
+</p>
 
 <p align="center">
   A minimal desktop database explorer for PostgreSQL, MySQL, and SQLite.
@@ -10,7 +15,10 @@
 
 Zap lets you browse tables, edit data, and save SQL queries in one workspace. It’s built with Tauri, React, TypeScript, and Rust.
 
-![Zap browsing a sample PostgreSQL workspace with the events and people tables open](docs/zap-workspace.jpg)
+![Zap browsing a sample PostgreSQL workspace with the events and people tables open](docs/zap-workspace.png)
+
+> [!IMPORTANT]
+> **A note on AI use:** I’m against the blind use of AI and generally oppose generating large portions of code with it. That said, I used AI-generated code to build Zap: I wanted a custom tool for myself and chose to experiment with how quickly AI could help me build it. This was also a chance to study these tools from a user’s perspective, how they work, how to communicate with them, and how to use them to implement features. I want to understand this technology and keep up with it, even if I don’t use it every day.
 
 ## What you can do
 
@@ -63,6 +71,32 @@ npm run tauri build -- --bundles appimage
 
 Find the package in `src-tauri/target/release/bundle/appimage/` in your Linux checkout. See [Tauri’s AppImage guide](https://v2.tauri.app/distribute/appimage/) for distribution details.
 
+## Automated desktop builds
+
+The **Desktop builds** GitHub Actions workflow runs on every push to `main`,
+on version tags matching `v[0-9]*`, and through **Run workflow** in the Actions tab.
+It runs the frontend and Rust tests, then builds a Linux x86_64 AppImage and a
+universal macOS `.app` for Apple Silicon and Intel Macs.
+
+Download the packages from the workflow run's **Artifacts** section. Artifact
+names include the commit SHA and downloads are retained for 14 days. Extract
+`Zap-macos-universal.app.zip` to get `Zap.app`.
+
+To publish a GitHub Release, update the versions in `package.json`,
+`package-lock.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, and
+`src-tauri/tauri.conf.json`, commit the changes, then push a matching tag:
+
+```sh
+git tag v0.3.0
+git push origin v0.3.0
+```
+
+The release is published after both platform builds pass, with both packages
+attached. The workflow uses GitHub's built-in token; no extra secrets are needed.
+macOS builds are not Developer ID signed or notarized, so downloaded apps may
+require approval in macOS security settings. For public distribution, configure
+[macOS signing and notarization](https://v2.tauri.app/distribute/sign/macos/).
+
 ## Development checks
 
 ```sh
@@ -73,6 +107,25 @@ cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
 For UI checks with sample data, run the Vite server and open `/tests/editor.html`. The fixture uses an in-memory mock and can simulate a save failure. See the [frontend architecture guide](docs/architecture.md) for the code layout.
+
+## License
+
+Zap is source-available under the custom [Zap Noncommercial Share-Alike
+No-AI-Cloning License 1.0](LICENSE).
+
+- Use, study, modify, and fork Zap for noncommercial purposes.
+- Share copies and modified versions under the exact same license, with notices
+  preserved and corresponding source provided to recipients.
+- Commercial use, commercial forks, sales, paid hosting, and use in a
+  profit-seeking business's operations are prohibited, even under the same license.
+- Using AI to clone or substantially reproduce Zap from its protected materials
+  is prohibited, including for noncommercial clones. AI assistance with
+  understanding, testing, debugging, and maintaining a permitted fork is allowed.
+
+The full license controls. Third-party dependencies retain their own licenses.
+These restrictions make Zap source-available rather than open-source under the
+[Open Source Definition](https://opensource.org/osd). The AI restriction does not
+claim ownership of general ideas or independently created software.
 
 ## macOS Keychain prompts
 

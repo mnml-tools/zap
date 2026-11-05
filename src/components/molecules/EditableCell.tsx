@@ -13,7 +13,9 @@ type Props = {
   saving: boolean
   editing: boolean
   onBegin: () => void
+  editOnClick?: boolean
   hint?: string
+  emptyLabel?: string
   selected?: boolean
   selectionEvents?: Pick<ComponentProps<'td'>, 'onPointerDown' | 'onPointerEnter' | 'onContextMenu'>
   reference?: CellReference
@@ -28,7 +30,9 @@ export function EditableCell({
   saving,
   editing,
   onBegin,
+  editOnClick = false,
   hint,
+  emptyLabel,
   selected,
   selectionEvents,
   reference,
@@ -54,9 +58,11 @@ export function EditableCell({
         if (reference && !editing && (macPlatform ? event.metaKey : event.ctrlKey)) {
           event.preventDefault()
           reference.onOpen()
+        } else if (editOnClick && editable && !saving && !editing) {
+          onBegin()
         }
       }}
-      onDoubleClick={onBegin}
+      onDoubleClick={!editOnClick && editable && !saving && !editing ? onBegin : undefined}
       onKeyDown={(event) => {
         if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === 'F2')) {
           event.preventDefault()
@@ -68,7 +74,7 @@ export function EditableCell({
         <CellEditorInput value={value} {...editor} />
       ) : (
         <>
-          {value === null ? <NullValue /> : value}
+          {value === null ? emptyLabel ? <span className="null">{emptyLabel}</span> : <NullValue /> : value}
           {reference && <ReferenceButton title={reference.title} onOpen={reference.onOpen} />}
         </>
       )}

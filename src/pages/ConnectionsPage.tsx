@@ -5,6 +5,7 @@ import { Button } from '../components/atoms/Button'
 import { ErrorMessage } from '../components/atoms/ErrorMessage'
 import { ErrorDialog } from '../components/molecules/ErrorDialog'
 import { SearchField } from '../components/molecules/SearchField'
+import { ConnectionTransferMenu } from '../components/molecules/ConnectionTransferMenu'
 import { ConnectionContextMenu } from '../components/molecules/ConnectionContextMenu'
 import { ConnectionsList } from '../components/organisms/ConnectionsList'
 import { ConnectionsEmptyState } from '../components/organisms/ConnectionsEmptyState'
@@ -17,10 +18,11 @@ export function ConnectionsPage({ connections: c }: Props) {
     <AppShell
       variant="app"
       status="Local workspace"
-      footerLeft="ZAP / 0.3.0"
+      footerLeft="Zap / 0.4.0"
       footerRight="PostgreSQL · MySQL · SQLite"
       dialogs={
         <>
+          {c.transferMessage && <ErrorDialog {...c.transferMessage} onDismiss={c.dismissTransferMessage} />}
           {c.openError && (
             <ErrorDialog title="Could not open connection" message={c.openError} onDismiss={c.dismissOpenError} />
           )}
@@ -56,10 +58,18 @@ export function ConnectionsPage({ connections: c }: Props) {
             </h1>
             <p>Saved databases</p>
           </div>
-          <Button className="primary" onClick={c.create}>
-            <Plus size={16} />
-            New connection
-          </Button>
+          <div className="connection-actions">
+            <ConnectionTransferMenu
+              busy={!!c.busy}
+              canExport={c.connections.length > 0}
+              onImport={c.importConnections}
+              onExport={c.exportConnections}
+            />
+            <Button className="primary" onClick={c.create} disabled={!!c.busy}>
+              <Plus size={16} />
+              New connection
+            </Button>
+          </div>
         </div>
         <div className="toolbar">
           <SearchField

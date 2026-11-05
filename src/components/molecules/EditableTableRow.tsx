@@ -53,8 +53,27 @@ export function EditableTableRow({
   const activeOrigin = referenceOrigin?.tab === active && referenceOrigin.rowKey === rowKey ? referenceOrigin : null
 
   return (
-    <tr className={draft ? 'row-edited' : undefined}>
-      <td className="row-number">{rowNumber}</td>
+    <tr
+      data-row-selected={selection.includesRow(rowIndex)}
+      className={draft?.deleted ? 'row-deleted' : draft ? 'row-edited' : undefined}
+    >
+      <td
+        className="row-number row-selector"
+        tabIndex={0}
+        aria-label={`Select row ${rowNumber}`}
+        onKeyDown={(event) => {
+          if (event.key === ' ' || event.key === 'Enter') {
+            event.preventDefault()
+            selection.selectRow(visibleColumns[0], rowIndex, event.shiftKey)
+          }
+        }}
+        onPointerDown={(event) => selection.start(event, visibleColumns[0], rowIndex, 'rows')}
+        onPointerEnter={(event) => selection.extend(event, visibleColumns[0], rowIndex, 'rows')}
+        onContextMenu={(event) => selection.openMenu(event, selection.column ?? visibleColumns[0], rowIndex, true)}
+        title={draft?.deleted ? 'Row will be removed when changes are saved' : undefined}
+      >
+        {rowNumber}
+      </td>
       {visibleColumns.map((column) => {
         const original = row[column]
         const modified = !!draft && Object.hasOwn(draft.changes, column),
@@ -73,7 +92,9 @@ export function EditableTableRow({
               onContextMenu: (event) => selection.openMenu(event, column, rowIndex)
             }}
             value={value}
-            editable={data.editable[column] && !data.primaryKeys.some((index) => row[index] === null)}
+            editable={
+              !draft?.deleted && data.editable[column] && !data.primaryKeys.some((index) => row[index] === null)
+            }
             modified={modified}
             saving={saving}
             editing={editing}

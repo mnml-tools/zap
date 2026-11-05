@@ -14,6 +14,8 @@ export function useConnections(request: ApiRequest = api) {
     [tested, setTested] = useState(false)
   const [id, setId] = useState<string | null>(null)
   const [openError, setOpenError] = useState('')
+  const [transferMessage, setTransferMessage] = useState<{ title: string; message: string } | null>(null)
+  const transferring = useRef(false)
   const opening = useRef(false)
   const [menu, setMenu] = useState<{ connection: Connection; x: number; y: number } | null>(null)
   const menuRow = useRef<HTMLElement | null>(null)
@@ -34,7 +36,7 @@ export function useConnections(request: ApiRequest = api) {
   }
 
   const remove = async (c: Connection) => {
-    if (removing.current || opening.current) return
+    if (removing.current || opening.current || transferring.current) return
 
     removing.current = true
     setMenu(null)
@@ -63,7 +65,7 @@ export function useConnections(request: ApiRequest = api) {
   useEffect(load, [])
 
   const open = async (c: Connection) => {
-    if (opening.current || removing.current) return
+    if (opening.current || removing.current || transferring.current) return
 
     setMenu(null)
     opening.current = true
@@ -137,6 +139,39 @@ export function useConnections(request: ApiRequest = api) {
     }
   }
 
+  const transfer = async (kind: 'import' | 'export') => {
+    if (transferring.current || opening.current || removing.current || busy) return
+
+    transferring.current = true
+    setBusy(kind)
+    setError('')
+
+    try {
+      if (kind === 'import') {
+        const count = await request<number | null>('import_connections')
+        if (count !== null) {
+          load()
+          setTransferMessage({
+            title: 'Connections imported',
+            message: `Imported ${count} connection${count === 1 ? '' : 's'}.`
+          })
+        }
+      } else {
+        const exported = await request<boolean>('export_connections')
+        if (exported)
+          setTransferMessage({
+            title: 'Connections exported',
+            message: 'The exported JSON file includes saved passwords in plain text.'
+          })
+      }
+    } catch (error) {
+      setTransferMessage({ title: `Connection ${kind} failed`, message: String(error) })
+    } finally {
+      transferring.current = false
+      setBusy('')
+    }
+  }
+
   const showMenu = (connection: Connection, target: HTMLElement, x: number, y: number) => {
     if (busy) return
 
@@ -146,6 +181,10 @@ export function useConnections(request: ApiRequest = api) {
 
   return {
     connections,
+    transferMessage,
+    dismissTransferMessage: () => setTransferMessage(null),
+    importConnections: () => transfer('import'),
+    exportConnections: () => transfer('export'),
     form,
     search,
     setSearch,

@@ -1,4 +1,7 @@
-import { ArrowLeft, Plus } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { useShortcut } from '../../hooks/useShortcut'
+import { filterTablesShortcut } from '../../lib/shortcuts'
+import { ArrowBigUp, ArrowLeft, Plus } from 'lucide-react'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
 import { ResizableSidebar } from './ResizableSidebar'
 import { Button } from '../atoms/Button'
@@ -44,6 +47,21 @@ type Props = { onChooseExportTables: () => void } & Pick<
 export function WorkspaceSidebar(props: Props) {
   const { closing, saving, anyQueryBusy, closeConnection, sidebar, setSidebar } = props
 
+  const tableSearch = useRef<HTMLInputElement>(null)
+  const [focusRequest, setFocusRequest] = useState(0)
+
+  useShortcut(filterTablesShortcut, !closing, () => {
+    setSidebar('tables')
+    setFocusRequest((count) => count + 1)
+  })
+
+  useEffect(() => {
+    if (!focusRequest) return
+
+    tableSearch.current?.focus()
+    tableSearch.current?.select()
+  }, [focusRequest])
+
   const activeTable = props.tables.find((table) => tableKey(table) === props.active)
 
   return (
@@ -60,6 +78,15 @@ export function WorkspaceSidebar(props: Props) {
       {sidebar === 'tables' ? (
         <>
           <SearchField
+            inputRef={tableSearch}
+            className="table-filter-search"
+            shortcutLabel="Press Shift twice"
+            shortcutHint={
+              <>
+                <ArrowBigUp size={12} aria-hidden="true" />
+                <ArrowBigUp size={12} aria-hidden="true" />
+              </>
+            }
             label="Filter tables"
             placeholder="Filter tables…"
             value={props.search}
