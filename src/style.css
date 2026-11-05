@@ -1870,3 +1870,103 @@ th[aria-sort='descending'] {
   font: inherit;
   white-space: nowrap;
 }
+
+:root {
+  --environment-local-text: #247344;
+  --environment-local-bg: #edf7ef;
+  --environment-local-border: #a8d5b5;
+  --environment-prod-text: #b33434;
+  --environment-prod-bg: #fff0ef;
+  --environment-prod-border: #e9afaa;
+}
+
+:root[data-theme='dark'] {
+  --environment-local-text: #8ed5a7;
+  --environment-local-bg: #21392a;
+  --environment-local-border: #426b4f;
+  --environment-prod-text: #f2a19a;
+  --environment-prod-bg: #422725;
+  --environment-prod-border: #81504b;
+}
+
+.environment-badge {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border: 1px solid;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.environment-badge[data-environment='local'] {
+  color: var(--environment-local-text);
+  background: var(--environment-local-bg);
+  border-color: var(--environment-local-border);
+}
+
+.environment-badge[data-environment='prod'] {
+  color: var(--environment-prod-text);
+  background: var(--environment-prod-bg);
+  border-color: var(--environment-prod-border);
+}
+
+.environment-picker {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 11px;
+}
+
+.environment-picker legend {
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.environment-options {
+  display: flex;
+  gap: 6px;
+}
+
+.fields .environment-choice {
+  flex-direction: row;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  color: var(--secondary);
+  cursor: pointer;
+}
+
+.fields .environment-choice:has(input:checked) {
+  color: var(--text);
+  border-color: var(--control-border);
+  background: var(--soft);
+  font-weight: 600;
+}
+
+.fields .environment-choice input {
+  appearance: none;
+  flex: 0 0 10px;
+  width: 10px;
+  height: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.environment-choice input[data-environment='local'] {
+  background: var(--environment-local-text);
+}
+
+.environment-choice input[data-environment='prod'] {
+  background: var(--environment-prod-text);
+}
+
+.environment-choice input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}

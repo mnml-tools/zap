@@ -19,6 +19,8 @@ mod window_size;
 struct Connection {
     id: String,
     title: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    environment: Option<ConnectionEnvironment>,
     driver: String,
     host: String,
     port: u16,
@@ -30,6 +32,13 @@ struct Connection {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     ssh: Option<ssh::SshSettings>,
 }
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+enum ConnectionEnvironment {
+    Local,
+    Prod,
+}
+
 #[derive(Default)]
 struct Store {
     pools: Mutex<HashMap<String, OpenConnection>>,
@@ -610,6 +619,7 @@ mod tests {
         Connection {
             id: "test".into(),
             title: "Test".into(),
+            environment: None,
             driver: "sqlite".into(),
             host: "localhost".into(),
             port: 5432,
@@ -626,6 +636,26 @@ mod tests {
         assert!(!value.contains("never-write-this"));
         assert!(!value.contains("password\":"));
     }
+    #[test]
+    fn connection_environment_is_optional_and_persists() {
+        let legacy = serde_json::to_value(config("/tmp/example.sqlite".into())).unwrap();
+        let connection: Connection = serde_json::from_value(legacy.clone()).unwrap();
+        assert!(connection.environment.is_none());
+
+        for environment in ["local", "prod"] {
+            let mut value = legacy.clone();
+            value["environment"] = serde_json::json!(environment);
+            let connection: Connection = serde_json::from_value(value).unwrap();
+            let saved = serde_json::to_value(connection).unwrap();
+            assert_eq!(saved["environment"], environment);
+            assert!(saved.get("password").is_none());
+        }
+
+        let mut invalid = legacy;
+        invalid["environment"] = serde_json::json!("unknown");
+        assert!(serde_json::from_value::<Connection>(invalid).is_err());
+    }
+
     #[tokio::test]
     async fn sqlite_existing_file_and_read_write() {
         sqlx::any::install_default_drivers();

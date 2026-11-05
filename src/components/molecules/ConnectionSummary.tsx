@@ -1,5 +1,6 @@
 import { Database, HardDrive, Server } from 'lucide-react'
 import type { Connection } from '../../types/connection'
+import { ConnectionEnvironmentBadge } from '../atoms/ConnectionEnvironmentBadge'
 import { driverNames } from '../../lib/connections'
 
 const driverIcons = { postgresql: Database, mysql: Server, sqlite: HardDrive }
@@ -12,6 +13,7 @@ export function ConnectionSummary({ connection }: { connection: Connection }) {
     <div className="header-connection" title={`${connection.title} · ${driver}`}>
       <Icon size={14} aria-hidden="true" />
       <strong>{connection.title}</strong>
+      <ConnectionEnvironmentBadge environment={connection.environment} />
       <span className="connection-driver">{driver}</span>
     </div>
   )

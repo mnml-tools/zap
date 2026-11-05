@@ -1,6 +1,7 @@
 import { Database, ArrowUpRight } from 'lucide-react'
 import type { Connection } from '../../types/connection'
 import { driverNames } from '../../lib/connections'
+import { ConnectionEnvironmentBadge } from '../atoms/ConnectionEnvironmentBadge'
 import { Spinner } from '../atoms/Spinner'
 import { Button } from '../atoms/Button'
 
@@ -40,6 +41,7 @@ export function ConnectionRow({ connection: c, active, busy, onOpen, onMenu }: P
         <h3>{c.title}</h3>
         <p>{c.driver === 'sqlite' ? c.database : `${c.host}:${c.port} / ${c.database}`}</p>
       </div>
+      <ConnectionEnvironmentBadge environment={c.environment} />
       <span className="badge">{driverNames[c.driver]}</span>
       <Button aria-label={`Open ${c.title}`} onClick={() => onOpen(c)} disabled={!!busy}>
         {busy === c.id ? <Spinner size={17} /> : <ArrowUpRight size={18} />}

@@ -1,5 +1,6 @@
 import type { Connection } from '../../types/connection'
 import { SshConnectionFields } from './SshConnectionFields'
+import { ConnectionEnvironmentPicker } from './ConnectionEnvironmentPicker'
 import { SqliteFilePicker } from './SqliteFilePicker'
 
 type Props = {
@@ -21,6 +22,10 @@ export function ConnectionFields({ connection: form, editing, onChange }: Props)
           onChange={(event) => onChange({ ...form, title: event.target.value }, false)}
         />
       </label>
+      <ConnectionEnvironmentPicker
+        value={form.environment}
+        onChange={(environment) => onChange({ ...form, environment }, false)}
+      />
       {form.driver !== 'sqlite' && (
         <>
           <label className="host">
