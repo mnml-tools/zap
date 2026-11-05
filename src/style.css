@@ -1116,25 +1116,53 @@ td.reference-active .reference-open,
   padding: 4px 8px 4px 12px;
   border-bottom: 1px solid var(--border);
 }
-.reference-title {
+.reference-heading {
   display: flex;
-  flex: 1;
+  align-items: center;
+  gap: 8px;
   min-width: 0;
-  flex-direction: column;
+  flex: 1;
+  font-size: 11px;
+  font-weight: 600;
+}
+.reference-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 12px;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
   font: 11px var(--mono);
 }
-.reference-title strong,
-.reference-title span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.reference-summary > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
-.reference-title strong {
+.reference-table-badge {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font: 11px var(--mono);
+  justify-self: start;
+  max-width: 100%;
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--soft);
   font-weight: 500;
-  color: var(--text);
 }
-.reference-title span {
-  font-size: 10px;
+.reference-record {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.reference-record > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.reference-record .icon-button {
+  flex-shrink: 0;
+}
+.reference-summary-label {
   color: var(--muted);
 }
 .icon-button {
@@ -1149,28 +1177,48 @@ td.reference-active .reference-open,
   overflow: auto;
 }
 .reference-fields {
-  margin: 0;
+  width: 100%;
+  table-layout: auto;
   font: 11px var(--mono);
 }
-.reference-fields > div {
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--hover);
+.reference-fields th,
+.reference-fields td {
+  padding: 8px 12px;
+  vertical-align: top;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
-.reference-fields dt {
+.reference-fields th:first-child {
+  width: 1%;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+.reference-fields th:last-child,
+.reference-fields td:last-child {
+  border-right: 0;
+}
+.reference-fields td {
+  background: var(--background);
+}
+.reference-fields tbody th {
+  position: static;
+  background: transparent;
   color: var(--muted);
-  font-size: 10px;
 }
-.reference-fields dt .key-label {
+.reference-fields tbody tr:hover > th,
+.reference-fields tbody tr:hover > td {
+  background: var(--soft);
+}
+.reference-fields .key-label {
   margin-left: 6px;
 }
-.reference-fields dd {
+.reference-value {
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  margin: 2px 0 0;
   color: var(--text);
 }
-.reference-fields dd > span {
+.reference-value > span {
   flex: 1;
   min-width: 0;
   max-height: 160px;
@@ -1178,7 +1226,7 @@ td.reference-active .reference-open,
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.reference-fields dd .reference-open {
+.reference-value .reference-open {
   position: static;
   flex: none;
   transform: none;
@@ -1188,17 +1236,6 @@ td.reference-active .reference-open,
   padding: 8px 12px;
   color: var(--muted);
   font-size: 10px;
-}
-.reference-footer {
-  display: flex;
-  justify-content: flex-end;
-  padding: 7px 10px;
-  border-top: 1px solid var(--border);
-}
-.reference-footer button {
-  min-height: 24px;
-  padding: 3px 7px;
-  font-size: 11px;
 }
 .sidebar-switch {
   margin: 9px 9px 11px;

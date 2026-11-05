@@ -54,13 +54,28 @@ export function ReferencePanel({
             <ArrowLeft size={13} aria-hidden="true" />
           </Button>
         )}
-        <div className="reference-title">
-          <strong>{target}</strong>
-          <span>{referenceLabel(reference)}</span>
+        <div className="reference-heading">
+          <strong>Preview</strong>
+          <span className="reference-table-badge">{target}</span>
         </div>
         <Button className="icon-button" title="Close" aria-label="Close" onClick={closeReference}>
           <X size={13} aria-hidden="true" />
         </Button>
+      </div>
+      <div className="reference-summary">
+        <span className="reference-summary-label">Record</span>
+        <div className="reference-record">
+          <span>{referenceLabel(reference)}</span>
+          <Button
+            className="icon-button"
+            title="Open in tab"
+            aria-label="Open in tab"
+            onClick={openReferenceInTab}
+            disabled={!data}
+          >
+            <ExternalLink size={12} aria-hidden="true" />
+          </Button>
+        </div>
       </div>
       <div className="reference-body" aria-busy={!data && !error}>
         {!data && !error && (
@@ -76,41 +91,45 @@ export function ReferencePanel({
           </div>
         )}
         {data && row && (
-          <dl className="reference-fields">
-            {data.columns.map((column, index) => {
-              const key = foreignKeyFor(data, index)
-              const next = key && referenceFrom(key, row)
-              const value = row[index]
+          <table className="reference-fields" aria-label={`Preview of ${target}`}>
+            <thead>
+              <tr>
+                <th scope="col">Key</th>
+                <th scope="col">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.columns.map((column, index) => {
+                const key = foreignKeyFor(data, index)
+                const next = key && referenceFrom(key, row)
+                const value = row[index]
 
-              return (
-                <div key={column}>
-                  <dt>
-                    {column}
-                    {data.primaryKeys.includes(index) && <span className="key-label">PK</span>}
-                    {key && (
-                      <span className="key-label" title={referenceTitle(key)}>
-                        FK
-                      </span>
-                    )}
-                  </dt>
-                  <dd>
-                    <span>{value === null ? <NullValue /> : value}</span>
-                    {key && next && (
-                      <ReferenceButton title={referenceTitle(key)} onOpen={() => followReference(next)} />
-                    )}
-                  </dd>
-                </div>
-              )
-            })}
-          </dl>
+                return (
+                  <tr key={column}>
+                    <th scope="row">
+                      {column}
+                      {data.primaryKeys.includes(index) && <span className="key-label">PK</span>}
+                      {key && (
+                        <span className="key-label" title={referenceTitle(key)}>
+                          FK
+                        </span>
+                      )}
+                    </th>
+                    <td>
+                      <div className="reference-value">
+                        <span>{value === null ? <NullValue /> : value}</span>
+                        {key && next && (
+                          <ReferenceButton title={referenceTitle(key)} onOpen={() => followReference(next)} />
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         )}
         {data && data.total > 1 && <p className="reference-note">{data.total} rows match. Showing the first.</p>}
-      </div>
-      <div className="reference-footer">
-        <Button onClick={openReferenceInTab} disabled={!data}>
-          <ExternalLink size={12} aria-hidden="true" />
-          Open in tab
-        </Button>
       </div>
     </aside>
   )
