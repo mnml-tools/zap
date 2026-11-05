@@ -8,6 +8,7 @@ export function ConnectionEnvironmentBadge({ environment }: { environment: Conne
       className="environment-badge"
       data-environment={environment}
       title={environment === 'prod' ? 'Production connection' : 'Local connection'}
+      style={{ marginLeft: 10 }}
     >
       {environment === 'prod' ? 'Prod' : 'Local'}
     </span>
