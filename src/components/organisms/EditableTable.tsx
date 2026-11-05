@@ -1,5 +1,7 @@
 import type { ComponentProps } from 'react'
 import type { Page, TableDraft, TableSort, CellEditor } from '../../types/table'
+import { useShortcut } from '../../hooks/useShortcut'
+import { duplicateRowsShortcut, formatShortcut } from '../../lib/shortcuts'
 import { useTableNavigation } from '../../hooks/useTableNavigation'
 import { useColumnSelection } from '../../hooks/useColumnSelection'
 import { ActionContextMenu } from '../molecules/ActionContextMenu'
@@ -63,33 +65,18 @@ export function EditableTable({
       : data.rows.slice(Math.min(menu.range.anchor, menu.range.end), Math.max(menu.range.anchor, menu.range.end) + 1)
   const restoreRows = menuRows.every((row) => draft?.rows[rowKey(row, data)]?.deleted)
   const rowLabel = menuRows.length === 1 ? 'Row' : `${menuRows.length} Rows`
+  const rowsToDuplicate = menu ? menuRows : selection.selectedRows
+  const canDuplicate = !saving && !data.readOnlyReason && rowsToDuplicate.length > 0
+  const duplicate = () => {
+    onDuplicateRows(rowsToDuplicate)
+    selection.dismissMenu()
+  }
+
+  useShortcut(duplicateRowsShortcut, canDuplicate, duplicate)
 
   return (
     <>
-      <table
-        className="selectable-table"
-        onKeyDown={(event) => {
-          navigate(event)
-
-          if (event.defaultPrevented) return
-
-          if (
-            event.key.toLowerCase() !== 'd' ||
-            !(event.metaKey || event.ctrlKey) ||
-            event.altKey ||
-            event.shiftKey ||
-            (event.target instanceof HTMLElement &&
-              (event.target.isContentEditable || !!event.target.closest('input, textarea, select'))) ||
-            !selection.selectedRows.length
-          )
-            return
-
-          event.preventDefault()
-          event.stopPropagation()
-
-          if (!event.repeat && !saving && !data.readOnlyReason) onDuplicateRows(selection.selectedRows)
-        }}
-      >
+      <table className="selectable-table" onKeyDown={navigate}>
         <thead>
           <tr>
             <th className="row-number">#</th>
@@ -174,6 +161,12 @@ export function EditableTable({
               : []),
             ...(menuRows.length
               ? [
+                  {
+                    label: `Duplicate ${rowLabel}`,
+                    shortcut: formatShortcut(duplicateRowsShortcut),
+                    disabled: !canDuplicate,
+                    run: duplicate
+                  },
                   {
                     label: `${restoreRows ? 'Restore' : 'Remove'} ${rowLabel}`,
                     disabled:

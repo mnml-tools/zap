@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom'
 import { useContextMenu } from '../../hooks/useContextMenu'
 import { Button } from '../atoms/Button'
 
-type Action = { label: string; disabled: boolean; run: () => void }
+type Action = { label: string; shortcut?: string; disabled: boolean; run: () => void }
 
 type Props = {
   title: string
@@ -29,9 +29,10 @@ export function ActionContextMenu({ title, x, y, actions, onDismiss, above, trig
       }}
       onContextMenu={(event) => event.preventDefault()}
     >
-      {actions.map(({ label, disabled, run }) => (
+      {actions.map(({ label, shortcut, disabled, run }) => (
         <Button key={label} type="button" role="menuitem" disabled={disabled} onClick={run}>
-          {label}
+          <span>{label}</span>
+          {shortcut && <kbd className="menu-shortcut">{shortcut}</kbd>}
         </Button>
       ))}
     </div>,

@@ -1860,3 +1860,13 @@ th[aria-sort='descending'] {
   display: inline-flex;
   vertical-align: middle;
 }
+
+.connection-menu .menu-shortcut {
+  display: inline-block;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-left: 12px;
+  color: var(--muted);
+  font: inherit;
+  white-space: nowrap;
+}
