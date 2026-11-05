@@ -104,6 +104,25 @@ cargo test --manifest-path src-tauri/Cargo.toml
 
 For UI checks with sample data, run the Vite server and open `/tests/editor.html`. The fixture uses an in-memory mock and can simulate a save failure. See the [frontend architecture guide](docs/architecture.md) for the code layout.
 
+## License
+
+Zap is source-available under the custom [Zap Noncommercial Share-Alike
+No-AI-Cloning License 1.0](LICENSE).
+
+- Use, study, modify, and fork Zap for noncommercial purposes.
+- Share copies and modified versions under the exact same license, with notices
+  preserved and corresponding source provided to recipients.
+- Commercial use, commercial forks, sales, paid hosting, and use in a
+  profit-seeking business's operations are prohibited, even under the same license.
+- Using AI to clone or substantially reproduce Zap from its protected materials
+  is prohibited, including for noncommercial clones. AI assistance with
+  understanding, testing, debugging, and maintaining a permitted fork is allowed.
+
+The full license controls. Third-party dependencies retain their own licenses.
+These restrictions make Zap source-available rather than open-source under the
+[Open Source Definition](https://opensource.org/osd). The AI restriction does not
+claim ownership of general ideas or independently created software.
+
 ## macOS Keychain prompts
 
 When macOS asks Zap for access to a saved password, use your login Keychain password, usually your Mac login password. **Allow** grants one access and **Always Allow** remembers permission for that app identity. Zap caches authorized credentials in memory until it exits. Development rebuilds can change the app identity and prompt again. See [Apple’s Keychain guide](https://support.apple.com/en-gb/guide/mac-help/kychn002/26/mac/26).
