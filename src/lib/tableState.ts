@@ -82,3 +82,32 @@ export function nextSort(current: TableSort | undefined, column: string): TableS
 
   return { column, direction: current?.column === column ? 'desc' : 'asc' }
 }
+
+export function duplicateRows(
+  drafts: Record<string, TableDraft>,
+  tab: string,
+  rows: (string | null)[][],
+  page: Page
+): Record<string, TableDraft> {
+  const draft = drafts[tab]
+  const nextRows = { ...draft?.rows }
+
+  for (const row of rows) {
+    const source = draft?.rows[rowKey(row, page)]
+    const changes: Record<number, string | null> = {}
+
+    page.columns.forEach((_, column) => {
+      if (page.editable[column] && !page.primaryKeys.includes(column)) {
+        changes[column] = source && Object.hasOwn(source.changes, column) ? source.changes[column] : row[column]
+      }
+    })
+
+    nextRows[`new:${crypto.randomUUID()}`] = {
+      original: page.columns.map(() => null),
+      changes,
+      inserted: true
+    }
+  }
+
+  return { ...drafts, [tab]: { columns: page.columns, rows: nextRows } }
+}

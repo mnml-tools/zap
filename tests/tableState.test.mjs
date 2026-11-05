@@ -1,6 +1,13 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { stageCell, countChanges, nextSort, toggleRowRemoval, toggleRowsRemoval } from '../src/lib/tableState.ts'
+import {
+  stageCell,
+  countChanges,
+  nextSort,
+  toggleRowRemoval,
+  toggleRowsRemoval,
+  duplicateRows
+} from '../src/lib/tableState.ts'
 const cell = (overrides = {}) => ({
   tab: 'people',
   rowKey: '[1]',
@@ -94,4 +101,36 @@ test('new rows remain pending with defaults and preserve explicit NULL values', 
   assert.deepEqual(staged.people.rows['new:two'].changes, {})
   assert.equal(countChanges(staged.people), 2)
   assert.deepEqual(original.people.rows['new:one'].changes, {})
+})
+
+test('duplicating rows stages independent inserts with edited values, NULLs and database defaults', () => {
+  const page = {
+    columns: ['id', 'name', 'email', 'computed'],
+    primaryKeys: [0],
+    editable: [true, true, true, false]
+  }
+  const rows = [
+    ['1', 'Before', null, 'generated'],
+    ['2', 'Second', '', 'generated']
+  ]
+  const drafts = stageCell({}, cell({ rowKey: '["1"]', columns: page.columns, row: rows[0] }))
+  const result = duplicateRows(drafts, 'people', rows, page)
+  const inserted = Object.values(result.people.rows).filter((row) => row.inserted)
+
+  assert.equal(inserted.length, 2)
+  assert.deepEqual(
+    inserted.map((row) => row.changes),
+    [
+      { 1: 'After', 2: null },
+      { 1: 'Second', 2: '' }
+    ]
+  )
+  assert.deepEqual(inserted[0].original, [null, null, null, null])
+  assert.equal(result.people.rows['["1"]'], drafts.people.rows['["1"]'])
+  assert.equal(Object.keys(drafts.people.rows).length, 1)
+  assert.equal(countChanges(result.people), 3)
+
+  const repeated = duplicateRows(result, 'people', [rows[0]], page)
+  assert.equal(Object.values(repeated.people.rows).filter((row) => row.inserted).length, 3)
+  assert.equal(Object.values(result.people.rows).filter((row) => row.inserted).length, 2)
 })

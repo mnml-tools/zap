@@ -38,6 +38,7 @@ type Props = Pick<
   | 'toggleSort'
   | 'beginEdit'
   | 'removeRows'
+  | 'duplicateSelectedRows'
   | 'addRow'
   | 'beginNewEdit'
   | 'removeNewRow'
@@ -123,6 +124,7 @@ export function TableDataView(props: Props) {
               onSort={props.toggleSort}
               onBegin={props.beginEdit}
               onRemoveRows={props.removeRows}
+              onDuplicateRows={props.duplicateSelectedRows}
               onBeginNew={props.beginNewEdit}
               onBeginBlank={props.addRow}
               onRemoveNew={props.removeNewRow}

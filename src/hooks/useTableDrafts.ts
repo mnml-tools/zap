@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { ApiRequest } from '../services/api'
 import type { Table, Page, TableDraft, CellEditor } from '../types/table'
-import { stageCell, rowKey, countChanges, toggleRowsRemoval } from '../lib/tableState'
+import { stageCell, rowKey, countChanges, toggleRowsRemoval, duplicateRows } from '../lib/tableState'
 
 type Options = {
   id: string
@@ -174,6 +174,12 @@ export function useTableDrafts({ id, active, table, data, request, onError, onSa
     setAll(toggleRowsRemoval(staged, active, rows, data))
   }
 
+  const duplicateSelectedRows = (rows: (string | null)[][]) => {
+    if (!data || data.readOnlyReason || savingRef.current || !rows.length) return
+
+    setAll(duplicateRows(stage(), active, rows, data))
+  }
+
   const setCellValue = (value: string | null) => {
     if (editorRef.current) editCell({ ...editorRef.current, value })
   }
@@ -224,6 +230,7 @@ export function useTableDrafts({ id, active, table, data, request, onError, onSa
     beginNewEdit,
     removeNewRow,
     removeRows,
+    duplicateSelectedRows,
     setCellValue,
     commitCell,
     cancelCell,

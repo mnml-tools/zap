@@ -92,6 +92,9 @@ export function useColumnSelection(data: Page, draft?: TableDraft) {
   }
 
   return {
+    selectCell: (column: number, row: number) =>
+      setRange(row < data.rows.length ? { column, anchor: row, end: row, mode: 'cells' } : undefined),
+    selectedRows: data.rows.filter((_, index) => includesRow(index)),
     column: range?.column,
     start,
     extend,

@@ -373,6 +373,7 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
     beginNewEdit: edits.beginNewEdit,
     removeNewRow: edits.removeNewRow,
     removeRows: edits.removeRows,
+    duplicateSelectedRows: edits.duplicateSelectedRows,
     setCellValue: edits.setCellValue,
     commitCell: edits.commitCell,
     cancelCell: edits.cancelCell,
