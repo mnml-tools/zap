@@ -5,6 +5,7 @@ use std::{collections::HashMap, sync::Mutex, time::Duration};
 use tauri::{Manager, State};
 use tauri_plugin_dialog::DialogExt;
 mod catalog;
+mod connection_transfer;
 mod credentials;
 mod editor;
 mod filters;
@@ -94,6 +95,16 @@ fn read(app: &tauri::AppHandle) -> Result<Vec<Connection>, String> {
         return Ok(vec![]);
     }
     serde_json::from_slice(&std::fs::read(p).map_err(|e| e.to_string())?).map_err(|e| e.to_string())
+}
+fn write_connections(app: &tauri::AppHandle, all: &[Connection]) -> Result<(), String> {
+    let p = path(app)?;
+    let temp = p.with_extension("tmp");
+    std::fs::write(
+        &temp,
+        serde_json::to_vec_pretty(all).map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())?;
+    std::fs::rename(temp, p).map_err(|e| e.to_string())
 }
 fn credential(id: &str) -> Result<keyring::Entry, String> {
     keyring::Entry::new("com.zap.desktop", id).map_err(|e| e.to_string())
@@ -187,14 +198,7 @@ fn save_connection(
     } else {
         all.push(connection);
     }
-    let p = path(&app)?;
-    let temp = p.with_extension("tmp");
-    std::fs::write(
-        &temp,
-        serde_json::to_vec_pretty(&all).map_err(|e| e.to_string())?,
-    )
-    .map_err(|e| e.to_string())?;
-    std::fs::rename(temp, p).map_err(|e| e.to_string())
+    write_connections(&app, &all)
 }
 #[tauri::command]
 fn remove_connection(app: tauri::AppHandle, state: State<Store>, id: String) -> Result<(), String> {
@@ -582,6 +586,8 @@ fn main() {
             pick_sql_file,
             import_sql_file,
             list_connections,
+            connection_transfer::import_connections,
+            connection_transfer::export_connections,
             test_connection,
             save_connection,
             remove_connection,

@@ -1970,3 +1970,9 @@ th[aria-sort='descending'] {
   outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
+
+.connection-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
