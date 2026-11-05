@@ -22,6 +22,7 @@ type Props = {
   saving: boolean
   sort?: TableSort
   onSort: (column: string) => void
+  onCloseReference: () => void
   onBeginBlank: (column: number) => void
   onBeginNew: (key: string, column: number) => void
   onRemoveNew: (key: string) => void
@@ -47,6 +48,7 @@ export function EditableTable({
   onBeginNew,
   onBeginBlank,
   onRemoveNew,
+  onCloseReference,
   ...actions
 }: Props) {
   const selection = useColumnSelection(data, draft)
@@ -112,7 +114,23 @@ export function EditableTable({
             })}
           </tr>
         </thead>
-        <tbody>
+        <tbody
+          onClickCapture={(event) => {
+            if (!actions.referenceOrigin || !(event.target instanceof Element)) return
+
+            const row = event.target.closest('tr')
+            if (!row || row.parentElement !== event.currentTarget) return
+
+            const values = data.rows[row.sectionRowIndex]
+            if (
+              actions.referenceOrigin.tab !== active ||
+              !values ||
+              rowKey(values, data) !== actions.referenceOrigin.rowKey
+            ) {
+              onCloseReference()
+            }
+          }}
+        >
           {data.rows.map((row, index) => {
             const key = rowKey(row, data)
 

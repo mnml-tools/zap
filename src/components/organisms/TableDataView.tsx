@@ -48,6 +48,7 @@ type Props = Pick<
   | 'nullCell'
   | 'referenceOrigin'
   | 'openReference'
+  | 'closeReference'
   | 'previousPage'
   | 'nextPage'
 >
@@ -136,6 +137,7 @@ export function TableDataView(props: Props) {
               onNull={props.nullCell}
               referenceOrigin={props.referenceOrigin}
               onOpenReference={props.openReference}
+              onCloseReference={props.closeReference}
             />
           ) : (
             <div className="table-message">No columns are visible. Use Columns to show fields.</div>
