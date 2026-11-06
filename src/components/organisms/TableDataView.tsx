@@ -1,4 +1,6 @@
 import type { WorkspaceController } from '../../hooks/useWorkspace'
+import { useShortcut } from '../../hooks/useShortcut'
+import { saveChangesShortcut } from '../../lib/shortcuts'
 import { ColumnVisibility } from '../molecules/ColumnVisibility'
 import { TableToolbar } from '../molecules/TableToolbar'
 import { TablePagination } from '../molecules/TablePagination'
@@ -30,6 +32,8 @@ type Props = Pick<
   | 'error'
   | 'dismissError'
   | 'data'
+  | 'pageSize'
+  | 'changePageSize'
   | 'page'
   | 'active'
   | 'pending'
@@ -55,6 +59,8 @@ type Props = Pick<
 
 export function TableDataView(props: Props) {
   const { table, data, loading, saving, currentFilters } = props
+
+  useShortcut(saveChangesShortcut, !!table && props.changeCount > 0 && !saving && !loading, props.save)
 
   if (!table) return null
 
@@ -118,6 +124,7 @@ export function TableDataView(props: Props) {
               key={props.active}
               visibleColumns={visibleColumns}
               data={data}
+              pageSize={props.pageSize}
               page={props.page}
               active={props.active}
               draft={props.pending[props.active]}
@@ -154,6 +161,8 @@ export function TableDataView(props: Props) {
       </div>
       <TablePagination
         total={data?.total}
+        pageSize={props.pageSize}
+        onPageSizeChange={props.changePageSize}
         page={props.page}
         filtered={props.enabledFilters > 0}
         disabled={loading || saving}

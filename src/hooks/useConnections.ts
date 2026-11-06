@@ -5,6 +5,25 @@ import { api } from '../services/api'
 import type { ApiRequest } from '../services/api'
 import { newConnection } from '../lib/connections'
 
+const lastConnectionKey = 'zap.lastConnection'
+
+function readLastConnection() {
+  try {
+    return localStorage.getItem(lastConnectionKey)
+  } catch {
+    return null
+  }
+}
+
+function rememberConnection(id: string | null) {
+  try {
+    if (id) localStorage.setItem(lastConnectionKey, id)
+    else localStorage.removeItem(lastConnectionKey)
+  } catch {
+    /* Keep connections usable if storage is unavailable. */
+  }
+}
+
 export function useConnections(request: ApiRequest = api) {
   const [connections, setConnections] = useState<Connection[]>([]),
     [form, setForm] = useState<Connection | null>(null),
@@ -46,6 +65,7 @@ export function useConnections(request: ApiRequest = api) {
     try {
       await request('remove_connection', { id: c.id })
       setConnections((all) => all.filter((item) => item.id !== c.id))
+      if (isTauri() && readLastConnection() === c.id) rememberConnection(null)
     } catch (e) {
       setError(String(e))
       menuRow.current?.focus()
@@ -62,8 +82,6 @@ export function useConnections(request: ApiRequest = api) {
         .catch((e) => setError(String(e)))
   }
 
-  useEffect(load, [])
-
   const open = async (c: Connection) => {
     if (opening.current || removing.current || transferring.current) return
 
@@ -76,6 +94,7 @@ export function useConnections(request: ApiRequest = api) {
     try {
       await request('open_connection', { id: c.id })
       setId(c.id)
+      if (isTauri()) rememberConnection(c.id)
     } catch (e) {
       setOpenError(String(e))
     } finally {
@@ -83,6 +102,34 @@ export function useConnections(request: ApiRequest = api) {
       setBusy('')
     }
   }
+
+  useEffect(() => {
+    if (!isTauri() && request === api) return
+
+    let cancelled = false
+
+    request<Connection[]>('list_connections')
+      .then((saved) => {
+        if (cancelled) return
+
+        setConnections(saved)
+
+        if (isTauri()) {
+          const lastId = readLastConnection()
+          const last = saved.find((connection) => connection.id === lastId)
+
+          if (last) void open(last)
+          else if (lastId) rememberConnection(null)
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) setError(String(error))
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const close = async () => {
     if (!id) return

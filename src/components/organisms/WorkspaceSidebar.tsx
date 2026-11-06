@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useShortcut } from '../../hooks/useShortcut'
 import { filterTablesShortcut } from '../../lib/shortcuts'
-import { ArrowBigUp, ArrowLeft, Plus } from 'lucide-react'
+import { ArrowBigUp, ArrowLeft, Plus, Zap } from 'lucide-react'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
 import { ResizableSidebar } from './ResizableSidebar'
 import { Button } from '../atoms/Button'
@@ -40,6 +40,7 @@ type Props = { onChooseExportTables: () => void } & Pick<
   | 'queries'
   | 'queryError'
   | 'queryDirty'
+  | 'newQuickQuery'
   | 'newQuery'
   | 'openQuery'
 >
@@ -74,7 +75,18 @@ export function WorkspaceSidebar(props: Props) {
         {closing ? <Spinner size={14} /> : <ArrowLeft size={14} />}{' '}
         {closing ? 'Closing connection…' : 'Close connection'}
       </Button>
-      <SidebarSwitch value={sidebar} onChange={setSidebar} />
+      <div className="sidebar-navigation">
+        <SidebarSwitch value={sidebar} onChange={setSidebar} />
+        <Button
+          className="quick-query"
+          aria-label="Quick Query"
+          title="Quick Query"
+          disabled={closing || saving || props.structureSaving || props.tableActionBusy}
+          onClick={props.newQuickQuery}
+        >
+          <Zap size={13} aria-hidden="true" />
+        </Button>
+      </div>
       {sidebar === 'tables' ? (
         <>
           <SearchField

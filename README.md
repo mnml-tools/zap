@@ -87,15 +87,63 @@ To publish a GitHub Release, update the versions in `package.json`,
 `src-tauri/tauri.conf.json`, commit the changes, then push a matching tag:
 
 ```sh
-git tag v0.3.0
-git push origin v0.3.0
+git tag v0.4.0
+git push origin v0.4.0
 ```
 
 The release is published after both platform builds pass, with both packages
-attached. The workflow uses GitHub's built-in token; no extra secrets are needed.
+attached. The workflow uses GitHub's built-in token for publishing. Version-tag builds also require the updater signing secrets described below.
 macOS builds are not Developer ID signed or notarized, so downloaded apps may
 require approval in macOS security settings. For public distribution, configure
 [macOS signing and notarization](https://v2.tauri.app/distribute/sign/macos/).
+
+## Automatic updates
+
+Published version-tag builds check GitHub Releases once at startup (with a 15-second timeout).
+When a newer version is available, Zap offers **Install and restart** or **Later**.
+If SQL, table data, or structure edits are unsaved, a second prompt lets you cancel
+and save your work or explicitly discard changes. Updating is blocked while query
+execution, saves, imports, exports, or table actions are running. A modal blocks
+editing during download and installation. Failed checks do not interrupt startup;
+failed installations show an error and allow retrying.
+
+### Configure GitHub signing secrets
+
+Generate an updater signing key pair on your own machine:
+
+```sh
+npm run tauri signer generate -- -w "$HOME/.tauri/zap.key"
+```
+
+In the repository's **Settings → Secrets and variables → Actions**, add:
+
+| Secret | Value |
+| --- | --- |
+| `TAURI_SIGNING_PRIVATE_KEY` | Full contents of `zap.key`, not its path. |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | The password chosen when generating the key; omit if unencrypted. |
+| `TAURI_UPDATER_PUBLIC_KEY` | Full contents of `zap.key.pub`. This is public information, stored as a secret for build configuration convenience. |
+
+Back up the private key and its password securely. Keep using the same key pair for
+future versions so existing installations can verify updates. Never commit the private key.
+Updater signatures are separate from Apple Developer ID signing and notarization.
+
+Tag builds embed the public key, generate signed updater artifacts, and publish
+`latest.json`, the macOS `.app.tar.gz` and Linux AppImage, and their `.sig` files.
+The manifest maps both Intel and Apple Silicon Macs to the universal macOS archive.
+The release tag must match the app version, e.g. `v0.4.0` for `0.4.0`.
+The GitHub repository and release assets must be publicly downloadable.
+
+Ordinary branch and local builds do not require signing secrets; their updater key
+is empty, so they cannot check for updates until configured. To build locally with
+updates, set `plugins.updater.pubkey` to your public key and enable
+`bundle.createUpdaterArtifacts` in a local Tauri config override, then provide the
+`TAURI_SIGNING_PRIVATE_KEY` and optional password environment variables when building.
+Development mode skips startup checks.
+
+Existing installations need one manual upgrade to the first release containing
+this updater. Test the full flow using two signed versions before relying on it
+for distribution: install the older version, publish the newer version, reopen
+Zap, verify cancel preserves dirty work, then install and restart.
 
 ## Development checks
 

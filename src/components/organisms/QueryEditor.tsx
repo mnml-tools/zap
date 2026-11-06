@@ -1,15 +1,23 @@
 import { useQueryEditor } from '../../hooks/useQueryEditor'
 import type { QueryEditorOptions } from '../../hooks/useQueryEditor'
+import { useShortcut } from '../../hooks/useShortcut'
+import { saveChangesShortcut } from '../../lib/shortcuts'
 import { ErrorMessage } from '../atoms/ErrorMessage'
 import { QueryToolbar } from '../molecules/QueryToolbar'
 import { SqlCodeInput } from '../molecules/SqlCodeInput'
 import { QueryEditorHint } from '../molecules/QueryEditorHint'
 import { QueryResults } from './QueryResults'
 
-type Props = QueryEditorOptions & { onDelete: () => void }
+type Props = QueryEditorOptions & { active: boolean; onDelete: () => void }
 
 export function QueryEditor(props: Props) {
   const editor = useQueryEditor(props)
+
+  useShortcut(
+    saveChangesShortcut,
+    !props.query.quick && props.active && editor.dirty && !editor.busy && !!editor.title.trim() && !!editor.sql.trim(),
+    editor.save
+  )
 
   return (
     <div
@@ -19,14 +27,12 @@ export function QueryEditor(props: Props) {
           event.preventDefault()
           void editor.run()
         }
-
-        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
-          event.preventDefault()
-          void editor.save()
-        }
       }}
     >
       <QueryToolbar
+        quick={!!props.query.quick}
+        canConvertQuick={!!editor.result}
+        onConvertQuick={editor.convertQuick}
         title={editor.title}
         sql={editor.sql}
         dirty={editor.dirty}
@@ -37,7 +43,7 @@ export function QueryEditor(props: Props) {
         onDelete={props.onDelete}
       />
       <SqlCodeInput value={editor.sql} disabled={!!editor.busy} onChange={editor.setSql} />
-      <QueryEditorHint lineCount={editor.sql.split('\n').length} />
+      <QueryEditorHint quick={!!props.query.quick} unsaved={editor.unsaved} lineCount={editor.sql.split('\n').length} />
       {editor.error && <ErrorMessage message={editor.error} />}
       <QueryResults
         running={editor.busy === 'run'}

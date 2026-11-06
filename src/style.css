@@ -686,9 +686,8 @@ nav small {
   display: flex;
   min-height: 32px;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
   overflow-x: auto;
-  background: var(--soft);
+  background: linear-gradient(var(--border), var(--border)) bottom / 100% 1px no-repeat var(--soft);
 }
 .tab {
   display: flex;
@@ -814,6 +813,24 @@ tbody tr:hover {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+.pagination select {
+  -webkit-appearance: none;
+  appearance: none;
+  font: inherit;
+  color: var(--text);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 2px 20px 2px 4px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--secondary) 50%),
+    linear-gradient(135deg, var(--secondary) 50%, transparent 50%);
+  background-position:
+    right 10px center,
+    right 6px center;
+  background-size: 4px 4px;
+  background-repeat: no-repeat;
 }
 .pagination button {
   padding: 2px;
@@ -1237,8 +1254,31 @@ td.reference-active .reference-open,
   color: var(--muted);
   font-size: 10px;
 }
-.sidebar-switch {
+.sidebar-navigation {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
   margin: 9px 9px 11px;
+}
+.sidebar-navigation .sidebar-switch {
+  flex: 1;
+  min-width: 0;
+}
+.quick-query {
+  color: var(--muted);
+  background: transparent;
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  flex: 0 0 28px;
+  padding: 0;
+}
+.quick-query svg,
+.quick-query-icon {
+  transform: scaleX(-1);
+}
+.query-toolbar.quick-query-toolbar {
+  justify-content: flex-end;
 }
 .view-switch {
   display: flex;
@@ -1260,6 +1300,7 @@ td.reference-active .reference-open,
   background: var(--hover);
 }
 .view-switch button[data-selected='true'],
+.view-switch button[aria-selected='true'],
 .view-switch button[aria-pressed='true'] {
   background: var(--background);
   color: var(--text);
