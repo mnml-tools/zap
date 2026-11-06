@@ -7,6 +7,7 @@ import { AppFooter } from '../molecules/AppFooter'
 type Props = {
   variant: 'app' | 'workspace'
   status: string
+  connectionSelector?: ReactNode
   connection?: Connection
   footerLeft: ReactNode
   footerRight: ReactNode
@@ -14,10 +15,19 @@ type Props = {
   dialogs?: ReactNode
 }
 
-export function AppShell({ variant, status, connection, footerLeft, footerRight, children, dialogs }: Props) {
+export function AppShell({
+  variant,
+  status,
+  connection,
+  connectionSelector,
+  footerLeft,
+  footerRight,
+  children,
+  dialogs
+}: Props) {
   return (
     <div className={nativeLinux ? `${variant} linux-window` : variant}>
-      <AppHeader status={status} connection={connection} />
+      <AppHeader status={status} connection={connection} connectionSelector={connectionSelector} />
       {children}
       <AppFooter left={footerLeft} right={footerRight} />
       {dialogs}

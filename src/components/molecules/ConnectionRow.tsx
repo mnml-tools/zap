@@ -1,4 +1,5 @@
-import { Database, ArrowUpRight } from 'lucide-react'
+import { ConnectionAvatar } from '../atoms/ConnectionAvatar'
+import { ArrowUpRight } from 'lucide-react'
 import type { Connection } from '../../types/connection'
 import { driverNames } from '../../lib/connections'
 import { ConnectionEnvironmentBadge } from '../atoms/ConnectionEnvironmentBadge'
@@ -35,7 +36,7 @@ export function ConnectionRow({ connection: c, active, busy, onOpen, onMenu }: P
       }}
     >
       <div className="db-icon">
-        <Database size={22} />
+        <ConnectionAvatar connection={c} />
       </div>
       <div className="connection-info">
         <h3>{c.title}</h3>

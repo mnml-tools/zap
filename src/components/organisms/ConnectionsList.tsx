@@ -1,4 +1,5 @@
 import type { ComponentProps } from 'react'
+import { orderConnections } from '../../lib/connectionOrder'
 import type { ConnectionView } from '../../hooks/useConnectionView'
 import type { Connection } from '../../types/connection'
 import { matchesConnection } from '../../lib/connections'
@@ -9,8 +10,8 @@ type Props = { connections: Connection[]; search: string; activeId?: string; vie
   'busy' | 'onOpen' | 'onMenu'
 >
 
-export function ConnectionsList({ connections, search, activeId, view = 'cards', ...actions }: Props) {
-  const filtered = connections.filter((connection) => matchesConnection(connection, search))
+export function ConnectionsList({ connections, search, activeId, view = 'grid', ...actions }: Props) {
+  const filtered = orderConnections(connections).filter((connection) => matchesConnection(connection, search))
 
   return (
     <div className={`connections connections-${view}`} aria-label="Saved connections">

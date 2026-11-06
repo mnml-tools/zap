@@ -1,3 +1,4 @@
+import { ConnectionAvatarPicker } from './ConnectionAvatarPicker'
 import type { Connection } from '../../types/connection'
 import { SshConnectionFields } from './SshConnectionFields'
 import { ConnectionEnvironmentPicker } from './ConnectionEnvironmentPicker'
@@ -22,6 +23,7 @@ export function ConnectionFields({ connection: form, editing, onChange }: Props)
           onChange={(event) => onChange({ ...form, title: event.target.value }, false)}
         />
       </label>
+      <ConnectionAvatarPicker connection={form} onChange={(avatarColor) => onChange({ ...form, avatarColor }, false)} />
       <ConnectionEnvironmentPicker
         value={form.environment}
         onChange={(environment) => onChange({ ...form, environment }, false)}

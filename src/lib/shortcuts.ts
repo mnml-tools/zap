@@ -15,6 +15,8 @@ export const removeRowsShortcut: Shortcut = { key: 'Backspace', primary: true }
 
 export const saveChangesShortcut: Shortcut = { key: 's', primary: true, allowInInputs: true }
 
+export const switchConnectionShortcut: Shortcut = { key: 'p', primary: true, allowInInputs: true }
+
 export function matchesShortcut(event: KeyboardEvent, shortcut: Shortcut, mac: boolean) {
   return (
     event.key.toLowerCase() === shortcut.key.toLowerCase() &&

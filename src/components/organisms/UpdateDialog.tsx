@@ -10,7 +10,8 @@ export function UpdateDialog({ update, onDismiss }: { update: Update; onDismiss:
   const installed = useRef(false)
   const [phase, setPhase] = useState<'ready' | 'confirm' | 'installing' | 'installed'>('ready')
   const [error, setError] = useState('')
-  const [progress, setProgress] = useState('')
+  const [progress, setProgress] = useState('Starting download…')
+  const [percent, setPercent] = useState<number | undefined>()
 
   useEffect(() => {
     const element = dialog.current!
@@ -35,6 +36,8 @@ export function UpdateDialog({ update, onDismiss }: { update: Update; onDismiss:
 
     installing.current = true
     setError('')
+    setProgress('Starting download…')
+    setPercent(undefined)
     setPhase('installing')
 
     try {
@@ -42,12 +45,24 @@ export function UpdateDialog({ update, onDismiss }: { update: Update; onDismiss:
         let received = 0
         let total: number | undefined
         await update.downloadAndInstall((event) => {
-          if (event.event === 'Started') total = event.data.contentLength
+          if (event.event === 'Started') {
+            total = event.data.contentLength
+            if (total) setPercent(0)
+          }
           if (event.event === 'Progress') {
             received += event.data.chunkLength
-            setProgress(total ? `${Math.round((received / total) * 100)}%` : `${Math.round(received / 1024)} KB`)
+            if (total) {
+              const next = Math.min(100, Math.round((received / total) * 100))
+              setPercent(next)
+              setProgress(`${next}%`)
+            } else {
+              setProgress(`${Math.round(received / 1024)} KB downloaded`)
+            }
           }
-          if (event.event === 'Finished') setProgress('Installing…')
+          if (event.event === 'Finished') {
+            setPercent(100)
+            setProgress('Installing…')
+          }
         })
         installed.current = true
       }
@@ -63,7 +78,7 @@ export function UpdateDialog({ update, onDismiss }: { update: Update; onDismiss:
   return (
     <dialog
       ref={dialog}
-      className="modal error-dialog"
+      className="modal error-dialog update-dialog"
       aria-labelledby="update-title"
       onCancel={(event) => {
         event.preventDefault()
@@ -79,9 +94,15 @@ export function UpdateDialog({ update, onDismiss }: { update: Update; onDismiss:
           : phase === 'installed'
             ? 'The update is installed. Restart Zap to finish.'
             : phase === 'installing'
-              ? `Updating Zap… ${progress}`
+              ? 'Updating Zap…'
               : 'Install the update and restart Zap.'}
       </p>
+      {phase === 'installing' && (
+        <div className="update-progress">
+          <progress aria-label="Update download progress" max={100} value={percent} />
+          <span aria-live="polite">{progress}</span>
+        </div>
+      )}
       {error && <p role="alert">{error}</p>}
       <div className="discard-actions">
         <Button disabled={phase === 'installing'} onClick={onDismiss}>

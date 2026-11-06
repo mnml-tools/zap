@@ -4,6 +4,7 @@ import type { Connection } from '../types/connection'
 import { api } from '../services/api'
 import type { ApiRequest } from '../services/api'
 import { newConnection } from '../lib/connections'
+import { assignConnectionAvatarColors, setConnectionAvatarColor } from '../lib/connectionAvatar'
 
 const lastConnectionKey = 'zap.lastConnection'
 
@@ -78,7 +79,10 @@ export function useConnections(request: ApiRequest = api) {
   const load = () => {
     if (isTauri() || request !== api)
       request<Connection[]>('list_connections')
-        .then(setConnections)
+        .then((saved) => {
+          assignConnectionAvatarColors(saved.map((connection) => connection.id))
+          setConnections(saved)
+        })
         .catch((e) => setError(String(e)))
   }
 
@@ -112,6 +116,7 @@ export function useConnections(request: ApiRequest = api) {
       .then((saved) => {
         if (cancelled) return
 
+        assignConnectionAvatarColors(saved.map((connection) => connection.id))
         setConnections(saved)
 
         if (isTauri()) {
@@ -135,7 +140,36 @@ export function useConnections(request: ApiRequest = api) {
     if (!id) return
 
     await request('close_connection', { id })
+    if (isTauri()) rememberConnection(null)
     setId(null)
+  }
+
+  const switchConnection = async (next: Connection) => {
+    if (!id || id === next.id || opening.current || removing.current || transferring.current) return
+
+    opening.current = true
+    setBusy(next.id)
+    setOpenError('')
+    let closed = false
+
+    try {
+      await request('close_connection', { id })
+      closed = true
+      if (isTauri()) rememberConnection(null)
+      await request('open_connection', { id: next.id })
+      setId(next.id)
+      if (isTauri()) rememberConnection(next.id)
+    } catch (error) {
+      if (closed) {
+        setId(null)
+        setOpenError(String(error))
+      } else {
+        throw error
+      }
+    } finally {
+      opening.current = false
+      setBusy('')
+    }
   }
 
   const create = () => {
@@ -159,7 +193,9 @@ export function useConnections(request: ApiRequest = api) {
     setError('')
 
     try {
-      await request('save_connection', { connection: form })
+      const { avatarColor, ...connection } = form
+      await request('save_connection', { connection })
+      if (avatarColor) setConnectionAvatarColor(form.id, avatarColor)
       setForm(null)
       load()
     } catch (error) {
@@ -248,6 +284,7 @@ export function useConnections(request: ApiRequest = api) {
     remove,
     open,
     close,
+    switchConnection,
     create,
     changeForm,
     cancelForm,
