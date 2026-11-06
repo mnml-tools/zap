@@ -44,6 +44,16 @@ Changes are grouped by version, with the newest version first. Dates use the tag
 
 - Improve macOS icon generation and correct the macOS CI build step.
 
+## Unreleased
+
+### Added
+
+- Suggest tables, columns, and keywords while typing in the SQL editor. Table suggestions follow `FROM`, `JOIN`, `UPDATE`, and `INTO`. Column suggestions use only the tables referenced in the current statement and resolve aliases such as `u.`. Keyword suggestions follow the statement's clause order, so clauses already written, such as `WHERE`, are not offered again. Press Ctrl+Space to open suggestions, ↑/↓ to choose, Enter or Tab to accept, and Esc to close.
+
+### Fixed
+
+- Show MySQL and MariaDB table columns in the Structure view and in SQL suggestions. `information_schema` text columns such as `COLUMN_TYPE` were returned as blobs and failed to decode.
+
 ## [0.3.0] — 2026-11-04
 
 ### Fixed

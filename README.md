@@ -32,7 +32,7 @@ View screenshots in [light mode](docs/zap-screenshot-light.png) or [dark mode](d
 - **Explore** tables in tabs with Data, Structure, and Indexes views. Search the sidebar, filter and sort rows, and choose which columns to show.
 - **Follow relations** from any foreign-key cell: click its ↗ icon, or Ctrl+click (⌘-click on macOS), to see the referenced row in a side panel. Follow further references from there, or open the row in its own filtered tab.
 - **Edit** cells and stage changes before saving. In Structure, you can rename tables and add fields. Available edits depend on the database driver and permissions.
-- **Run SQL** with a syntax-highlighted editor. Save queries per connection and revisit them in their own tabs.
+- **Run SQL** with a syntax-highlighted editor that suggests tables, columns, and keywords as you type. Save queries per connection and revisit them in their own tabs.
 - **Import and export SQL** from the sidebar’s **⋯** menu. Export one table or a selection, with rows or structure only.
 - **Make it yours** with Light or Dark mode and five accent colours. Zap remembers your appearance settings, sidebar width, and window size.
 

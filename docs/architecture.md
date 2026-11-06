@@ -21,6 +21,7 @@ UI components compose their own level or lower layers. Atoms do not know about d
 - `useTableDrafts`: cell editors, pending edits, saving, and reverting drafts.
 - `useSavedQueries`: saved-query definitions, open query tabs, and dirty/busy state.
 - `useQueryEditor`: local SQL/title changes, query saving, and execution/results state.
+- `useSqlCompletion`: loads columns for the tables a query references and returns the editor's completion provider. Ranking and item building live in `src/lib/sqlCompletion.ts`, and clause order and expression state live in `src/lib/sqlClauses.ts`.
 - `useReferencePanel`: the referenced-row panel opened from foreign-key cells, with a back stack for following further references.
 - `useWorkspace`: coordinates those features for cross-feature actions such as closing a connection or protecting unsaved changes.
 - `useUnsavedChanges`, `useContextMenu`, `useSidebarResize`, and `useTheme`: focused interaction and platform lifecycle hooks.
@@ -39,6 +40,6 @@ npm test
 npm run format:check
 ```
 
-`npm test` checks SQL tokenization and immutable table-draft/sort transitions. During `npm run dev`, `/tests/editor.html` exercises the workspace, and `/tests/connections.html` exercises the full connection-to-workspace flow. Both use the isolated mock in `tests/fixtures/database.ts`; neither accesses real databases or Keychain credentials.
+`npm test` checks SQL tokenization, SQL completion contexts, and immutable table-draft/sort transitions. During `npm run dev`, `/tests/editor.html` exercises the workspace, and `/tests/connections.html` exercises the full connection-to-workspace flow. Both use the isolated mock in `tests/fixtures/database.ts`; neither accesses real databases or Keychain credentials.
 
 Use `npm run format` to format React, TypeScript, CSS, and fixture files consistently. TypeScript also checks unused locals and parameters.

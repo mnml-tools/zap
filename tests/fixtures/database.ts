@@ -70,6 +70,22 @@ export const request: ApiRequest = async <T>(command: string, args?: Record<stri
       { schema: 'public', name: 'people' },
       { schema: 'public', name: 'events' }
     ] as T
+  if (command === 'table_columns') {
+    const table = args!.table as Table
+    return (
+      table.name === 'people'
+        ? [
+            ['id', 'integer', 'No', null, null],
+            ['name', 'text', 'No', null, null],
+            ['email', 'text', 'Yes', null, null]
+          ]
+        : [
+            ['id', 'integer', 'No', null, null],
+            ['title', 'text', 'No', null, null],
+            ['person_id', 'integer', 'Yes', null, null]
+          ]
+    ) as T
+  }
   if (command === 'table_page') {
     const table = fixtureTables[(args!.table as Table).name]
     let filtered = table.rows

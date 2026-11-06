@@ -69,6 +69,8 @@ export function WorkspacePage(options: WorkspaceOptions) {
               <QueryEditor
                 active={model.active === `query:${query.id}`}
                 connectionId={options.id}
+                driver={options.connection?.driver ?? ''}
+                tables={model.tables}
                 query={query}
                 request={options.request || model.request}
                 onSaved={model.savedQuery}
