@@ -686,9 +686,8 @@ nav small {
   display: flex;
   min-height: 32px;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
   overflow-x: auto;
-  background: var(--soft);
+  background: linear-gradient(var(--border), var(--border)) bottom / 100% 1px no-repeat var(--soft);
 }
 .tab {
   display: flex;
