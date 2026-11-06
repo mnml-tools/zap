@@ -1,6 +1,48 @@
 # Changelog
 
-Changes are grouped by tagged version, with the newest version first. Dates use the tagged commits. Changes after the latest tag are listed under Unreleased.
+Changes are grouped by version, with the newest version first. Dates use the tagged commits for tagged releases and the release preparation date for versions awaiting a tag.
+
+## [0.5.0] — 2026-11-06
+
+### Added
+
+- Check for updates automatically at startup and offer Install and restart, with download progress, retry handling, and confirmation before discarding unsaved SQL, table edits, or structure changes.
+- Publish signed Linux and universal macOS update packages and an update manifest through the release workflow, with signing setup documented in the README.
+- Run one-time SQL queries in quick query tabs without creating a saved query, with an option to convert them to saved queries.
+- Choose the number of rows displayed per page.
+- Save pending changes with Command+S on macOS or Ctrl+S on other platforms.
+- Remember and reopen the last connection at startup.
+
+### Changed
+
+- Improve active workspace tab styling so the selected tab integrates with the workspace.
+
+### Fixed
+
+- Restore the window's screen position and maximized state between launches.
+- Decode database text metadata returned as BLOB values, including MySQL column types, defaults, comments, and index information, while preserving NULL values and reporting invalid UTF-8.
+
+## [0.4.0] — 2026-11-05
+
+### Added
+
+- Preview foreign-key references in a side panel, follow related records through a back stack, and open referenced tables in filtered tabs.
+- Insert new rows, duplicate selected rows, and stage row deletions before saving changes.
+- Add keyboard shortcuts for duplicating and removing rows, Tab navigation between editable cells, and shortcut hints in context menus.
+- Focus the table search from anywhere by pressing Shift twice.
+- Label connections by environment and display the environment in the workspace.
+- Import and export saved connections, including passwords, through JSON files.
+- Add automated Rust tests and desktop builds for Linux x86_64 and universal macOS, with packages published to GitHub Releases on version tags.
+- Add a source-available license and document the project's use of AI assistance.
+
+### Changed
+
+- Add a subtle window border on Linux.
+- Improve the README and workspace screenshot.
+
+### Fixed
+
+- Improve macOS icon generation and correct the macOS CI build step.
 
 ## [0.3.0] — 2026-11-04
 
@@ -61,6 +103,8 @@ Initial tagged release.
 - Confirmation for discarding unsaved changes and popup error reporting.
 - Application icons, development fixtures, automated tests, and architecture documentation.
 
+[0.5.0]: https://github.com/rafmst/zap/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/rafmst/zap/compare/0.3.0...v0.4.0
 [0.3.0]: https://github.com/rafmst/zap/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/rafmst/zap/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/rafmst/zap/releases/tag/0.1.0
