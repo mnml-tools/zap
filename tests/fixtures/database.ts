@@ -1,10 +1,28 @@
-import type { Page, Table, SavedQuery, TableFilter, TableSort } from '../../src/types/index'
+import type { ForeignKey, Page, Table, SavedQuery, TableFilter, TableSort } from '../../src/types/index'
 import type { ApiRequest } from '../../src/services/api'
 const rows = Array.from({ length: 101 }, (_, i) => [
   String(i + 1),
   `Person ${i + 1}`,
   i === 0 ? null : `person${i + 1}@example.test`
 ])
+// Events reference people and their parent event; event 3 has no person and event 4 points at a missing one.
+const eventRows = Array.from({ length: 6 }, (_, i) => [
+  String(i + 1),
+  `Event ${i + 1}`,
+  i === 2 ? null : i === 3 ? '999' : String(i * 7 + 2),
+  i === 0 ? null : String(i)
+])
+const fixtureTables: Record<string, { columns: string[]; rows: (string | null)[][]; foreignKeys: ForeignKey[] }> = {
+  people: { columns: ['id', 'name', 'email'], rows, foreignKeys: [] },
+  events: {
+    columns: ['id', 'title', 'person_id', 'parent_id'],
+    rows: eventRows,
+    foreignKeys: [
+      { columns: [2], target: { schema: 'public', name: 'people' }, targetColumns: ['id'] },
+      { columns: [3], target: { schema: 'public', name: 'events' }, targetColumns: ['id'] }
+    ]
+  }
+}
 let failNext = false
 const savedQueries: SavedQuery[] = JSON.parse(localStorage.getItem('zap.fixtureQueries') || '[]')
 
@@ -69,11 +87,11 @@ export const request: ApiRequest = async <T>(command: string, args?: Record<stri
     ) as T
   }
   if (command === 'table_page') {
-    const table = args!.table as Table
-    let filtered = table.name === 'people' ? rows : [['1', 'Event one', null]]
+    const table = fixtureTables[(args!.table as Table).name]
+    let filtered = table.rows
     for (const filter of (args!.filters || []) as TableFilter[]) {
       if (!filter.enabled) continue
-      const column = ['id', 'name', 'email'].indexOf(filter.column)
+      const column = table.columns.indexOf(filter.column)
       filtered = filtered.filter((row) => {
         const value = row[column]
         switch (filter.operator) {
@@ -124,7 +142,7 @@ export const request: ApiRequest = async <T>(command: string, args?: Record<stri
     }
     const sort = args!.sort as TableSort | undefined
     if (sort) {
-      const column = ['id', 'name', 'email'].indexOf(sort.column)
+      const column = table.columns.indexOf(sort.column)
       filtered = [...filtered].sort((a, b) => {
         let result = 0
         if (a[column] === null) result = b[column] === null ? 0 : -1
@@ -134,12 +152,18 @@ export const request: ApiRequest = async <T>(command: string, args?: Record<stri
       })
     }
     return {
-      columns: ['id', 'name', 'email'],
-      rows: filtered.slice(Number(args!.page) * 100, Number(args!.page) * 100 + 100).map((r) => [...r]),
+      columns: table.columns,
+      rows: filtered
+        .slice(
+          Number(args!.page) * Number(args!.pageSize ?? 100),
+          Number(args!.page) * Number(args!.pageSize ?? 100) + Number(args!.pageSize ?? 100)
+        )
+        .map((r) => [...r]),
       total: filtered.length,
       primaryKeys: [0],
-      editable: [true, true, true],
-      readOnlyReason: null
+      editable: table.columns.map(() => true),
+      readOnlyReason: null,
+      foreignKeys: table.foreignKeys
     } satisfies Page as T
   }
   if (command === 'save_table_changes') {
@@ -147,6 +171,7 @@ export const request: ApiRequest = async <T>(command: string, args?: Record<stri
       failNext = false
       throw new Error('Simulated save failure. Your changes are still pending.')
     }
+    const table = fixtureTables[(args!.table as Table).name]
     for (const row of args!.edits as {
       original: (string | null)[]
       inserted?: boolean
@@ -154,24 +179,21 @@ export const request: ApiRequest = async <T>(command: string, args?: Record<stri
       changes: { column: string; value: string | null }[]
     }[]) {
       if (row.inserted) {
-        const values: (string | null)[] = [
-          String(Math.max(0, ...rows.map((value) => Number(value[0]))) + 1),
-          null,
-          null
-        ]
-        for (const change of row.changes) values[['id', 'name', 'email'].indexOf(change.column)] = change.value
-        rows.push(values)
+        const values = table.columns.map((): string | null => null)
+        values[0] = String(Math.max(0, ...table.rows.map((value) => Number(value[0]))) + 1)
+        for (const change of row.changes) values[table.columns.indexOf(change.column)] = change.value
+        table.rows.push(values)
         continue
       }
 
       if (row.deleted) {
-        const index = rows.findIndex((r) => r[0] === row.original[0])
-        if (index >= 0) rows.splice(index, 1)
+        const index = table.rows.findIndex((r) => r[0] === row.original[0])
+        if (index >= 0) table.rows.splice(index, 1)
         continue
       }
 
-      const target = rows.find((r) => r[0] === row.original[0])!
-      for (const change of row.changes) target[['id', 'name', 'email'].indexOf(change.column)] = change.value
+      const target = table.rows.find((r) => r[0] === row.original[0])!
+      for (const change of row.changes) target[table.columns.indexOf(change.column)] = change.value
     }
     return undefined as T
   }

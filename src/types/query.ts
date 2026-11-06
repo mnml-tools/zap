@@ -1,6 +1,6 @@
 export type SavedQuery = { id: string; connectionId: string; title: string; sql: string }
 
-export type QueryDocument = SavedQuery & { isNew?: boolean }
+export type QueryDocument = SavedQuery & { isNew?: boolean; quick?: boolean }
 
 export type QueryResultSet = {
   columns: string[]

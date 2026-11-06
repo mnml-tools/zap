@@ -48,14 +48,19 @@ export function useSavedQueries({ id, request, active, fallbackTab, onSelect, on
     onSelect(`query:${query.id}`)
   }
 
-  const create = () =>
+  const create = (quick = false) =>
     open({
       id: crypto.randomUUID(),
       connectionId: id,
-      title: 'Untitled query',
+      title: quick ? 'Quick Query' : 'Untitled query',
       sql: '',
-      isNew: true
+      isNew: true,
+      quick
     })
+
+  const convertQuick = (query: QueryDocument) => {
+    setTabs((all) => all.map((item) => (item.id === query.id && item.quick ? { ...query, quick: false } : item)))
+  }
 
   const saved = (query: SavedQuery) => {
     setQueries((all) =>
@@ -117,6 +122,7 @@ export function useSavedQueries({ id, request, active, fallbackTab, onSelect, on
     open,
     create,
     saved,
+    convertQuick,
     dismiss,
     dismissMany,
     remove

@@ -1,5 +1,5 @@
 use crate::Table;
-use sqlx::{any::AnyRow, AnyPool, Row};
+use sqlx::AnyPool;
 
 pub async fn columns(
     pool: &AnyPool,
@@ -68,25 +68,15 @@ pub async fn columns(
     rows.iter()
         .map(|row| {
             Ok([
-                text(row, 0)?,
-                text(row, 1)?,
-                text(row, 2)?,
-                text(row, 3)?,
-                text(row, 4)?,
+                crate::sql_text::optional(row, 0)?,
+                crate::sql_text::optional(row, 1)?,
+                crate::sql_text::optional(row, 2)?,
+                crate::sql_text::optional(row, 3)?,
+                crate::sql_text::optional(row, 4)?,
             ])
         })
         .collect::<Result<_, sqlx::Error>>()
         .map_err(|error| error.to_string())
-}
-
-/// MySQL and MariaDB report `information_schema` TEXT columns such as COLUMN_TYPE as blobs through `Any`.
-fn text(row: &AnyRow, index: usize) -> Result<Option<String>, sqlx::Error> {
-    match row.try_get::<Option<String>, _>(index) {
-        Ok(value) => Ok(value),
-        Err(_) => Ok(row
-            .try_get::<Option<Vec<u8>>, _>(index)?
-            .map(|bytes| String::from_utf8_lossy(&bytes).into_owned())),
-    }
 }
 
 pub async fn indexes(
@@ -141,10 +131,10 @@ pub async fn indexes(
     rows.iter()
         .map(|row| {
             Ok([
-                row.try_get(0)?,
-                row.try_get(1)?,
-                row.try_get(2)?,
-                row.try_get(3)?,
+                crate::sql_text::required(row, 0)?,
+                crate::sql_text::required(row, 1)?,
+                crate::sql_text::required(row, 2)?,
+                crate::sql_text::required(row, 3)?,
             ])
         })
         .collect::<Result<_, sqlx::Error>>()
@@ -543,20 +533,25 @@ async fn mysql_column_change(
     use crate::editor::quote;
 
     let row = sqlx::query(
-        "SELECT COLUMN_TYPE AS kind, DATA_TYPE AS base, IS_NULLABLE AS nullable,
-                CAST(COLUMN_DEFAULT AS CHAR) AS default_value, COLUMN_COMMENT AS comment,
-                EXTRA AS extra, CHARACTER_SET_NAME AS charset, COLLATION_NAME AS collation
+        "SELECT CAST(COLUMN_TYPE AS CHAR CHARACTER SET utf8mb4) AS kind,
+                CAST(DATA_TYPE AS CHAR CHARACTER SET utf8mb4) AS base,
+                CAST(IS_NULLABLE AS CHAR CHARACTER SET utf8mb4) AS nullable,
+                CAST(COLUMN_DEFAULT AS CHAR CHARACTER SET utf8mb4) AS default_value,
+                CAST(COLUMN_COMMENT AS CHAR CHARACTER SET utf8mb4) AS comment,
+                CAST(EXTRA AS CHAR CHARACTER SET utf8mb4) AS extra,
+                CAST(CHARACTER_SET_NAME AS CHAR CHARACTER SET utf8mb4) AS charset,
+                CAST(COLLATION_NAME AS CHAR CHARACTER SET utf8mb4) AS collation
          FROM information_schema.columns WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?",
     )
     .bind(&table.schema).bind(&table.name).bind(column)
     .fetch_one(connection).await.map_err(|error| error.to_string())?;
 
     let read = |key| {
-        row.try_get::<String, _>(key)
+        crate::sql_text::required(&row, key)
             .map_err(|error| error.to_string())
     };
     let optional = |key| {
-        row.try_get::<Option<String>, _>(key)
+        crate::sql_text::optional(&row, key)
             .map_err(|error| error.to_string())
     };
     let base = read("base")?;

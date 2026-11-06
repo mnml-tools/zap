@@ -6,13 +6,14 @@ import { Button } from '../atoms/Button'
 type Props = {
   column: string
   primary: boolean
+  reference?: string
   sort?: TableSort
   disabled: boolean
   onContextMenu: (event: MouseEvent<HTMLButtonElement>) => void
   onSort: (column: string) => void
 }
 
-export function ColumnHeader({ column, primary, sort, disabled, onSort, onContextMenu }: Props) {
+export function ColumnHeader({ column, primary, reference, sort, disabled, onSort, onContextMenu }: Props) {
   return (
     <th aria-sort={sort?.column === column ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
       <Button
@@ -30,6 +31,11 @@ export function ColumnHeader({ column, primary, sort, disabled, onSort, onContex
         {primary && (
           <span className="key-label" title="Primary key">
             PK
+          </span>
+        )}
+        {reference && (
+          <span className="key-label" title={reference}>
+            FK
           </span>
         )}
         {sort?.column === column &&

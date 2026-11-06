@@ -1,3 +1,5 @@
+import { useConnectionView } from '../hooks/useConnectionView'
+import { ConnectionViewSwitch } from '../components/molecules/ConnectionViewSwitch'
 import { Plus } from 'lucide-react'
 import type { useConnections } from '../hooks/useConnections'
 import { AppShell } from '../components/templates/AppShell'
@@ -14,11 +16,13 @@ import { ConnectionDialog } from '../components/organisms/ConnectionDialog'
 type Props = { connections: ReturnType<typeof useConnections> }
 
 export function ConnectionsPage({ connections: c }: Props) {
+  const { view, changeView } = useConnectionView()
+
   return (
     <AppShell
       variant="app"
       status="Local workspace"
-      footerLeft="Zap / 0.4.0"
+      footerLeft="Zap / 0.5.1"
       footerRight="PostgreSQL · MySQL · SQLite"
       dialogs={
         <>
@@ -80,15 +84,19 @@ export function ConnectionsPage({ connections: c }: Props) {
             size={15}
             shortcut
           />
-          <span>
-            {c.connections.length} saved connection{c.connections.length !== 1 ? 's' : ''}
-          </span>
+          <div className="connection-view-controls">
+            <span>
+              {c.connections.length} saved connection{c.connections.length !== 1 ? 's' : ''}
+            </span>
+            <ConnectionViewSwitch view={view} onChange={changeView} />
+          </div>
         </div>
         {c.error && !c.form && <ErrorMessage message={c.error} />}
         {c.connections.length === 0 ? (
           <ConnectionsEmptyState onCreate={c.create} />
         ) : (
           <ConnectionsList
+            view={view}
             connections={c.connections}
             search={c.search}
             activeId={c.menu?.connection.id}

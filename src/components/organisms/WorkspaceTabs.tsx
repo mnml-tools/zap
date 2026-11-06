@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { Table2, FileCode2 } from 'lucide-react'
+import { Table2, FileCode2, Zap } from 'lucide-react'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
 import { tableKey, countChanges } from '../../lib/tableState'
 import { ActionContextMenu } from '../molecules/ActionContextMenu'
@@ -70,7 +70,7 @@ export function WorkspaceTabs(props: Props) {
         <WorkspaceTab
           key={query.id}
           title={query.title}
-          icon={<FileCode2 size={14} />}
+          icon={query.quick ? <Zap size={14} className="quick-query-icon" /> : <FileCode2 size={14} />}
           active={props.active === `query:${query.id}`}
           dirty={!!props.queryDirty[query.id]}
           disabled={props.saving || props.structureSaving}

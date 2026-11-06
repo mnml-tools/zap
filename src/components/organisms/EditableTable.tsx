@@ -7,6 +7,7 @@ import { useColumnSelection } from '../../hooks/useColumnSelection'
 import { ActionContextMenu } from '../molecules/ActionContextMenu'
 import { ErrorDialog } from '../molecules/ErrorDialog'
 import { rowKey } from '../../lib/tableState'
+import { foreignKeyFor, referenceTitle } from '../../lib/relations'
 import { ColumnHeader } from '../molecules/ColumnHeader'
 import { EditableTableRow } from '../molecules/EditableTableRow'
 import { NewTableRow } from '../molecules/NewTableRow'
@@ -14,6 +15,7 @@ import { NewTableRow } from '../molecules/NewTableRow'
 type Props = {
   data: Page
   visibleColumns: number[]
+  pageSize: number
   page: number
   active: string
   draft?: TableDraft
@@ -21,17 +23,22 @@ type Props = {
   saving: boolean
   sort?: TableSort
   onSort: (column: string) => void
+  onCloseReference: () => void
   onBeginBlank: (column: number) => void
   onBeginNew: (key: string, column: number) => void
   onRemoveNew: (key: string) => void
   onDuplicateRows: (rows: (string | null)[][]) => void
   onRemoveRows: (rows: (string | null)[][]) => void
-} & Pick<ComponentProps<typeof EditableTableRow>, 'onBegin' | 'onValueChange' | 'onCommit' | 'onCancel' | 'onNull'>
+} & Pick<
+  ComponentProps<typeof EditableTableRow>,
+  'onBegin' | 'onValueChange' | 'onCommit' | 'onCancel' | 'onNull' | 'referenceOrigin' | 'onOpenReference'
+>
 
 export function EditableTable({
   data,
   visibleColumns,
   page,
+  pageSize,
   active,
   draft,
   editor,
@@ -43,6 +50,7 @@ export function EditableTable({
   onBeginNew,
   onBeginBlank,
   onRemoveNew,
+  onCloseReference,
   ...actions
 }: Props) {
   const selection = useColumnSelection(data, draft)
@@ -90,20 +98,41 @@ export function EditableTable({
         <thead>
           <tr>
             <th className="row-number">#</th>
-            {visibleColumns.map((index) => (
-              <ColumnHeader
-                key={index}
-                column={data.columns[index]}
-                primary={data.primaryKeys.includes(index)}
-                sort={sort}
-                disabled={saving}
-                onSort={onSort}
-                onContextMenu={(event) => selection.openMenu(event, index)}
-              />
-            ))}
+            {visibleColumns.map((index) => {
+              const reference = foreignKeyFor(data, index)
+
+              return (
+                <ColumnHeader
+                  key={index}
+                  column={data.columns[index]}
+                  primary={data.primaryKeys.includes(index)}
+                  reference={reference && referenceTitle(reference)}
+                  sort={sort}
+                  disabled={saving}
+                  onSort={onSort}
+                  onContextMenu={(event) => selection.openMenu(event, index)}
+                />
+              )
+            })}
           </tr>
         </thead>
-        <tbody>
+        <tbody
+          onClickCapture={(event) => {
+            if (!actions.referenceOrigin || !(event.target instanceof Element)) return
+
+            const row = event.target.closest('tr')
+            if (!row || row.parentElement !== event.currentTarget) return
+
+            const values = data.rows[row.sectionRowIndex]
+            if (
+              actions.referenceOrigin.tab !== active ||
+              !values ||
+              rowKey(values, data) !== actions.referenceOrigin.rowKey
+            ) {
+              onCloseReference()
+            }
+          }}
+        >
           {data.rows.map((row, index) => {
             const key = rowKey(row, data)
 
@@ -113,7 +142,7 @@ export function EditableTable({
                 row={row}
                 rowIndex={index}
                 selection={selection}
-                rowNumber={page * 100 + index + 1}
+                rowNumber={page * pageSize + index + 1}
                 rowKey={key}
                 active={active}
                 data={data}

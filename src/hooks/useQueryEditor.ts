@@ -7,6 +7,7 @@ export type QueryEditorOptions = {
   query: QueryDocument
   request: ApiRequest
   onSaved: (query: SavedQuery) => void
+  onConvertQuick: (query: QueryDocument) => void
   onDirty: (id: string, dirty: boolean) => void
   onBusy: (id: string, busy: boolean) => void
   onExecuted: () => void
@@ -17,6 +18,7 @@ export function useQueryEditor({
   query,
   request,
   onSaved,
+  onConvertQuick,
   onDirty,
   onBusy,
   onExecuted
@@ -29,7 +31,7 @@ export function useQueryEditor({
     [result, setResult] = useState<QueryResult | null>(null),
     [resultIndex, setResultIndex] = useState(0)
   const busyRef = useRef(false)
-  const dirty = !baseline || title !== baseline.title || sql !== baseline.sql
+  const dirty = baseline ? title !== baseline.title || sql !== baseline.sql : !!sql.trim() || title !== query.title
 
   useEffect(() => {
     onDirty(query.id, dirty)
@@ -53,7 +55,7 @@ export function useQueryEditor({
   }
 
   const save = async () => {
-    if (!title.trim() || !sql.trim() || !dirty || !begin('save')) return
+    if (query.quick || !title.trim() || !sql.trim() || !dirty || !begin('save')) return
 
     try {
       const saved = await request<SavedQuery>('save_query', {
@@ -86,7 +88,16 @@ export function useQueryEditor({
     }
   }
 
+  const convertQuick = () => {
+    if (!query.quick || !result || busyRef.current) return
+
+    const title = 'Untitled query'
+    setTitle(title)
+    onConvertQuick({ ...query, title, sql, quick: false })
+  }
+
   return {
+    convertQuick,
     title,
     setTitle,
     sql,
@@ -97,6 +108,7 @@ export function useQueryEditor({
     resultIndex,
     setResultIndex,
     dirty,
+    unsaved: !baseline,
     save,
     run
   }

@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { registerUpdateGuard } from '../services/updateGuard'
 import { api } from '../services/api'
 import type { ApiRequest } from '../services/api'
 import type { Connection, Table, QueryDocument, TableFilter } from '../types'
@@ -9,6 +10,8 @@ import { useTableViewState } from './useTableViewState'
 import { useTableDrafts } from './useTableDrafts'
 import { useSavedQueries } from './useSavedQueries'
 import { useUnsavedChanges } from './useUnsavedChanges'
+import { useReferencePanel } from './useReferencePanel'
+import { referenceFilters } from '../lib/relations'
 
 export type WorkspaceOptions = {
   id: string
@@ -45,6 +48,7 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
     onError: setError,
     onSaved: view.reload
   })
+  const references = useReferencePanel({ id, request })
   const queries = useSavedQueries({
     id,
     request,
@@ -119,6 +123,22 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
       setConfirm({ message: 'Discard all pending changes and quit Zap?', action: confirmClose })
     }
   })
+
+  const updateSafety = useRef(() => ({ dirty: false, busy: false }))
+  updateSafety.current = () => ({
+    dirty:
+      Object.values(edits.draftsRef.current).some((draft) => countChanges(draft) > 0) ||
+      !!edits.editorRef.current ||
+      anyStructureDirty ||
+      Object.values(queries.dirtyRef.current).some(Boolean),
+    busy:
+      structureSaving ||
+      tableActionBusy ||
+      edits.savingRef.current ||
+      Object.values(queries.busyRef.current).some(Boolean)
+  })
+
+  useEffect(() => registerUpdateGuard(() => updateSafety.current()), [])
 
   const closeTabs = (keys: string[]) => {
     const targets = new Set(keys)
@@ -294,11 +314,28 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
     queries.create()
   }
 
+  const newQuickQuery = () => beforeViewChange(() => queries.create(true))
+
   const closeQuery = (query: QueryDocument) =>
     guard('Discard unsaved changes to this query?', () => queries.dismiss(query), !!queries.dirty[query.id])
 
   const deleteQuery = (query: QueryDocument) =>
-    guard('Delete this saved query and discard its unsaved changes?', () => queries.remove(query), true)
+    guard(
+      query.isNew ? 'Discard this unsaved query?' : 'Delete this saved query and discard its unsaved changes?',
+      () => queries.remove(query),
+      query.isNew ? !!queries.dirtyRef.current[query.id] : true
+    )
+
+  const openReferenceInTab = () => {
+    const reference = references.current?.reference
+
+    if (!reference) return
+
+    beforeViewChange(() => {
+      view.presetFilters(tableKey(reference.key.target), referenceFilters(reference))
+      tabs.openTable(reference.key.target)
+    })
+  }
 
   const toggleSort = (column: string) => beforeViewChange(() => view.toggleSort(column))
 
@@ -307,6 +344,8 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
   const clearFilters = () => beforeViewChange(view.clearFilters)
 
   const removeFilter = (id: string) => beforeViewChange(() => view.removeFilter(id))
+
+  const changePageSize = (size: number) => beforeViewChange(() => view.changePageSize(size))
 
   const previousPage = () => beforeViewChange(view.previousPage),
     nextPage = () => beforeViewChange(view.nextPage)
@@ -361,6 +400,7 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
     applyFilters,
     clearFilters,
     removeFilter,
+    changePageSize,
     previousPage,
     nextPage,
     pending: edits.pending,
@@ -378,6 +418,14 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
     commitCell: edits.commitCell,
     cancelCell: edits.cancelCell,
     nullCell: edits.nullCell,
+    reference: references.current,
+    referenceDepth: references.depth,
+    referenceOrigin: references.origin,
+    openReference: references.open,
+    followReference: references.follow,
+    backReference: references.back,
+    closeReference: references.close,
+    openReferenceInTab,
     discard,
     refresh,
     closeConnection,
@@ -394,8 +442,10 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
     dirtyQuery: queries.markDirty,
     busyQuery: queries.markBusy,
     savedQuery: queries.saved,
+    convertQuickQuery: queries.convertQuick,
     openQuery,
     newQuery,
+    newQuickQuery,
     selectQuery,
     closeQuery,
     deleteQuery

@@ -12,6 +12,7 @@ import { WorkspaceTabs } from '../components/organisms/WorkspaceTabs'
 import { TableView } from '../components/organisms/TableView'
 import { ExportTablesDialog } from '../components/organisms/ExportTablesDialog'
 import { QueryEditor } from '../components/organisms/QueryEditor'
+import { ReferencePanel } from '../components/organisms/ReferencePanel'
 
 export function WorkspacePage(options: WorkspaceOptions) {
   const model = useWorkspace(options)
@@ -66,12 +67,14 @@ export function WorkspacePage(options: WorkspaceOptions) {
           {model.queryTabs.map((query) => (
             <div key={query.id} className={model.active === `query:${query.id}` ? 'query-pane' : 'query-pane hidden'}>
               <QueryEditor
+                active={model.active === `query:${query.id}`}
                 connectionId={options.id}
                 driver={options.connection?.driver ?? ''}
                 tables={model.tables}
                 query={query}
                 request={options.request || model.request}
                 onSaved={model.savedQuery}
+                onConvertQuick={model.convertQuickQuery}
                 onDirty={model.dirtyQuery}
                 onBusy={model.busyQuery}
                 onDelete={() => model.deleteQuery(query)}
@@ -80,6 +83,7 @@ export function WorkspacePage(options: WorkspaceOptions) {
             </div>
           ))}
         </section>
+        <ReferencePanel {...model} />
       </div>
     </AppShell>
   )

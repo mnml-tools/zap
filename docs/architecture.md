@@ -22,10 +22,11 @@ UI components compose their own level or lower layers. Atoms do not know about d
 - `useSavedQueries`: saved-query definitions, open query tabs, and dirty/busy state.
 - `useQueryEditor`: local SQL/title changes, query saving, and execution/results state.
 - `useSqlCompletion`: loads columns for the tables a query references and returns the editor's completion provider. Ranking and item building live in `src/lib/sqlCompletion.ts`, and clause order and expression state live in `src/lib/sqlClauses.ts`.
+- `useReferencePanel`: the referenced-row panel opened from foreign-key cells, with a back stack for following further references.
 - `useWorkspace`: coordinates those features for cross-feature actions such as closing a connection or protecting unsaved changes.
 - `useUnsavedChanges`, `useContextMenu`, `useSidebarResize`, and `useTheme`: focused interaction and platform lifecycle hooks.
 
-`src/services` owns Tauri invocation and the persistent theme store. `ApiRequest` is injectable so fixtures can exercise the real screens without native credentials or databases. `src/lib` contains non-React helpers such as connection defaults, SQL tokenization, draft transitions, and the three-state sort cycle. `src/types` contains separate connection, table, filter, and query models.
+`src/services` owns Tauri invocation and the persistent theme store. `ApiRequest` is injectable so fixtures can exercise the real screens without native credentials or databases. `src/lib` contains non-React helpers such as connection defaults, SQL tokenization, draft transitions, foreign-key references, and the three-state sort cycle. `src/types` contains separate connection, table, filter, and query models.
 
 Table and query editor components remain mounted or retain drafts using the same tab identities as before. Changing pages, filters, or sorting stages the active cell before navigation. The workspace coordinates discard prompts rather than making individual cells or tabs decide when data may be lost.
 

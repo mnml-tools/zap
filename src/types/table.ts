@@ -1,5 +1,7 @@
 export type Table = { schema: string; name: string }
 
+export type ForeignKey = { columns: number[]; target: Table; targetColumns: string[] }
+
 export type Page = {
   columns: string[]
   rows: (string | null)[][]
@@ -7,6 +9,7 @@ export type Page = {
   primaryKeys: number[]
   editable: boolean[]
   readOnlyReason: string | null
+  foreignKeys: ForeignKey[]
 }
 
 export type TableSort = { column: string; direction: 'asc' | 'desc' }

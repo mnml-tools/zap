@@ -11,6 +11,7 @@ pub struct Page {
     pub primary_keys: Vec<usize>,
     pub editable: Vec<bool>,
     pub read_only_reason: Option<String>,
+    pub foreign_keys: Vec<crate::relations::ForeignKey>,
 }
 struct Column {
     name: String,
@@ -86,15 +87,16 @@ async fn metadata(pool: &AnyPool, driver: &str, table: &Table) -> Result<Metadat
                 .collect::<Result<Vec<_>, String>>()?
         }
         "mysql" => {
-            let rows=sqlx::query("SELECT COLUMN_NAME AS name, DATA_TYPE AS kind, EXTRA AS extra, COLUMN_KEY AS key_kind FROM information_schema.columns WHERE TABLE_SCHEMA=? AND TABLE_NAME=? ORDER BY ORDINAL_POSITION")
+            // Normalize the charset; sql_text also handles BLOB protocol types.
+            let rows=sqlx::query("SELECT CAST(COLUMN_NAME AS CHAR CHARACTER SET utf8mb4) AS name, CAST(DATA_TYPE AS CHAR CHARACTER SET utf8mb4) AS kind, CAST(EXTRA AS CHAR CHARACTER SET utf8mb4) AS extra, CAST(COLUMN_KEY AS CHAR CHARACTER SET utf8mb4) AS key_kind FROM information_schema.columns WHERE TABLE_SCHEMA=? AND TABLE_NAME=? ORDER BY ORDINAL_POSITION")
                 .bind(&table.schema).bind(&table.name).fetch_all(pool).await.map_err(|e|e.to_string())?;
             rows.iter()
                 .map(|r| {
-                    let kind: String = r.try_get("kind").map_err(|e| e.to_string())?;
-                    let extra: String = r.try_get("extra").map_err(|e| e.to_string())?;
-                    let key: String = r.try_get("key_kind").map_err(|e| e.to_string())?;
+                    let kind: String = crate::sql_text::required(r, "kind").map_err(|e| e.to_string())?;
+                    let extra: String = crate::sql_text::required(r, "extra").map_err(|e| e.to_string())?;
+                    let key: String = crate::sql_text::required(r, "key_kind").map_err(|e| e.to_string())?;
                     Ok(Column {
-                        name: r.try_get("name").map_err(|e| e.to_string())?,
+                        name: crate::sql_text::required(r, "name").map_err(|e| e.to_string())?,
                         writable: !extra.contains("VIRTUAL GENERATED")
                             && !extra.contains("STORED GENERATED")
                             && !mysql_binary(&kind),
@@ -134,7 +136,7 @@ async fn metadata(pool: &AnyPool, driver: &str, table: &Table) -> Result<Metadat
     };
     if driver == "mysql" {
         let row=sqlx::query("SELECT ENGINE AS engine FROM information_schema.tables WHERE TABLE_SCHEMA=? AND TABLE_NAME=?").bind(&table.schema).bind(&table.name).fetch_one(pool).await.map_err(|e|e.to_string())?;
-        let engine: Option<String> = row.try_get("engine").map_err(|e| e.to_string())?;
+        let engine: Option<String> = crate::sql_text::optional(&row, "engine").map_err(|e| e.to_string())?;
         if !engine.is_some_and(|e| e.eq_ignore_ascii_case("InnoDB")) {
             reason = Some("Editing requires a transactional InnoDB table.".into());
         }
@@ -161,7 +163,7 @@ pub async fn page(
     page: u32,
     filters: &[crate::filters::TableFilter],
 ) -> Result<Page, String> {
-    page_sorted(pool, driver, table, page, filters, None).await
+    page_sorted(pool, driver, table, page, filters, None, 100).await
 }
 pub async fn page_sorted(
     pool: &AnyPool,
@@ -170,7 +172,11 @@ pub async fn page_sorted(
     page: u32,
     filters: &[crate::filters::TableFilter],
     sort: Option<&TableSort>,
+    page_size: u32,
 ) -> Result<Page, String> {
+    if ![50, 100, 250, 500, 1000].contains(&page_size) {
+        return Err("Invalid rows per page.".into());
+    }
     let meta = metadata(pool, driver, table).await?;
     let name = qualified(driver, table);
     let filter_columns = meta
@@ -247,8 +253,8 @@ pub async fn page_sorted(
         format!(" ORDER BY {}", order_fields.join(","))
     };
     let row_sql = format!(
-        "SELECT {fields} FROM {name} AS zap_row{where_sql}{order} LIMIT 100 OFFSET {}",
-        u64::from(page) * 100
+        "SELECT {fields} FROM {name} AS zap_row{where_sql}{order} LIMIT {page_size} OFFSET {}",
+        u64::from(page) * u64::from(page_size)
     );
     let mut row_query = sqlx::query(&row_sql);
     for value in &values {
@@ -281,6 +287,10 @@ pub async fn page_sorted(
         .iter()
         .map(|c| c.writable && meta.reason.is_none())
         .collect();
+    // Relations are a browsing aid; a catalog the user cannot read must not hide the rows.
+    let foreign_keys = crate::relations::outgoing(pool, driver, table, &columns)
+        .await
+        .unwrap_or_default();
     Ok(Page {
         columns,
         rows,
@@ -288,6 +298,7 @@ pub async fn page_sorted(
         primary_keys,
         editable,
         read_only_reason: meta.reason,
+        foreign_keys,
     })
 }
 #[derive(Deserialize)]
@@ -833,12 +844,34 @@ mod tests {
             column: "id".into(),
             direction: SortDirection::Desc,
         };
-        let first = page_sorted(&pool, "sqlite", &table, 0, &[], Some(&desc))
+        for size in [50, 100, 250, 500, 1000] {
+            let first = page_sorted(&pool, "sqlite", &table, 0, &[], Some(&desc), size)
+                .await
+                .unwrap();
+            assert_eq!(first.rows.len(), size.min(250) as usize);
+            assert_eq!(first.total, 250);
+
+            let second = page_sorted(&pool, "sqlite", &table, 1, &[], Some(&desc), size)
+                .await
+                .unwrap();
+            assert_eq!(
+                second.rows.len(),
+                250_u32.saturating_sub(size).min(size) as usize
+            );
+            if size < 250 {
+                assert_eq!(second.rows[0][0], Some((250 - size).to_string()));
+            }
+        }
+        assert!(page_sorted(&pool, "sqlite", &table, 0, &[], None, 75)
+            .await
+            .is_err());
+
+        let first = page_sorted(&pool, "sqlite", &table, 0, &[], Some(&desc), 100)
             .await
             .unwrap();
         assert_eq!(first.rows[0][0].as_deref(), Some("250"));
         assert_eq!(first.rows[99][0].as_deref(), Some("151"));
-        let second = page_sorted(&pool, "sqlite", &table, 1, &[], Some(&desc))
+        let second = page_sorted(&pool, "sqlite", &table, 1, &[], Some(&desc), 100)
             .await
             .unwrap();
         assert_eq!(second.rows[0][0].as_deref(), Some("150"));
@@ -846,7 +879,7 @@ mod tests {
             column: "bucket".into(),
             direction: SortDirection::Asc,
         };
-        let tied = page_sorted(&pool, "sqlite", &table, 1, &[], Some(&asc))
+        let tied = page_sorted(&pool, "sqlite", &table, 1, &[], Some(&asc), 100)
             .await
             .unwrap();
         assert_eq!(tied.rows[0][0].as_deref(), Some("202"));
@@ -856,7 +889,7 @@ mod tests {
             value: "3, 200".into(),
             enabled: true,
         };
-        let filtered = page_sorted(&pool, "sqlite", &table, 0, &[filter], Some(&desc))
+        let filtered = page_sorted(&pool, "sqlite", &table, 0, &[filter], Some(&desc), 100)
             .await
             .unwrap();
         assert_eq!(filtered.total, 2);
@@ -865,9 +898,11 @@ mod tests {
             column: "id; DROP TABLE items".into(),
             direction: SortDirection::Asc,
         };
-        assert!(page_sorted(&pool, "sqlite", &table, 0, &[], Some(&invalid))
-            .await
-            .is_err());
+        assert!(
+            page_sorted(&pool, "sqlite", &table, 0, &[], Some(&invalid), 100)
+                .await
+                .is_err()
+        );
         assert!(serde_json::from_str::<TableSort>(
             r#"{"column":"id","direction":"desc; DROP TABLE items"}"#
         )
