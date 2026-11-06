@@ -13,6 +13,7 @@ mod postgres_export;
 mod queries;
 mod relations;
 mod sql_import;
+mod sql_text;
 mod ssh;
 mod table_export;
 mod window_size;

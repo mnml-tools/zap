@@ -87,15 +87,16 @@ async fn metadata(pool: &AnyPool, driver: &str, table: &Table) -> Result<Metadat
                 .collect::<Result<Vec<_>, String>>()?
         }
         "mysql" => {
-            let rows=sqlx::query("SELECT COLUMN_NAME AS name, DATA_TYPE AS kind, EXTRA AS extra, COLUMN_KEY AS key_kind FROM information_schema.columns WHERE TABLE_SCHEMA=? AND TABLE_NAME=? ORDER BY ORDINAL_POSITION")
+            // Normalize the charset; sql_text also handles BLOB protocol types.
+            let rows=sqlx::query("SELECT CAST(COLUMN_NAME AS CHAR CHARACTER SET utf8mb4) AS name, CAST(DATA_TYPE AS CHAR CHARACTER SET utf8mb4) AS kind, CAST(EXTRA AS CHAR CHARACTER SET utf8mb4) AS extra, CAST(COLUMN_KEY AS CHAR CHARACTER SET utf8mb4) AS key_kind FROM information_schema.columns WHERE TABLE_SCHEMA=? AND TABLE_NAME=? ORDER BY ORDINAL_POSITION")
                 .bind(&table.schema).bind(&table.name).fetch_all(pool).await.map_err(|e|e.to_string())?;
             rows.iter()
                 .map(|r| {
-                    let kind: String = r.try_get("kind").map_err(|e| e.to_string())?;
-                    let extra: String = r.try_get("extra").map_err(|e| e.to_string())?;
-                    let key: String = r.try_get("key_kind").map_err(|e| e.to_string())?;
+                    let kind: String = crate::sql_text::required(r, "kind").map_err(|e| e.to_string())?;
+                    let extra: String = crate::sql_text::required(r, "extra").map_err(|e| e.to_string())?;
+                    let key: String = crate::sql_text::required(r, "key_kind").map_err(|e| e.to_string())?;
                     Ok(Column {
-                        name: r.try_get("name").map_err(|e| e.to_string())?,
+                        name: crate::sql_text::required(r, "name").map_err(|e| e.to_string())?,
                         writable: !extra.contains("VIRTUAL GENERATED")
                             && !extra.contains("STORED GENERATED")
                             && !mysql_binary(&kind),
@@ -135,7 +136,7 @@ async fn metadata(pool: &AnyPool, driver: &str, table: &Table) -> Result<Metadat
     };
     if driver == "mysql" {
         let row=sqlx::query("SELECT ENGINE AS engine FROM information_schema.tables WHERE TABLE_SCHEMA=? AND TABLE_NAME=?").bind(&table.schema).bind(&table.name).fetch_one(pool).await.map_err(|e|e.to_string())?;
-        let engine: Option<String> = row.try_get("engine").map_err(|e| e.to_string())?;
+        let engine: Option<String> = crate::sql_text::optional(&row, "engine").map_err(|e| e.to_string())?;
         if !engine.is_some_and(|e| e.eq_ignore_ascii_case("InnoDB")) {
             reason = Some("Editing requires a transactional InnoDB table.".into());
         }
