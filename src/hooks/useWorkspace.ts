@@ -322,6 +322,8 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
 
   const removeFilter = (id: string) => beforeViewChange(() => view.removeFilter(id))
 
+  const changePageSize = (size: number) => beforeViewChange(() => view.changePageSize(size))
+
   const previousPage = () => beforeViewChange(view.previousPage),
     nextPage = () => beforeViewChange(view.nextPage)
 
@@ -375,6 +377,7 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
     applyFilters,
     clearFilters,
     removeFilter,
+    changePageSize,
     previousPage,
     nextPage,
     pending: edits.pending,

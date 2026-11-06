@@ -14,6 +14,7 @@ type Options = {
 }
 
 export function useTableViewState({ id, active, table, request, onError }: Options) {
+  const [pageSizes, setPageSizes] = useState<Record<string, number>>({})
   const [hiddenByTab, setHiddenByTab] = useState<Record<string, string[]>>({})
   const [pages, setPages] = useState<Record<string, number>>({}),
     [sorts, setSorts] = useState<Record<string, TableSort>>({})
@@ -22,6 +23,7 @@ export function useTableViewState({ id, active, table, request, onError }: Optio
   const [data, setData] = useState<Page | null>(null),
     [loading, setLoading] = useState(false),
     [revision, setRevision] = useState(0)
+  const pageSize = pageSizes[active] ?? 100
   const page = pages[active] || 0,
     sort = sorts[active],
     currentFilters = filters[active]
@@ -39,7 +41,7 @@ export function useTableViewState({ id, active, table, request, onError }: Optio
 
     setLoading(true)
     onError('')
-    request<Page>('table_page', { id, table, page, filters: applied, sort: sort || null })
+    request<Page>('table_page', { id, table, page, pageSize, filters: applied, sort: sort || null })
       .then((value) => {
         if (!canceled) {
           setData(value)
@@ -56,11 +58,18 @@ export function useTableViewState({ id, active, table, request, onError }: Optio
     return () => {
       canceled = true
     }
-  }, [id, active, page, revision, filterSignature, sortSignature])
+  }, [id, active, page, pageSize, revision, filterSignature, sortSignature])
 
   const reload = () => setRevision((value) => value + 1)
 
   const firstPage = () => setPages((all) => ({ ...all, [active]: 0 }))
+
+  const changePageSize = (size: number) => {
+    if (![50, 100, 250, 500, 1000].includes(size)) return
+
+    setPageSizes((all) => ({ ...all, [active]: size }))
+    firstPage()
+  }
 
   const state = (): FilterState => filters[active] || { open: false, draft: [], applied: [] }
 
@@ -158,6 +167,8 @@ export function useTableViewState({ id, active, table, request, onError }: Optio
 
   return {
     page,
+    pageSize,
+    changePageSize,
     data,
     loading,
     columns,

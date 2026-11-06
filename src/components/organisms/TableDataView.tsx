@@ -32,6 +32,8 @@ type Props = Pick<
   | 'error'
   | 'dismissError'
   | 'data'
+  | 'pageSize'
+  | 'changePageSize'
   | 'page'
   | 'active'
   | 'pending'
@@ -122,6 +124,7 @@ export function TableDataView(props: Props) {
               key={props.active}
               visibleColumns={visibleColumns}
               data={data}
+              pageSize={props.pageSize}
               page={props.page}
               active={props.active}
               draft={props.pending[props.active]}
@@ -158,6 +161,8 @@ export function TableDataView(props: Props) {
       </div>
       <TablePagination
         total={data?.total}
+        pageSize={props.pageSize}
+        onPageSizeChange={props.changePageSize}
         page={props.page}
         filtered={props.enabledFilters > 0}
         disabled={loading || saving}

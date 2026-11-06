@@ -815,6 +815,24 @@ tbody tr:hover {
   align-items: center;
   gap: 10px;
 }
+.pagination select {
+  -webkit-appearance: none;
+  appearance: none;
+  font: inherit;
+  color: var(--text);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 2px 20px 2px 4px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--secondary) 50%),
+    linear-gradient(135deg, var(--secondary) 50%, transparent 50%);
+  background-position:
+    right 10px center,
+    right 6px center;
+  background-size: 4px 4px;
+  background-repeat: no-repeat;
+}
 .pagination button {
   padding: 2px;
   min-height: 22px;

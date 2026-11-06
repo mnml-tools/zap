@@ -15,6 +15,7 @@ import { NewTableRow } from '../molecules/NewTableRow'
 type Props = {
   data: Page
   visibleColumns: number[]
+  pageSize: number
   page: number
   active: string
   draft?: TableDraft
@@ -37,6 +38,7 @@ export function EditableTable({
   data,
   visibleColumns,
   page,
+  pageSize,
   active,
   draft,
   editor,
@@ -140,7 +142,7 @@ export function EditableTable({
                 row={row}
                 rowIndex={index}
                 selection={selection}
-                rowNumber={page * 100 + index + 1}
+                rowNumber={page * pageSize + index + 1}
                 rowKey={key}
                 active={active}
                 data={data}

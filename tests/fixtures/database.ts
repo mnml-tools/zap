@@ -137,7 +137,12 @@ export const request: ApiRequest = async <T>(command: string, args?: Record<stri
     }
     return {
       columns: table.columns,
-      rows: filtered.slice(Number(args!.page) * 100, Number(args!.page) * 100 + 100).map((r) => [...r]),
+      rows: filtered
+        .slice(
+          Number(args!.page) * Number(args!.pageSize ?? 100),
+          Number(args!.page) * Number(args!.pageSize ?? 100) + Number(args!.pageSize ?? 100)
+        )
+        .map((r) => [...r]),
       total: filtered.length,
       primaryKeys: [0],
       editable: table.columns.map(() => true),

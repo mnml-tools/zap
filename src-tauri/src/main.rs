@@ -357,6 +357,7 @@ async fn table_page(
     id: String,
     table: Table,
     page: u32,
+    page_size: Option<u32>,
     filters: Option<Vec<filters::TableFilter>>,
     sort: Option<editor::TableSort>,
 ) -> Result<editor::Page, String> {
@@ -371,6 +372,7 @@ async fn table_page(
         page,
         &filters.unwrap_or_default(),
         sort.as_ref(),
+        page_size.unwrap_or(100),
     )
     .await
 }
