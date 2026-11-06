@@ -2,6 +2,26 @@
 
 Changes are grouped by version, with the newest version first. Dates use the tagged commits for tagged releases and the release preparation date for versions awaiting a tag.
 
+## [0.6.0] — 2026-11-06
+
+### Added
+
+- Switch connections from a compact header dropdown or with Command+P on macOS and Ctrl+P on other platforms. Show other saved connections with database details and environment badges, close the current connection before switching, and confirm before discarding unsaved changes.
+- Give each connection a first-letter avatar from an 11-color palette, with distinct automatic colors for the first 11 connections and a color picker in the connection form. Remember custom color choices across launches.
+- Choose between List and Grid views for saved connections and remember the selected view.
+- Suggest tables, columns, and keywords while typing in the SQL editor. Table suggestions follow `FROM`, `JOIN`, `UPDATE`, and `INTO`. Column suggestions use only the tables referenced in the current statement and resolve aliases such as `u.`. Keyword suggestions follow the statement's clause order, so clauses already written, such as `WHERE`, are not offered again. Press Ctrl+Space to open suggestions, ↑/↓ to choose, Enter or Tab to accept, and Esc to close.
+
+### Changed
+
+- Sort connections alphabetically in both the connections screen and header selector, with Local before Prod when names match.
+- Use a compact grid with borders around populated connection cells.
+- Improve update dialog spacing and show download progress with a grey track, an accent-colored rectangular bar, and a percentage label.
+
+### Fixed
+
+- Forget the last opened connection after closing it, so restarting from the connections screen returns to that screen.
+- Show MySQL and MariaDB table columns in the Structure view and in SQL suggestions. `information_schema` text columns such as `COLUMN_TYPE` were returned as blobs and failed to decode.
+
 ## [0.5.0] — 2026-11-06
 
 ### Added
@@ -43,16 +63,6 @@ Changes are grouped by version, with the newest version first. Dates use the tag
 ### Fixed
 
 - Improve macOS icon generation and correct the macOS CI build step.
-
-## Unreleased
-
-### Added
-
-- Suggest tables, columns, and keywords while typing in the SQL editor. Table suggestions follow `FROM`, `JOIN`, `UPDATE`, and `INTO`. Column suggestions use only the tables referenced in the current statement and resolve aliases such as `u.`. Keyword suggestions follow the statement's clause order, so clauses already written, such as `WHERE`, are not offered again. Press Ctrl+Space to open suggestions, ↑/↓ to choose, Enter or Tab to accept, and Esc to close.
-
-### Fixed
-
-- Show MySQL and MariaDB table columns in the Structure view and in SQL suggestions. `information_schema` text columns such as `COLUMN_TYPE` were returned as blobs and failed to decode.
 
 ## [0.3.0] — 2026-11-04
 
