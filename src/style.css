@@ -1846,6 +1846,10 @@ th[aria-sort='descending'] {
   overflow-wrap: anywhere;
 }
 
+.update-dialog p {
+  padding: 4px 16px;
+}
+
 .sqlite-file-field {
   display: flex;
   flex-direction: column;
@@ -2343,4 +2347,40 @@ aside .table-filter-search:focus-within {
 }
 .connections-grid .no-results {
   grid-column: 1 / -1;
+}
+
+.update-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 16px 12px;
+}
+.update-progress progress {
+  appearance: none !important;
+  flex: 1;
+  min-width: 0;
+  height: 8px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0px;
+  background: var(--border);
+  accent-color: var(--accent);
+}
+.update-progress progress::-webkit-progress-bar {
+  background: var(--border);
+  border-radius: 0px;
+}
+.update-progress progress::-webkit-progress-value {
+  background: var(--accent);
+  border-radius: 0;
+  transition: width 150ms ease;
+}
+.update-progress progress::-moz-progress-bar {
+  background: var(--accent);
+  border-radius: 0px;
+}
+.update-progress span {
+  color: var(--secondary);
+  font: 11px var(--mono);
+  font-variant-numeric: tabular-nums;
 }
