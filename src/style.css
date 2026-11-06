@@ -2384,3 +2384,27 @@ aside .table-filter-search:focus-within {
   font: 11px var(--mono);
   font-variant-numeric: tabular-nums;
 }
+
+.connection[draggable='true'] {
+  cursor: grab;
+  -webkit-user-drag: element;
+  user-select: none;
+}
+.connection-dragging {
+  opacity: 0.45;
+}
+.connection-drop-target {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.connection .db-icon .connection-drag-grip {
+  display: none;
+}
+.connection[draggable='true']:hover .db-icon > svg:first-child,
+.connection[draggable='true']:focus-visible .db-icon > svg:first-child {
+  display: none;
+}
+.connection[draggable='true']:hover .db-icon .connection-drag-grip,
+.connection[draggable='true']:focus-visible .db-icon .connection-drag-grip {
+  display: block;
+}

@@ -1,4 +1,5 @@
-import { Database, ArrowUpRight } from 'lucide-react'
+import type { DragEventHandler } from 'react'
+import { Database, ArrowUpRight, GripVertical } from 'lucide-react'
 import type { Connection } from '../../types/connection'
 import { driverNames } from '../../lib/connections'
 import { ConnectionEnvironmentBadge } from '../atoms/ConnectionEnvironmentBadge'
@@ -6,6 +7,15 @@ import { Spinner } from '../atoms/Spinner'
 import { Button } from '../atoms/Button'
 
 type Props = {
+  reorder?: {
+    dragging: boolean
+    target: boolean
+    onDragStart: DragEventHandler<HTMLDivElement>
+    onDragOver: DragEventHandler<HTMLDivElement>
+    onDrop: DragEventHandler<HTMLDivElement>
+    onDragEnd: DragEventHandler<HTMLDivElement>
+    onMove: (direction: -1 | 1) => void
+  }
   connection: Connection
   active: boolean
   busy: string
@@ -13,12 +23,17 @@ type Props = {
   onMenu: (connection: Connection, target: HTMLElement, x: number, y: number) => void
 }
 
-export function ConnectionRow({ connection: c, active, busy, onOpen, onMenu }: Props) {
+export function ConnectionRow({ connection: c, active, busy, onOpen, onMenu, reorder }: Props) {
   return (
     <div
       role="button"
       tabIndex={0}
-      className={active ? 'connection context-active' : 'connection'}
+      className={`connection${active ? ' context-active' : ''}${reorder?.dragging ? ' connection-dragging' : ''}${reorder?.target ? ' connection-drop-target' : ''}`}
+      draggable={!!reorder && !busy}
+      onDragStart={reorder?.onDragStart}
+      onDragOver={reorder?.onDragOver}
+      onDrop={reorder?.onDrop}
+      onDragEnd={reorder?.onDragEnd}
       onContextMenu={(event) => {
         event.preventDefault()
         onMenu(c, event.currentTarget, event.clientX, event.clientY)
@@ -27,6 +42,12 @@ export function ConnectionRow({ connection: c, active, busy, onOpen, onMenu }: P
       onKeyDown={(event) => {
         if (event.target !== event.currentTarget) return
 
+        if (reorder && !busy && event.altKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+          event.preventDefault()
+          reorder.onMove(event.key === 'ArrowUp' ? -1 : 1)
+          return
+        }
+
         if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
           event.preventDefault()
           const rect = event.currentTarget.getBoundingClientRect()
@@ -34,8 +55,9 @@ export function ConnectionRow({ connection: c, active, busy, onOpen, onMenu }: P
         } else if (event.key === 'Enter') onOpen(c)
       }}
     >
-      <div className="db-icon">
+      <div className="db-icon" title={reorder ? 'Drag to reorder · Alt+↑/↓ to move with keyboard' : undefined}>
         <Database size={22} />
+        {reorder && <GripVertical size={16} className="connection-drag-grip" aria-hidden="true" />}
       </div>
       <div className="connection-info">
         <h3>{c.title}</h3>
