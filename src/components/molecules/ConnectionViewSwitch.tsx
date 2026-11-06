@@ -11,14 +11,9 @@ export function ConnectionViewSwitch({ view, onChange }: Props) {
         <List size={14} />
         List
       </Button>
-      <Button
-        title="Card view"
-        aria-label="Card view"
-        aria-pressed={view === 'cards'}
-        onClick={() => onChange('cards')}
-      >
+      <Button title="Grid view" aria-label="Grid view" aria-pressed={view === 'grid'} onClick={() => onChange('grid')}>
         <LayoutGrid size={14} />
-        Cards
+        Grid
       </Button>
     </div>
   )

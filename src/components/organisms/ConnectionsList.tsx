@@ -9,7 +9,7 @@ type Props = { connections: Connection[]; search: string; activeId?: string; vie
   'busy' | 'onOpen' | 'onMenu'
 >
 
-export function ConnectionsList({ connections, search, activeId, view = 'cards', ...actions }: Props) {
+export function ConnectionsList({ connections, search, activeId, view = 'grid', ...actions }: Props) {
   const filtered = connections.filter((connection) => matchesConnection(connection, search))
 
   return (

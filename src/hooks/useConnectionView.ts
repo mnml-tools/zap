@@ -1,15 +1,15 @@
 import { useState } from 'react'
 
-export type ConnectionView = 'list' | 'cards'
+export type ConnectionView = 'list' | 'grid'
 
 const storageKey = 'zap.connectionView'
 
 export function useConnectionView() {
   const [view, setView] = useState<ConnectionView>(() => {
     try {
-      return localStorage.getItem(storageKey) === 'list' ? 'list' : 'cards'
+      return localStorage.getItem(storageKey) === 'list' ? 'list' : 'grid'
     } catch {
-      return 'cards'
+      return 'grid'
     }
   })
 
