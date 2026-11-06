@@ -2215,3 +2215,74 @@ aside .table-filter-search:focus-within {
 .linux-window {
   border: 1px solid var(--border);
 }
+
+.connection-view-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+.connection-view-switch button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 8px;
+}
+.connections-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  align-content: start;
+  gap: 12px;
+  padding: 16px;
+}
+.connections-cards .connection {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--raised);
+  min-width: 0;
+}
+.connections-cards .connection:hover,
+.connections-cards .connection:focus-visible,
+.connections-cards .connection.context-active {
+  background: var(--hover);
+}
+.connections-cards .connection-info {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.connections-cards .connection h3 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.connections-cards .connection p {
+  margin: 0;
+}
+.connections-cards .environment-badge {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: start;
+}
+.connections-cards .badge {
+  grid-column: 1 / 3;
+  grid-row: 3;
+  justify-self: start;
+}
+.connections-cards .connection > button {
+  grid-column: 3;
+  grid-row: 3;
+  justify-self: end;
+}
+.connections-cards .no-results {
+  grid-column: 1 / -1;
+}
