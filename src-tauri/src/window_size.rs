@@ -73,7 +73,20 @@ pub fn restore_and_track(window: WebviewWindow) {
                 return;
             };
             if let Some(saved) = state.1.as_mut() {
-                update(&observed, saved);
+                update_mode(&observed, saved);
+                if normal_bounds(&observed, saved) {
+                    match event {
+                        WindowEvent::Moved(position) => saved.position = Some(*position),
+                        WindowEvent::Resized(size) if size.width > 0 && size.height > 0 => {
+                            if let Ok(scale) = observed.scale_factor() {
+                                let logical = size.to_logical::<f64>(scale);
+                                saved.width = logical.width;
+                                saved.height = logical.height;
+                            }
+                        }
+                        _ => {}
+                    }
+                }
             }
             state.0 += 1;
             let revision = state.0;
@@ -101,15 +114,23 @@ pub fn restore_and_track(window: WebviewWindow) {
     });
 }
 
-fn update(window: &WebviewWindow, state: &mut WindowState) {
+fn update_mode(window: &WebviewWindow, state: &mut WindowState) {
     if let Ok(maximized) = window.is_maximized() {
         state.maximized = maximized;
     }
+}
+
+fn normal_bounds(window: &WebviewWindow, state: &WindowState) -> bool {
+    !state.maximized
+        && matches!(window.is_fullscreen(), Ok(false))
+        && matches!(window.is_minimized(), Ok(false))
+}
+
+fn update(window: &WebviewWindow, state: &mut WindowState) {
+    update_mode(window, state);
+
     // Keep the normal bounds so unmaximizing restores the previous size and position.
-    if state.maximized
-        || !matches!(window.is_fullscreen(), Ok(false))
-        || !matches!(window.is_minimized(), Ok(false))
-    {
+    if !normal_bounds(window, state) {
         return;
     }
     if let (Ok(size), Ok(scale)) = (window.inner_size(), window.scale_factor()) {
