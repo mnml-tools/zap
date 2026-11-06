@@ -1,3 +1,5 @@
+import { useAppUpdate } from '../hooks/useAppUpdate'
+import { UpdateDialog } from '../components/organisms/UpdateDialog'
 import { api } from '../services/api'
 import type { ApiRequest } from '../services/api'
 import { useConnections } from '../hooks/useConnections'
@@ -7,15 +9,21 @@ import { WorkspacePage } from '../pages/WorkspacePage'
 export function App({ request = api }: { request?: ApiRequest }) {
   const connections = useConnections(request)
 
-  if (connections.id)
-    return (
-      <WorkspacePage
-        id={connections.id}
-        connection={connections.connections.find((connection) => connection.id === connections.id)}
-        onClose={connections.close}
-        request={request}
-      />
-    )
+  const { update, dismiss } = useAppUpdate()
 
-  return <ConnectionsPage connections={connections} />
+  return (
+    <>
+      {connections.id ? (
+        <WorkspacePage
+          id={connections.id}
+          connection={connections.connections.find((connection) => connection.id === connections.id)}
+          onClose={connections.close}
+          request={request}
+        />
+      ) : (
+        <ConnectionsPage connections={connections} />
+      )}
+      {update && <UpdateDialog update={update} onDismiss={dismiss} />}
+    </>
+  )
 }

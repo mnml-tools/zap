@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { registerUpdateGuard } from '../services/updateGuard'
 import { api } from '../services/api'
 import type { ApiRequest } from '../services/api'
 import type { Connection, Table, QueryDocument, TableFilter } from '../types'
@@ -122,6 +123,22 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
       setConfirm({ message: 'Discard all pending changes and quit Zap?', action: confirmClose })
     }
   })
+
+  const updateSafety = useRef(() => ({ dirty: false, busy: false }))
+  updateSafety.current = () => ({
+    dirty:
+      Object.values(edits.draftsRef.current).some((draft) => countChanges(draft) > 0) ||
+      !!edits.editorRef.current ||
+      anyStructureDirty ||
+      Object.values(queries.dirtyRef.current).some(Boolean),
+    busy:
+      structureSaving ||
+      tableActionBusy ||
+      edits.savingRef.current ||
+      Object.values(queries.busyRef.current).some(Boolean)
+  })
+
+  useEffect(() => registerUpdateGuard(() => updateSafety.current()), [])
 
   const closeTabs = (keys: string[]) => {
     const targets = new Set(keys)
