@@ -9,6 +9,8 @@ const keywords = new Set(
   )
 )
 
+export const isSqlKeyword = (word: string) => keywords.has(word.toUpperCase())
+
 /** Lossless display tokens: the original SQL is never transformed or interpreted. */
 
 export function highlightSql(sql: string): SqlToken[] {

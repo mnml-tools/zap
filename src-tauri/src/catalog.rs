@@ -1,5 +1,5 @@
 use crate::Table;
-use sqlx::{AnyPool, Row};
+use sqlx::{any::AnyRow, AnyPool, Row};
 
 pub async fn columns(
     pool: &AnyPool,
@@ -68,15 +68,25 @@ pub async fn columns(
     rows.iter()
         .map(|row| {
             Ok([
-                row.try_get(0)?,
-                row.try_get(1)?,
-                row.try_get(2)?,
-                row.try_get(3)?,
-                row.try_get(4)?,
+                text(row, 0)?,
+                text(row, 1)?,
+                text(row, 2)?,
+                text(row, 3)?,
+                text(row, 4)?,
             ])
         })
         .collect::<Result<_, sqlx::Error>>()
         .map_err(|error| error.to_string())
+}
+
+/// MySQL and MariaDB report `information_schema` TEXT columns such as COLUMN_TYPE as blobs through `Any`.
+fn text(row: &AnyRow, index: usize) -> Result<Option<String>, sqlx::Error> {
+    match row.try_get::<Option<String>, _>(index) {
+        Ok(value) => Ok(value),
+        Err(_) => Ok(row
+            .try_get::<Option<Vec<u8>>, _>(index)?
+            .map(|bytes| String::from_utf8_lossy(&bytes).into_owned())),
+    }
 }
 
 pub async fn indexes(

@@ -1,15 +1,24 @@
 import { useQueryEditor } from '../../hooks/useQueryEditor'
 import type { QueryEditorOptions } from '../../hooks/useQueryEditor'
+import { useSqlCompletion } from '../../hooks/useSqlCompletion'
+import type { Table } from '../../types/table'
 import { ErrorMessage } from '../atoms/ErrorMessage'
 import { QueryToolbar } from '../molecules/QueryToolbar'
 import { SqlCodeInput } from '../molecules/SqlCodeInput'
 import { QueryEditorHint } from '../molecules/QueryEditorHint'
 import { QueryResults } from './QueryResults'
 
-type Props = QueryEditorOptions & { onDelete: () => void }
+type Props = QueryEditorOptions & { driver: string; tables: Table[]; onDelete: () => void }
 
 export function QueryEditor(props: Props) {
   const editor = useQueryEditor(props)
+  const complete = useSqlCompletion({
+    connectionId: props.connectionId,
+    driver: props.driver,
+    request: props.request,
+    tables: props.tables,
+    sql: editor.sql
+  })
 
   return (
     <div
@@ -36,7 +45,7 @@ export function QueryEditor(props: Props) {
         onRun={editor.run}
         onDelete={props.onDelete}
       />
-      <SqlCodeInput value={editor.sql} disabled={!!editor.busy} onChange={editor.setSql} />
+      <SqlCodeInput value={editor.sql} disabled={!!editor.busy} onChange={editor.setSql} complete={complete} />
       <QueryEditorHint lineCount={editor.sql.split('\n').length} />
       {editor.error && <ErrorMessage message={editor.error} />}
       <QueryResults

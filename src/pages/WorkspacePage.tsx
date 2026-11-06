@@ -67,6 +67,8 @@ export function WorkspacePage(options: WorkspaceOptions) {
             <div key={query.id} className={model.active === `query:${query.id}` ? 'query-pane' : 'query-pane hidden'}>
               <QueryEditor
                 connectionId={options.id}
+                driver={options.connection?.driver ?? ''}
+                tables={model.tables}
                 query={query}
                 request={options.request || model.request}
                 onSaved={model.savedQuery}
