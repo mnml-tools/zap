@@ -135,6 +135,7 @@ export function useConnections(request: ApiRequest = api) {
     if (!id) return
 
     await request('close_connection', { id })
+    if (isTauri()) rememberConnection(null)
     setId(null)
   }
 
