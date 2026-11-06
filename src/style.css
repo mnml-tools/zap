@@ -1255,8 +1255,31 @@ td.reference-active .reference-open,
   color: var(--muted);
   font-size: 10px;
 }
-.sidebar-switch {
+.sidebar-navigation {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
   margin: 9px 9px 11px;
+}
+.sidebar-navigation .sidebar-switch {
+  flex: 1;
+  min-width: 0;
+}
+.quick-query {
+  color: var(--muted);
+  background: transparent;
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  flex: 0 0 28px;
+  padding: 0;
+}
+.quick-query svg,
+.quick-query-icon {
+  transform: scaleX(-1);
+}
+.query-toolbar.quick-query-toolbar {
+  justify-content: flex-end;
 }
 .view-switch {
   display: flex;

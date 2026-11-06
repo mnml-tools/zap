@@ -72,6 +72,7 @@ export function WorkspacePage(options: WorkspaceOptions) {
                 query={query}
                 request={options.request || model.request}
                 onSaved={model.savedQuery}
+                onConvertQuick={model.convertQuickQuery}
                 onDirty={model.dirtyQuery}
                 onBusy={model.busyQuery}
                 onDelete={() => model.deleteQuery(query)}

@@ -15,7 +15,7 @@ export function QueryEditor(props: Props) {
 
   useShortcut(
     saveChangesShortcut,
-    props.active && editor.dirty && !editor.busy && !!editor.title.trim() && !!editor.sql.trim(),
+    !props.query.quick && props.active && editor.dirty && !editor.busy && !!editor.title.trim() && !!editor.sql.trim(),
     editor.save
   )
 
@@ -30,6 +30,9 @@ export function QueryEditor(props: Props) {
       }}
     >
       <QueryToolbar
+        quick={!!props.query.quick}
+        canConvertQuick={!!editor.result}
+        onConvertQuick={editor.convertQuick}
         title={editor.title}
         sql={editor.sql}
         dirty={editor.dirty}
@@ -40,7 +43,7 @@ export function QueryEditor(props: Props) {
         onDelete={props.onDelete}
       />
       <SqlCodeInput value={editor.sql} disabled={!!editor.busy} onChange={editor.setSql} />
-      <QueryEditorHint lineCount={editor.sql.split('\n').length} />
+      <QueryEditorHint quick={!!props.query.quick} unsaved={editor.unsaved} lineCount={editor.sql.split('\n').length} />
       {editor.error && <ErrorMessage message={editor.error} />}
       <QueryResults
         running={editor.busy === 'run'}

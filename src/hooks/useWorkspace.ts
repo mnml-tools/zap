@@ -297,11 +297,17 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
     queries.create()
   }
 
+  const newQuickQuery = () => beforeViewChange(() => queries.create(true))
+
   const closeQuery = (query: QueryDocument) =>
     guard('Discard unsaved changes to this query?', () => queries.dismiss(query), !!queries.dirty[query.id])
 
   const deleteQuery = (query: QueryDocument) =>
-    guard('Delete this saved query and discard its unsaved changes?', () => queries.remove(query), true)
+    guard(
+      query.isNew ? 'Discard this unsaved query?' : 'Delete this saved query and discard its unsaved changes?',
+      () => queries.remove(query),
+      query.isNew ? !!queries.dirtyRef.current[query.id] : true
+    )
 
   const openReferenceInTab = () => {
     const reference = references.current?.reference
@@ -419,8 +425,10 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
     dirtyQuery: queries.markDirty,
     busyQuery: queries.markBusy,
     savedQuery: queries.saved,
+    convertQuickQuery: queries.convertQuick,
     openQuery,
     newQuery,
+    newQuickQuery,
     selectQuery,
     closeQuery,
     deleteQuery
