@@ -2408,3 +2408,124 @@ aside .table-filter-search:focus-within {
 .connection[draggable='true']:focus-visible .db-icon .connection-drag-grip {
   display: block;
 }
+
+.connection-selector {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(320px, 40%);
+  pointer-events: auto !important;
+}
+.connection-selector-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+}
+.connection-selector .header-connection {
+  position: static;
+  min-width: 0;
+}
+.connection-selector-trigger > svg {
+  flex-shrink: 0;
+  color: var(--muted);
+  transition: transform 150ms ease;
+}
+.connection-selector-trigger[aria-expanded='true'] > svg {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+.connection-selector-trigger:hover,
+.connection-selector-trigger[aria-expanded='true'] {
+  border-color: var(--border);
+  background: var(--hover);
+}
+.connection-selector-menu {
+  position: fixed;
+  z-index: 1000;
+  overflow: auto;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  background: var(--raised);
+  box-shadow: 0 8px 28px var(--shadow);
+}
+.connection-selector-menu-heading,
+.connection-selector-menu-footer {
+  padding: 8px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.connection-selector-menu-heading {
+  display: flex;
+  justify-content: space-between;
+}
+.connection-selector-menu-heading > span:first-child {
+  color: var(--secondary);
+  font-weight: 600;
+}
+.connection-selector-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 8px;
+  border: 0;
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+}
+.connection-selector-option:hover,
+.connection-selector-option:focus-visible {
+  outline: none;
+  background: var(--hover);
+}
+.connection-selector-option[aria-checked='true'] {
+  background: color-mix(in srgb, var(--accent) 8%, var(--background));
+}
+.connection-selector-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  color: var(--secondary);
+  background: var(--background);
+}
+.connection-selector-option[aria-checked='true'] .connection-selector-icon,
+.connection-selector-check {
+  color: var(--accent);
+}
+.connection-selector-check {
+  flex-shrink: 0;
+}
+.connection-selector-details {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.connection-selector-details strong,
+.connection-selector-details > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.connection-selector-details strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+.connection-selector-details > span {
+  font: 10px var(--mono);
+  color: var(--muted);
+}
+.connection-selector-menu-footer {
+  margin-top: 5px;
+  border-top: 1px solid var(--border);
+}

@@ -16,11 +16,13 @@ import { referenceFilters } from '../lib/relations'
 export type WorkspaceOptions = {
   id: string
   connection?: Connection
+  connections?: Connection[]
+  onSwitch?: (connection: Connection) => Promise<void>
   onClose: () => Promise<void>
   request?: ApiRequest
 }
 
-export function useWorkspace({ id, connection, onClose, request = api }: WorkspaceOptions) {
+export function useWorkspace({ id, connection, onClose, onSwitch, request = api }: WorkspaceOptions) {
   const [sidebar, setSidebar] = useState<'tables' | 'queries'>('tables'),
     [search, setSearch] = useState(''),
     [error, setError] = useState(''),
@@ -258,18 +260,32 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
     )
   }
 
-  const closeConnection = () =>
+  const leaveConnection = (action: () => Promise<void>, message: string) => {
+    if (closing || edits.savingRef.current || Object.values(queries.busyRef.current).some(Boolean)) return
+
+    const staged = edits.stage()
     guard(
-      'Discard all pending changes and close the connection?',
+      message,
       () => {
+        if (edits.savingRef.current || Object.values(queries.busyRef.current).some(Boolean)) return
+
         setClosing(true)
-        onClose().catch((error) => {
+        action().catch((error) => {
           setError(String(error))
           setClosing(false)
         })
       },
-      Object.values(edits.pending).some((draft) => countChanges(draft) > 0) || queries.anyDirty || anyStructureDirty
+      Object.values(staged).some((draft) => countChanges(draft) > 0) || queries.anyDirty || anyStructureDirty
     )
+  }
+
+  const closeConnection = () => leaveConnection(onClose, 'Discard all pending changes and close the connection?')
+
+  const switchConnection = (next: Connection) => {
+    if (!onSwitch || next.id === id) return
+
+    leaveConnection(() => onSwitch(next), `Discard all pending changes and switch to “${next.title}”?`)
+  }
 
   const refresh = () =>
     guard(
@@ -429,6 +445,7 @@ export function useWorkspace({ id, connection, onClose, request = api }: Workspa
     discard,
     refresh,
     closeConnection,
+    switchConnection,
     queries: queries.queries,
     queryTabs: queries.tabs,
     querySearch: queries.search,

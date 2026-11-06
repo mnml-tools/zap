@@ -1,3 +1,4 @@
+import { ConnectionSelector } from '../components/molecules/ConnectionSelector'
 import { useState } from 'react'
 import { useWorkspace } from '../hooks/useWorkspace'
 import type { WorkspaceOptions } from '../hooks/useWorkspace'
@@ -23,6 +24,19 @@ export function WorkspacePage(options: WorkspaceOptions) {
       variant="workspace"
       status="Connected"
       connection={options.connection}
+      connectionSelector={
+        options.connection &&
+        options.onSwitch && (
+          <ConnectionSelector
+            connection={options.connection}
+            connections={options.connections ?? []}
+            disabled={
+              model.closing || model.saving || model.anyQueryBusy || model.structureSaving || model.tableActionBusy
+            }
+            onSelect={model.switchConnection}
+          />
+        )
+      }
       footerLeft={`ZAP / ${options.connection?.database || 'DATABASE'}`}
       footerRight={
         <>

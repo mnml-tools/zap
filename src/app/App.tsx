@@ -15,6 +15,9 @@ export function App({ request = api }: { request?: ApiRequest }) {
     <>
       {connections.id ? (
         <WorkspacePage
+          key={connections.id}
+          connections={connections.connections}
+          onSwitch={connections.switchConnection}
           id={connections.id}
           connection={connections.connections.find((connection) => connection.id === connections.id)}
           onClose={connections.close}

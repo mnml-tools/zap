@@ -139,6 +139,34 @@ export function useConnections(request: ApiRequest = api) {
     setId(null)
   }
 
+  const switchConnection = async (next: Connection) => {
+    if (!id || id === next.id || opening.current || removing.current || transferring.current) return
+
+    opening.current = true
+    setBusy(next.id)
+    setOpenError('')
+    let closed = false
+
+    try {
+      await request('close_connection', { id })
+      closed = true
+      if (isTauri()) rememberConnection(null)
+      await request('open_connection', { id: next.id })
+      setId(next.id)
+      if (isTauri()) rememberConnection(next.id)
+    } catch (error) {
+      if (closed) {
+        setId(null)
+        setOpenError(String(error))
+      } else {
+        throw error
+      }
+    } finally {
+      opening.current = false
+      setBusy('')
+    }
+  }
+
   const create = () => {
     setForm(newConnection())
     setError('')
@@ -249,6 +277,7 @@ export function useConnections(request: ApiRequest = api) {
     remove,
     open,
     close,
+    switchConnection,
     create,
     changeForm,
     cancelForm,
