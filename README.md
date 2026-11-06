@@ -15,7 +15,13 @@
 
 Zap lets you browse tables, edit data, and save SQL queries in one workspace. It’s built with Tauri, React, TypeScript, and Rust.
 
-![Zap browsing a sample PostgreSQL workspace with the events and people tables open](docs/zap-workspace.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/zap-screenshot-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/zap-screenshot-light.png">
+  <img src="docs/zap-screenshot-light.png" alt="Zap desktop workspace showing a SQLite database, table tabs, and selected member records">
+</picture>
+
+View screenshots in [light mode](docs/zap-screenshot-light.png) or [dark mode](docs/zap-screenshot-dark.png).
 
 > [!IMPORTANT]
 > **A note on AI use:** I’m against the blind use of AI and generally oppose generating large portions of code with it. That said, I used AI-generated code to build Zap: I wanted a custom tool for myself and chose to experiment with how quickly AI could help me build it. This was also a chance to study these tools from a user’s perspective, how they work, how to communicate with them, and how to use them to implement features. I want to understand this technology and keep up with it, even if I don’t use it every day.
