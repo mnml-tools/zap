@@ -2,6 +2,8 @@ import { Check, Plus } from 'lucide-react'
 import { useState } from 'react'
 import type { NewColumn } from '../../types/table'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
+import { useShortcut } from '../../hooks/useShortcut'
+import { saveChangesShortcut } from '../../lib/shortcuts'
 import { Button } from '../atoms/Button'
 import { Spinner } from '../atoms/Spinner'
 import { ColumnTypePicker } from '../molecules/ColumnTypePicker'
@@ -28,6 +30,7 @@ export function TableStructureEditor({ model, rows }: Props) {
   const invalid = additions.some((column) => !column.name.trim() || !column.kind.trim())
   const fullEditing = model.driver === 'postgresql' || model.driver === 'mysql'
   const blocked = model.changeCount > 0 || model.saving
+  const canSave = count > 0 && !blocked && !model.structureSaving && !!name.trim() && !invalid
 
   const stage = (row: number, field: number, value: string | null) => {
     if (row >= rows.length) {
@@ -66,6 +69,8 @@ export function TableStructureEditor({ model, rows }: Props) {
     }
   }
 
+  useShortcut(saveChangesShortcut, canSave, save)
+
   return (
     <>
       <div className="table-toolbar structure-toolbar">
@@ -99,11 +104,7 @@ export function TableStructureEditor({ model, rows }: Props) {
               >
                 Discard
               </Button>
-              <Button
-                className="save-changes"
-                disabled={blocked || model.structureSaving || !name.trim() || invalid}
-                onClick={save}
-              >
+              <Button className="save-changes" disabled={!canSave} onClick={save}>
                 {model.structureSaving ? <Spinner size={13} /> : <Check size={13} />}
                 {model.structureSaving ? 'Saving…' : `Save ${count} ${count === 1 ? 'change' : 'changes'}`}
               </Button>

@@ -67,6 +67,7 @@ export function WorkspacePage(options: WorkspaceOptions) {
           {model.queryTabs.map((query) => (
             <div key={query.id} className={model.active === `query:${query.id}` ? 'query-pane' : 'query-pane hidden'}>
               <QueryEditor
+                active={model.active === `query:${query.id}`}
                 connectionId={options.id}
                 query={query}
                 request={options.request || model.request}
