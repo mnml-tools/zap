@@ -1260,6 +1260,7 @@ td.reference-active .reference-open,
   background: var(--hover);
 }
 .view-switch button[data-selected='true'],
+.view-switch button[aria-selected='true'],
 .view-switch button[aria-pressed='true'] {
   background: var(--background);
   color: var(--text);
