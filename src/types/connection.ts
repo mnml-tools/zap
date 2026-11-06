@@ -1,6 +1,7 @@
 export type Connection = {
   id: string
   title: string
+  avatarColor?: string
   environment?: 'local' | 'prod' | null
   driver: string
   host: string

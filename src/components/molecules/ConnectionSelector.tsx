@@ -1,7 +1,7 @@
 import { useCallback, useId, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import type { Connection } from '../../types/connection'
-import { useConnectionOrder } from '../../hooks/useConnectionOrder'
+import { orderConnections } from '../../lib/connectionOrder'
 import { useShortcut } from '../../hooks/useShortcut'
 import { formatShortcut, switchConnectionShortcut } from '../../lib/shortcuts'
 import { ConnectionSelectorMenu } from './ConnectionSelectorMenu'
@@ -15,7 +15,7 @@ type Props = {
 }
 
 export function ConnectionSelector({ connection, connections, disabled, onSelect }: Props) {
-  const { ordered } = useConnectionOrder(connections)
+  const ordered = orderConnections(connections)
 
   const [open, setOpen] = useState(false)
   const trigger = useRef<HTMLButtonElement>(null)

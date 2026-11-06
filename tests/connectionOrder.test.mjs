@@ -1,24 +1,38 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { moveConnection, orderConnections } from '../src/lib/connectionOrder.ts'
+import { orderConnections } from '../src/lib/connectionOrder.ts'
 
-const connections = ['a', 'b', 'c', 'd'].map((id) => ({ id }))
-const ids = (items) => items.map((item) => item.id)
-
-test('saved order survives reloads and ignores deleted connections while appending new ones', () => {
-  const persisted = JSON.parse(JSON.stringify(['c', 'deleted', 'a']))
-  assert.deepEqual(ids(orderConnections(connections, persisted)), ['c', 'a', 'b', 'd'])
-  assert.deepEqual(ids(connections), ['a', 'b', 'c', 'd'])
+test('sorts connection titles alphabetically ignoring case and surrounding whitespace', () => {
+  const connections = ['zebra', ' Banana ', 'apple', 'cherry'].map((title) => ({ title }))
+  assert.deepEqual(
+    orderConnections(connections).map((item) => item.title),
+    ['apple', ' Banana ', 'cherry', 'zebra']
+  )
+  assert.deepEqual(
+    connections.map((item) => item.title),
+    ['zebra', ' Banana ', 'apple', 'cherry']
+  )
 })
 
-test('connections move forward and backward without losing hidden search results', () => {
-  assert.deepEqual(ids(moveConnection(connections, 'a', 'c')), ['b', 'c', 'a', 'd'])
-  assert.deepEqual(ids(moveConnection(connections, 'd', 'b')), ['a', 'd', 'b', 'c'])
-  assert.deepEqual(ids(connections), ['a', 'b', 'c', 'd'])
+test('sorts numbers naturally and preserves equal-title order', () => {
+  const connections = [
+    { title: 'Server 10', id: 'a' },
+    { title: 'Server 2', id: 'b' },
+    { title: 'server 2', id: 'c' }
+  ]
+  assert.deepEqual(
+    orderConnections(connections).map((item) => item.id),
+    ['b', 'c', 'a']
+  )
+  assert.deepEqual(orderConnections([]), [])
 })
 
-test('dropping on the same connection or an unknown connection leaves the order unchanged', () => {
-  assert.equal(moveConnection(connections, 'a', 'a'), connections)
-  assert.equal(moveConnection(connections, 'missing', 'a'), connections)
-  assert.equal(moveConnection(connections, 'a', 'missing'), connections)
+test('same-name connections put Local before Prod while keeping alphabetical order primary', () => {
+  const connections = [
+    { title: 'Beta', environment: 'prod' },
+    { title: 'beta', environment: 'local' },
+    { title: 'Alpha', environment: 'prod' },
+    { title: 'Beta', environment: null }
+  ]
+  assert.deepEqual(orderConnections(connections), [connections[2], connections[1], connections[3], connections[0]])
 })

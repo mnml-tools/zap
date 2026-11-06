@@ -1,17 +1,9 @@
-export function orderConnections<T extends { id: string }>(connections: T[], order: string[]): T[] {
-  const ranks = new Map(order.map((id, index) => [id, index]))
+export function orderConnections<T extends { title: string; environment?: string | null }>(connections: T[]): T[] {
+  const rank = (environment?: string | null) => (environment === 'local' ? 0 : environment === 'prod' ? 2 : 1)
 
-  return [...connections].sort((a, b) => (ranks.get(a.id) ?? Infinity) - (ranks.get(b.id) ?? Infinity))
-}
+  return [...connections].sort((a, b) => {
+    const title = a.title.trim().localeCompare(b.title.trim(), undefined, { sensitivity: 'base', numeric: true })
 
-export function moveConnection<T extends { id: string }>(connections: T[], source: string, target: string): T[] {
-  const from = connections.findIndex((connection) => connection.id === source)
-  const to = connections.findIndex((connection) => connection.id === target)
-  if (from < 0 || to < 0 || from === to) return connections
-
-  const next = [...connections]
-  const [moved] = next.splice(from, 1)
-  next.splice(to, 0, moved)
-
-  return next
+    return title || rank(a.environment) - rank(b.environment)
+  })
 }
