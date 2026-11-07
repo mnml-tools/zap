@@ -1,8 +1,9 @@
 import { ConnectionAvatar } from '../atoms/ConnectionAvatar'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Search } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import type { Connection } from '../../types/connection'
-import { driverNames } from '../../lib/connections'
+import { driverNames, matchesConnection } from '../../lib/connections'
 import { ConnectionEnvironmentBadge } from '../atoms/ConnectionEnvironmentBadge'
 
 type Props = {
@@ -15,15 +16,23 @@ type Props = {
 }
 
 export function ConnectionSelectorMenu({ id, connection, connections, trigger, onDismiss, onSelect }: Props) {
-  const available = connections.filter((item) => item.id !== connection.id)
+  const [search, setSearch] = useState('')
+  const [activeIndex, setActiveIndex] = useState(0)
+  const input = useRef<HTMLInputElement>(null)
+  const available = connections.filter((item) => item.id !== connection.id && matchesConnection(item, search.trim()))
+  const active = available[activeIndex] ?? available[0]
+  const choose = (item: Connection) => {
+    onDismiss()
+    trigger.focus()
+    onSelect(item)
+  }
   const menu = useRef<HTMLDivElement>(null)
   const rect = trigger.getBoundingClientRect()
   const width = Math.min(320, window.innerWidth - 24)
   const left = Math.max(12, Math.min(rect.left + rect.width / 2 - width / 2, window.innerWidth - width - 12))
 
   useEffect(() => {
-    const first = menu.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')
-    ;(first ?? menu.current)?.focus()
+    input.current?.focus()
 
     const outside = (event: PointerEvent) => {
       if (!menu.current?.contains(event.target as Node) && !trigger.contains(event.target as Node)) onDismiss()
@@ -37,28 +46,31 @@ export function ConnectionSelectorMenu({ id, connection, connections, trigger, o
     }
   }, [trigger, onDismiss])
 
+  useEffect(() => {
+    if (active) document.getElementById(`${id}-option-${active.id}`)?.scrollIntoView({ block: 'nearest' })
+  }, [active?.id, id])
+
   return createPortal(
     <div
       ref={menu}
       id={id}
       className="connection-selector-menu"
-      role="menu"
-      tabIndex={-1}
+      role="dialog"
       aria-label="Switch connection"
       style={{ left, top: rect.bottom + 8, width, maxHeight: Math.max(120, window.innerHeight - rect.bottom - 24) }}
       onKeyDown={(event) => {
-        const items = Array.from(menu.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [])
-        const index = items.indexOf(document.activeElement as HTMLButtonElement)
+        if (event.nativeEvent.isComposing) return
 
-        if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
           event.preventDefault()
-          const next =
-            event.key === 'Home'
-              ? 0
-              : event.key === 'End'
-                ? items.length - 1
-                : (index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length
-          items[next]?.focus()
+          if (available.length) {
+            setActiveIndex(
+              (index) => (index + (event.key === 'ArrowDown' ? 1 : -1) + available.length) % available.length
+            )
+          }
+        } else if (event.key === 'Enter') {
+          event.preventDefault()
+          if (active && !event.repeat) choose(active)
         } else if (event.key === 'Escape') {
           event.preventDefault()
           onDismiss()
@@ -76,31 +88,55 @@ export function ConnectionSelectorMenu({ id, connection, connections, trigger, o
         <span>Switch connection</span>
         <span>{available.length} available</span>
       </div>
-      {available.map((item) => (
-        <button
-          key={item.id}
-          type="button"
-          role="menuitem"
-          tabIndex={-1}
-          className="connection-selector-option"
-          onClick={() => {
-            onDismiss()
-            trigger.focus()
-            onSelect(item)
+      <label className="connection-selector-search">
+        <Search size={14} aria-hidden="true" />
+        <input
+          ref={input}
+          role="combobox"
+          aria-label="Search connections"
+          aria-autocomplete="list"
+          aria-expanded="true"
+          aria-controls={`${id}-results`}
+          aria-activedescendant={active ? `${id}-option-${active.id}` : undefined}
+          placeholder="Search connections…"
+          value={search}
+          onChange={(event) => {
+            setSearch(event.target.value)
+            setActiveIndex(0)
           }}
-        >
-          <ConnectionAvatar connection={item} />
-          <span className="connection-selector-details">
-            <strong>{item.title}</strong>
-            <span>
-              {driverNames[item.driver] ?? item.driver} ·{' '}
-              {item.driver === 'sqlite' ? item.database : `${item.host}:${item.port}`}
+        />
+      </label>
+      <div id={`${id}-results`} role="listbox" aria-label="Available connections">
+        {available.map((item, index) => (
+          <button
+            key={item.id}
+            type="button"
+            id={`${id}-option-${item.id}`}
+            role="option"
+            aria-selected={active?.id === item.id}
+            tabIndex={-1}
+            className="connection-selector-option"
+            onPointerMove={() => setActiveIndex(index)}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => choose(item)}
+          >
+            <ConnectionAvatar connection={item} />
+            <span className="connection-selector-details">
+              <strong>{item.title}</strong>
+              <span>
+                {driverNames[item.driver] ?? item.driver} ·{' '}
+                {item.driver === 'sqlite' ? item.database : `${item.host}:${item.port}`}
+              </span>
             </span>
-          </span>
-          <ConnectionEnvironmentBadge environment={item.environment} />
-        </button>
-      ))}
-      {!available.length && <p className="connection-selector-menu-footer">No other saved connections.</p>}
+            <ConnectionEnvironmentBadge environment={item.environment} />
+          </button>
+        ))}
+      </div>
+      {!available.length && (
+        <p className="connection-selector-menu-footer" role="status">
+          {search ? 'No matching connections.' : 'No other saved connections.'}
+        </p>
+      )}
       <div className="connection-selector-menu-footer">Switching closes the current connection</div>
     </div>,
     document.body

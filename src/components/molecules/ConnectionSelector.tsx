@@ -33,7 +33,7 @@ export function ConnectionSelector({ connection, connections, disabled, onSelect
         aria-label={`Switch connection: ${connection.title}`}
         title={`Switch connection (${formatShortcut(switchConnectionShortcut)})`}
         aria-keyshortcuts="Control+P Meta+P"
-        aria-haspopup="menu"
+        aria-haspopup="dialog"
         aria-expanded={open && !disabled}
         aria-controls={open && !disabled ? menuId : undefined}
         disabled={disabled}
