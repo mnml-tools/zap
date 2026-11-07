@@ -203,6 +203,22 @@ header {
   flex-direction: column;
   overflow: hidden;
 }
+.connection-loading {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+}
+.connection-loading h1 {
+  justify-content: center;
+  margin: 16px 0 8px;
+  font-size: 18px;
+}
+.connection-loading p {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
 .home {
   flex: 1;
   min-height: 0;

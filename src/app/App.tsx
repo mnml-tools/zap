@@ -5,6 +5,7 @@ import type { ApiRequest } from '../services/api'
 import { useConnections } from '../hooks/useConnections'
 import { ConnectionsPage } from '../pages/ConnectionsPage'
 import { WorkspacePage } from '../pages/WorkspacePage'
+import { ConnectionLoadingPage } from '../pages/ConnectionLoadingPage'
 
 export function App({ request = api }: { request?: ApiRequest }) {
   const connections = useConnections(request)
@@ -13,7 +14,11 @@ export function App({ request = api }: { request?: ApiRequest }) {
 
   return (
     <>
-      {connections.id ? (
+      {connections.restoring ? (
+        <ConnectionLoadingPage
+          connection={connections.connections.find((connection) => connection.id === connections.busy)}
+        />
+      ) : connections.id ? (
         <WorkspacePage
           key={connections.id}
           connections={connections.connections}
