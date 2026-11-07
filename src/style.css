@@ -1849,15 +1849,19 @@ th[aria-sort='descending'] {
 .update-dialog p {
   padding: 4px 16px;
 }
-.update-release-notes a {
+.update-actions {
+  align-items: center;
+}
+.update-release-notes {
+  margin-right: auto;
   color: var(--secondary);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.update-release-notes a:hover {
+.update-release-notes:hover {
   color: var(--text);
 }
-.update-release-notes a:focus-visible {
+.update-release-notes:focus-visible {
   outline: 1px solid var(--secondary);
   outline-offset: 3px;
 }

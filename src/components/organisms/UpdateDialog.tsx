@@ -98,8 +98,16 @@ export function UpdateDialog({ update, onDismiss }: { update: Update; onDismiss:
               ? 'Updating Zap…'
               : 'Install the update and restart Zap.'}
       </p>
-      <p className="update-release-notes">
+      {phase === 'installing' && (
+        <div className="update-progress">
+          <progress aria-label="Update download progress" max={100} value={percent} />
+          <span aria-live="polite">{progress}</span>
+        </div>
+      )}
+      {error && <p role="alert">{error}</p>}
+      <div className="discard-actions update-actions">
         <a
+          className="update-release-notes"
           href="https://github.com/rafmst/zap/releases/latest"
           target="_blank"
           rel="noopener noreferrer"
@@ -110,15 +118,6 @@ export function UpdateDialog({ update, onDismiss }: { update: Update; onDismiss:
         >
           What’s new
         </a>
-      </p>
-      {phase === 'installing' && (
-        <div className="update-progress">
-          <progress aria-label="Update download progress" max={100} value={percent} />
-          <span aria-live="polite">{progress}</span>
-        </div>
-      )}
-      {error && <p role="alert">{error}</p>}
-      <div className="discard-actions">
         <Button disabled={phase === 'installing'} onClick={onDismiss}>
           {phase === 'confirm' ? 'Cancel' : 'Later'}
         </Button>
