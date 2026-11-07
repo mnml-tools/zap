@@ -17,6 +17,19 @@ export function activeParameters(sql: string, parameters: QueryParameter[]): Que
   )
 }
 
+export function inferParameter(name: string, value: string): QueryParameter {
+  const trimmed = value.trim()
+  const type = /^null$/i.test(trimmed)
+    ? 'null'
+    : /^(true|false)$/i.test(trimmed)
+      ? 'boolean'
+      : /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(trimmed)
+        ? 'number'
+        : 'text'
+
+  return { name, type, value: type === 'text' ? value : trimmed.toLowerCase() }
+}
+
 // Encode text as bytes rather than relying on server-specific string escape modes.
 export function parameterSql(sql: string, parameters: QueryParameter[], driver: string): string {
   const values = new Map(parameters.map((parameter) => [parameter.name, parameter]))

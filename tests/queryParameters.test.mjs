@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { activeParameters, parameterNames, parameterSql } from '../src/lib/queryParameters.ts'
+import { activeParameters, inferParameter, parameterNames, parameterSql } from '../src/lib/queryParameters.ts'
 
 test('discovers repeated names while ignoring quoted SQL, comments and casts', () => {
   assert.deepEqual(
@@ -42,4 +42,17 @@ test('renders values safely for every driver and reuses repeated parameters', ()
     ),
     'SELECT NULL, FALSE'
   )
+})
+
+test('infers types from a single value field without treating SQL as code', () => {
+  for (const [value, type, expected] of [
+    ['42', 'number', '42'],
+    [' 1.5 ', 'number', '1.5'],
+    ['TRUE', 'boolean', 'true'],
+    ['NULL', 'null', 'null'],
+    ['', 'text', ''],
+    ['hello', 'text', 'hello'],
+    ['1; DROP TABLE bikes', 'text', '1; DROP TABLE bikes']
+  ])
+    assert.deepEqual(inferParameter('id', value), { name: 'id', type, value: expected })
 })
