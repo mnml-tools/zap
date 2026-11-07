@@ -28,7 +28,7 @@ export function ConnectionSelectorMenu({ id, connection, connections, trigger, o
   }
   const menu = useRef<HTMLDivElement>(null)
   const rect = trigger.getBoundingClientRect()
-  const width = Math.min(320, window.innerWidth - 24)
+  const width = Math.min(400, window.innerWidth - 24)
   const left = Math.max(12, Math.min(rect.left + rect.width / 2 - width / 2, window.innerWidth - width - 12))
 
   useEffect(() => {
