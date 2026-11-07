@@ -1899,6 +1899,208 @@ th[aria-sort='descending'] {
   width: 230px;
 }
 
+.tab-switcher {
+  position: fixed;
+  z-index: 30;
+  top: 14%;
+  left: 50%;
+  width: min(760px, calc(100vw - 32px));
+  padding: 3px;
+  transform: translateX(-50%);
+  border: 1px solid var(--faint);
+  background: var(--background);
+  box-shadow: 0 3px 10px var(--shadow);
+}
+
+.tab-switcher > p {
+  margin: 0;
+  padding: 5px 7px 4px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+/* A fixed height keeps the popup still while the highlight moves between tabs. */
+.tab-switcher-body {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  height: 300px;
+}
+
+.tab-switcher-body > ul {
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.tab-switcher li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 26px;
+  padding: 4px 7px;
+  color: var(--text);
+  font-size: 11px;
+  cursor: default;
+}
+
+.tab-switcher li.active {
+  background: var(--selected);
+}
+
+.tab-switcher li svg,
+.tab-preview-header svg {
+  flex-shrink: 0;
+  color: var(--icon);
+}
+
+.tab-switcher li span:not(.dirty-dot) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-preview {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 10px 6px;
+  overflow: hidden;
+  border-left: 1px solid var(--border);
+}
+
+.tab-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 22px;
+  font-size: 11px;
+}
+
+.tab-preview-header strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-preview-subtitle {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.tab-preview-busy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.tab-preview-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.tab-preview-empty {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.tab-preview-error {
+  margin: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  color: var(--notice-text);
+  font: 10px/15px var(--mono);
+  white-space: pre-wrap;
+}
+
+.tab-preview-sql {
+  flex-shrink: 0;
+  max-height: 128px;
+  margin: 0;
+  padding: 6px 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--editor-bg);
+  font: 10px/15px var(--mono);
+  white-space: pre;
+}
+
+.preview-grid {
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.preview-grid table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font: 10px/15px var(--mono);
+}
+
+.preview-grid th,
+.preview-grid td {
+  position: static;
+  height: auto;
+  max-width: 140px;
+  padding: 2px 6px;
+  overflow: hidden;
+  border-right: 0;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-grid th {
+  background: var(--soft);
+  color: var(--secondary);
+  font-weight: 600;
+}
+
+.preview-grid tbody tr:hover {
+  background: none;
+}
+
+.preview-grid tr:last-child td {
+  border-bottom: 0;
+}
+
+.preview-grid .tab-preview-note {
+  padding: 6px;
+}
+
+@media (max-width: 640px) {
+  .tab-switcher {
+    width: min(320px, calc(100vw - 32px));
+  }
+
+  .tab-switcher-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tab-preview {
+    display: none;
+  }
+}
+
 .fields .ssh-toggle {
   flex-direction: row;
   align-items: center;

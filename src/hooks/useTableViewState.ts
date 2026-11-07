@@ -4,6 +4,8 @@ import type { Table, Page, TableSort } from '../types/table'
 import type { FilterState, TableFilter } from '../types/filter'
 import { newFilter } from '../lib/filters'
 import { nextSort } from '../lib/tableState'
+import { previewGrid } from '../lib/tabPreview'
+import type { TablePreview } from '../lib/tabPreview'
 
 type Options = {
   id: string
@@ -20,6 +22,7 @@ export function useTableViewState({ id, active, table, request, onError }: Optio
     [sorts, setSorts] = useState<Record<string, TableSort>>({})
   const [filters, setFilters] = useState<Record<string, FilterState>>({}),
     [tableColumns, setTableColumns] = useState<Record<string, string[]>>({})
+  const [tablePreviews, setTablePreviews] = useState<Record<string, TablePreview>>({})
   const [data, setData] = useState<Page | null>(null),
     [loading, setLoading] = useState(false),
     [revision, setRevision] = useState(0)
@@ -46,6 +49,10 @@ export function useTableViewState({ id, active, table, request, onError }: Optio
         if (!canceled) {
           setData(value)
           setTableColumns((all) => ({ ...all, [active]: value.columns }))
+          setTablePreviews((all) => ({
+            ...all,
+            [active]: { ...previewGrid(value.columns, value.rows, value.total), loadedAt: Date.now() }
+          }))
         }
       })
       .catch((error) => {
@@ -171,6 +178,7 @@ export function useTableViewState({ id, active, table, request, onError }: Optio
     changePageSize,
     data,
     loading,
+    tablePreviews,
     columns,
     hiddenColumns: hiddenByTab[active] ?? [],
     setHiddenColumns: (hidden: string[]) => setHiddenByTab((previous) => ({ ...previous, [active]: hidden })),

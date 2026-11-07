@@ -2,6 +2,13 @@
 
 Changes are grouped by version, with the newest version first. Dates use the tagged commits for tagged releases and the release preparation date for versions awaiting a tag.
 
+## Unreleased
+
+### Added
+
+- Switch between open tabs with Ctrl+Tab, as in JetBrains IDEs. Tabs are listed by most recent use. Keep Ctrl held and press Tab or Shift+Tab (or ↑/↓) to move through the list, then release Ctrl to switch. Esc or a click outside the list cancels. Ctrl+Shift+Tab starts from the least recently used tab. The shortcut uses Ctrl on macOS too.
+- Preview the highlighted tab in the Ctrl+Tab switcher. Tables show the first rows from their last load, with the row count, pending changes, and when the rows were loaded. Queries show their SQL and the last result or error. A small loader appears while a table loads or a query runs. The preview makes no database requests.
+
 ## [0.6.0] — 2026-11-06
 
 ### Added

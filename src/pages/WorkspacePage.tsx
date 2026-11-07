@@ -85,6 +85,7 @@ export function WorkspacePage(options: WorkspaceOptions) {
                 connectionId={options.id}
                 driver={options.connection?.driver ?? ''}
                 tables={model.tables}
+                previews={model.queryPreviews}
                 query={query}
                 request={options.request || model.request}
                 onSaved={model.savedQuery}
