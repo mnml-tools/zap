@@ -12,6 +12,7 @@ mod filters;
 mod postgres_export;
 mod queries;
 mod relations;
+mod releases;
 mod sql_import;
 mod sql_text;
 mod ssh;
@@ -588,6 +589,7 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            releases::open_latest_release,
             pick_sqlite_file,
             pick_sql_file,
             import_sql_file,

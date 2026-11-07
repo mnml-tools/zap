@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Update } from '@tauri-apps/plugin-updater'
 import { relaunch } from '@tauri-apps/plugin-process'
 import { inspectUpdateSafety, updateDecision } from '../../services/updateGuard'
+import { api } from '../../services/api'
 import { Button } from '../atoms/Button'
 
 export function UpdateDialog({ update, onDismiss }: { update: Update; onDismiss: () => void }) {
@@ -96,6 +97,19 @@ export function UpdateDialog({ update, onDismiss }: { update: Update; onDismiss:
             : phase === 'installing'
               ? 'Updating Zap…'
               : 'Install the update and restart Zap.'}
+      </p>
+      <p className="update-release-notes">
+        <a
+          href="https://github.com/rafmst/zap/releases/latest"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(event) => {
+            event.preventDefault()
+            void api('open_latest_release').catch((error) => setError(String(error)))
+          }}
+        >
+          What’s new
+        </a>
       </p>
       {phase === 'installing' && (
         <div className="update-progress">
