@@ -4,6 +4,7 @@ import type { WorkspaceController } from '../../hooks/useWorkspace'
 import { tableKey, countChanges } from '../../lib/tableState'
 import { ActionContextMenu } from '../molecules/ActionContextMenu'
 import { WorkspaceTab } from '../molecules/WorkspaceTab'
+import { TabSwitcher } from '../molecules/TabSwitcher'
 
 type Props = Pick<
   WorkspaceController,
@@ -27,7 +28,24 @@ export function WorkspaceTabs(props: Props) {
   const [menu, setMenu] = useState<{ key: string; title: string; x: number; y: number }>()
   const dismissMenu = useCallback(() => setMenu(undefined), [])
   const disabled = props.saving || props.structureSaving
-  const order = [...props.tabs.map(tableKey), ...props.queryTabs.map((query) => `query:${query.id}`)]
+  const tableDirty = (key: string) => countChanges(props.pending[key]) > 0 || props.structureDirty(key)
+  const switchable = [
+    ...props.tabs.map((table) => ({
+      key: tableKey(table),
+      title: table.name,
+      icon: <Table2 size={14} />,
+      dirty: tableDirty(tableKey(table)),
+      select: () => props.selectTable(table)
+    })),
+    ...props.queryTabs.map((query) => ({
+      key: `query:${query.id}`,
+      title: query.title,
+      icon: query.quick ? <Zap size={14} className="quick-query-icon" /> : <FileCode2 size={14} />,
+      dirty: !!props.queryDirty[query.id],
+      select: () => props.selectQuery(query)
+    }))
+  ]
+  const order = switchable.map((tab) => tab.key)
   const index = menu ? order.indexOf(menu.key) : -1
 
   const action = (label: string, keys: string[]) => ({
@@ -47,7 +65,7 @@ export function WorkspaceTabs(props: Props) {
           title={table.name}
           icon={<Table2 size={14} />}
           active={props.active === tableKey(table)}
-          dirty={countChanges(props.pending[tableKey(table)]) > 0 || props.structureDirty(tableKey(table))}
+          dirty={tableDirty(tableKey(table))}
           disabled={props.saving || props.structureSaving}
           closeLabel={`Close ${table.name}`}
           onSelect={() => props.selectTable(table)}
@@ -80,6 +98,7 @@ export function WorkspaceTabs(props: Props) {
           onClose={() => props.closeQuery(query)}
         />
       ))}
+      <TabSwitcher tabs={switchable} active={props.active} disabled={disabled} />
       {menu && index >= 0 && (
         <ActionContextMenu
           key={menu.key}
