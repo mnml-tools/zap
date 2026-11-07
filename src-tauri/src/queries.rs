@@ -15,7 +15,17 @@ pub struct SavedQuery {
     connection_id: String,
     title: String,
     sql: String,
+    #[serde(default)]
+    parameters: Vec<QueryParameter>,
 }
+#[derive(Clone, Serialize, Deserialize)]
+pub struct QueryParameter {
+    name: String,
+    #[serde(rename = "type")]
+    kind: String,
+    value: String,
+}
+
 fn read_file(path: &Path) -> Result<Vec<SavedQuery>, String> {
     if !path.exists() {
         return Ok(vec![]);
@@ -208,6 +218,14 @@ pub async fn run_query(
 mod tests {
     use super::*;
     #[test]
+    fn reads_queries_saved_before_parameters_existed() {
+        let query: SavedQuery =
+            serde_json::from_str(r#"{"id":"q","connectionId":"c","title":"Old","sql":"SELECT 1"}"#)
+                .unwrap();
+        assert!(query.parameters.is_empty());
+    }
+
+    #[test]
     fn saved_queries_persist_and_update_without_crossing_connections() {
         let path = std::env::temp_dir().join(format!("zap-queries-{}.json", std::process::id()));
         let make = |connection: &str, title: &str| SavedQuery {
@@ -215,12 +233,18 @@ mod tests {
             connection_id: connection.into(),
             title: title.into(),
             sql: "SELECT 1".into(),
+            parameters: vec![QueryParameter {
+                name: "id".into(),
+                kind: "number".into(),
+                value: "42".into(),
+            }],
         };
         upsert(&path, make("one", "First")).unwrap();
         upsert(&path, make("two", "Other")).unwrap();
         upsert(&path, make("one", "Updated")).unwrap();
         let all = read_file(&path).unwrap();
         assert_eq!(all.len(), 2);
+        assert_eq!(all[0].parameters[0].value, "42");
         assert_eq!(all[0].title, "Updated");
         assert_eq!(all[1].title, "Other");
         assert!(upsert(&path, make("one", " ")).is_err());

@@ -1,4 +1,6 @@
-export type SavedQuery = { id: string; connectionId: string; title: string; sql: string }
+export type QueryParameter = { name: string; type: 'text' | 'number' | 'boolean' | 'null'; value: string }
+
+export type SavedQuery = { id: string; connectionId: string; title: string; sql: string; parameters?: QueryParameter[] }
 
 export type QueryDocument = SavedQuery & { isNew?: boolean; quick?: boolean }
 

@@ -8,6 +8,7 @@ import { ErrorMessage } from '../atoms/ErrorMessage'
 import { QueryToolbar } from '../molecules/QueryToolbar'
 import { SqlCodeInput } from '../molecules/SqlCodeInput'
 import { QueryEditorHint } from '../molecules/QueryEditorHint'
+import { QueryParameters } from '../molecules/QueryParameters'
 import { QueryResults } from './QueryResults'
 
 type Props = QueryEditorOptions & { active: boolean; driver: string; tables: Table[]; onDelete: () => void }
@@ -52,6 +53,7 @@ export function QueryEditor(props: Props) {
         onDelete={props.onDelete}
       />
       <SqlCodeInput value={editor.sql} disabled={!!editor.busy} onChange={editor.setSql} complete={complete} />
+      <QueryParameters parameters={editor.parameters} disabled={!!editor.busy} onChange={editor.setParameter} />
       <QueryEditorHint quick={!!props.query.quick} unsaved={editor.unsaved} lineCount={editor.sql.split('\n').length} />
       {editor.error && <ErrorMessage message={editor.error} />}
       <QueryResults
