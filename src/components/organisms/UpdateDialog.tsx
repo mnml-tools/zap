@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Update } from '@tauri-apps/plugin-updater'
 import { relaunch } from '@tauri-apps/plugin-process'
 import { inspectUpdateSafety, updateDecision } from '../../services/updateGuard'
+import { api } from '../../services/api'
 import { Button } from '../atoms/Button'
 
 export function UpdateDialog({ update, onDismiss }: { update: Update; onDismiss: () => void }) {
@@ -104,7 +105,19 @@ export function UpdateDialog({ update, onDismiss }: { update: Update; onDismiss:
         </div>
       )}
       {error && <p role="alert">{error}</p>}
-      <div className="discard-actions">
+      <div className="discard-actions update-actions">
+        <a
+          className="update-release-notes"
+          href="https://github.com/rafmst/zap/releases/latest"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(event) => {
+            event.preventDefault()
+            void api('open_latest_release').catch((error) => setError(String(error)))
+          }}
+        >
+          What’s new
+        </a>
         <Button disabled={phase === 'installing'} onClick={onDismiss}>
           {phase === 'confirm' ? 'Cancel' : 'Later'}
         </Button>
