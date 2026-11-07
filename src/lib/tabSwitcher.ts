@@ -13,6 +13,12 @@ export function stepTab(index: number, length: number, backwards: boolean) {
   return (index + (backwards ? length - 1 : 1)) % length
 }
 
+// WebKitGTK reports the modifiers from before the event, so releasing Ctrl itself can still
+// arrive with ctrlKey set.
+export function isSwitchRelease(event: Pick<KeyboardEvent, 'key' | 'ctrlKey'>) {
+  return event.key === 'Control' || !event.ctrlKey
+}
+
 export function isTabSwitch(event: Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'metaKey' | 'altKey'>) {
   return event.key === 'Tab' && event.ctrlKey && !event.metaKey && !event.altKey
 }

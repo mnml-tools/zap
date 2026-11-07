@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { isTabSwitch, recentTabs, stepTab, touchTab } from '../src/lib/tabSwitcher.ts'
+import { isSwitchRelease, isTabSwitch, recentTabs, stepTab, touchTab } from '../src/lib/tabSwitcher.ts'
 
 test('tabs are listed most recently used first, then in tab bar order', () => {
   let history = []
@@ -42,4 +42,12 @@ test('only Control+Tab, with or without Shift, opens the switcher', () => {
   assert.equal(isTabSwitch(event({ ctrlKey: false, metaKey: true })), false)
   assert.equal(isTabSwitch(event({ altKey: true })), false)
   assert.equal(isTabSwitch(event({ key: 'q' })), false)
+})
+
+test('releasing Ctrl finishes the switch even when WebKitGTK still reports ctrlKey', () => {
+  assert.equal(isSwitchRelease({ key: 'Control', ctrlKey: false }), true)
+  assert.equal(isSwitchRelease({ key: 'Control', ctrlKey: true }), true)
+  assert.equal(isSwitchRelease({ key: 'Shift', ctrlKey: false }), true)
+  assert.equal(isSwitchRelease({ key: 'Tab', ctrlKey: true }), false)
+  assert.equal(isSwitchRelease({ key: 'Shift', ctrlKey: true }), false)
 })

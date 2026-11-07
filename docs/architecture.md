@@ -23,7 +23,7 @@ UI components compose their own level or lower layers. Atoms do not know about d
 - `useQueryEditor`: local SQL/title changes, query saving, and execution/results state.
 - `useSqlCompletion`: loads columns for the tables a query references and returns the editor's completion provider. Ranking and item building live in `src/lib/sqlCompletion.ts`, and clause order and expression state live in `src/lib/sqlClauses.ts`.
 - `useReferencePanel`: the referenced-row panel opened from foreign-key cells, with a back stack for following further references.
-- `useTabSwitcher`: the Ctrl+Tab switcher over open table and query tabs, ordered by most recent use. It listens in the capture phase so the SQL editor and other shortcuts do not see the keys while it is open. Ordering and stepping live in `src/lib/tabSwitcher.ts`.
+- `useTabSwitcher`: the Ctrl+Tab switcher over open table and query tabs, ordered by most recent use. It listens in the capture phase so the SQL editor and other shortcuts do not see the keys while it is open. Ordering and stepping live in `src/lib/tabSwitcher.ts`. Its previews make no database requests: `useTableViewState` keeps a small snapshot of each table's last loaded page, and query editors register a reader in a preview store that the switcher reads, and listens to, only while it is open. Snapshot sizes and the store live in `src/lib/tabPreview.ts`.
 - `useWorkspace`: coordinates those features for cross-feature actions such as closing a connection or protecting unsaved changes.
 - `useUnsavedChanges`, `useContextMenu`, `useSidebarResize`, and `useTheme`: focused interaction and platform lifecycle hooks.
 

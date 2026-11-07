@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { isTabSwitch, recentTabs, stepTab, touchTab } from '../lib/tabSwitcher'
+import { isSwitchRelease, isTabSwitch, recentTabs, stepTab, touchTab } from '../lib/tabSwitcher'
 
 type Switcher = { order: string[]; index: number }
 
@@ -10,6 +10,7 @@ type Options = { keys: string[]; active: string; disabled: boolean; onSelect: (k
 export function useTabSwitcher({ keys, active, disabled, onSelect }: Options) {
   const [switcher, setSwitcher] = useState<Switcher>()
   const state = useRef<Switcher>(undefined)
+  const popup = useRef<HTMLDivElement>(null)
   const history = useRef<string[]>([])
   const current = useRef({ keys, disabled, onSelect })
   current.current = { keys, disabled, onSelect }
@@ -76,7 +77,7 @@ export function useTabSwitcher({ keys, active, disabled, onSelect }: Options) {
     }
 
     const keyup = (event: KeyboardEvent) => {
-      if (!state.current || event.ctrlKey) return
+      if (!state.current || !isSwitchRelease(event)) return
 
       swallow(event)
       pick(state.current.index)
@@ -84,19 +85,27 @@ export function useTabSwitcher({ keys, active, disabled, onSelect }: Options) {
 
     const cancel = () => state.current && update()
 
+    // A click outside closes without switching and still reaches what was clicked.
+    const pointerdown = (event: PointerEvent) => {
+      if (state.current && !popup.current?.contains(event.target as Node)) update()
+    }
+
     window.addEventListener('keydown', keydown, true)
     window.addEventListener('keyup', keyup, true)
+    window.addEventListener('pointerdown', pointerdown, true)
     window.addEventListener('blur', cancel)
 
     return () => {
       window.removeEventListener('keydown', keydown, true)
       window.removeEventListener('keyup', keyup, true)
+      window.removeEventListener('pointerdown', pointerdown, true)
       window.removeEventListener('blur', cancel)
     }
   }, [])
 
   return {
     switcher,
+    popup,
     hover: (index: number) => state.current && update({ ...state.current, index }),
     pick
   }

@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { Table2, FileCode2, Zap } from 'lucide-react'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
 import { tableKey, countChanges } from '../../lib/tableState'
+import type { TabPreview } from '../../lib/tabPreview'
 import { ActionContextMenu } from '../molecules/ActionContextMenu'
 import { WorkspaceTab } from '../molecules/WorkspaceTab'
 import { TabSwitcher } from '../molecules/TabSwitcher'
@@ -22,6 +23,9 @@ type Props = Pick<
   | 'closeTabs'
   | 'selectQuery'
   | 'closeQuery'
+  | 'loading'
+  | 'tablePreviews'
+  | 'queryPreviews'
 >
 
 export function WorkspaceTabs(props: Props) {
@@ -35,14 +39,26 @@ export function WorkspaceTabs(props: Props) {
       title: table.name,
       icon: <Table2 size={14} />,
       dirty: tableDirty(tableKey(table)),
-      select: () => props.selectTable(table)
+      select: () => props.selectTable(table),
+      preview: (): TabPreview => ({
+        kind: 'table',
+        subtitle: table.schema || 'Table',
+        loading: props.loading && props.active === tableKey(table),
+        grid: props.tablePreviews[tableKey(table)],
+        pending: countChanges(props.pending[tableKey(table)])
+      })
     })),
     ...props.queryTabs.map((query) => ({
       key: `query:${query.id}`,
       title: query.title,
       icon: query.quick ? <Zap size={14} className="quick-query-icon" /> : <FileCode2 size={14} />,
       dirty: !!props.queryDirty[query.id],
-      select: () => props.selectQuery(query)
+      select: () => props.selectQuery(query),
+      preview: (): TabPreview => ({
+        kind: 'query',
+        subtitle: query.quick ? 'Quick query' : query.isNew ? 'New query' : 'Saved query',
+        query: props.queryPreviews.read(`query:${query.id}`)
+      })
     }))
   ]
   const order = switchable.map((tab) => tab.key)
@@ -98,7 +114,12 @@ export function WorkspaceTabs(props: Props) {
           onClose={() => props.closeQuery(query)}
         />
       ))}
-      <TabSwitcher tabs={switchable} active={props.active} disabled={disabled} />
+      <TabSwitcher
+        tabs={switchable}
+        active={props.active}
+        disabled={disabled}
+        subscribe={props.queryPreviews.subscribe}
+      />
       {menu && index >= 0 && (
         <ActionContextMenu
           key={menu.key}
