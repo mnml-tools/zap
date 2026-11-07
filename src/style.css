@@ -2426,7 +2426,6 @@ aside .table-filter-search:focus-within {
   overflow: auto;
   padding: 5px;
   border: 1px solid var(--border);
-  border-top: 2px solid var(--accent);
   background: var(--raised);
   box-shadow: 0 8px 28px var(--shadow);
 }
@@ -2455,7 +2454,7 @@ aside .table-filter-search:focus-within {
   background: transparent;
   cursor: pointer;
 }
-.connection-selector-option:hover,
+.connection-selector-option[aria-selected='true'],
 .connection-selector-option:focus-visible {
   outline: none;
   background: var(--hover);
@@ -2555,4 +2554,28 @@ aside .table-filter-search:focus-within {
 .connection-avatar-swatches button[aria-pressed='true'] {
   outline: 2px solid var(--swatch-color);
   outline-offset: 1px;
+}
+
+.connection-selector-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 3px 6px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--muted);
+}
+.connection-selector-search:focus-within {
+  border-color: var(--control-border);
+}
+.connection-selector-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
 }
