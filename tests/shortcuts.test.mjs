@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   duplicateRowsShortcut,
+  discardChangesShortcut,
   matchesShortcut,
   formatShortcut,
   createDoubleShiftDetector
@@ -77,4 +78,17 @@ test('resetting double Shift discards a tap from a previous window or dialog', (
 
   assert.equal(detector.handle(shift('keydown', 100)), false)
   assert.equal(detector.handle(shift('keyup', 150)), false)
+})
+
+test('discard uses Command/Ctrl+Z and preserves redo and input undo', () => {
+  assert.equal(matchesShortcut(event({ key: 'z', metaKey: true }), discardChangesShortcut, true), true)
+  assert.equal(matchesShortcut(event({ key: 'z', ctrlKey: true }), discardChangesShortcut, false), true)
+  assert.equal(
+    matchesShortcut(event({ key: 'z', ctrlKey: true, shiftKey: true }), discardChangesShortcut, false),
+    false
+  )
+  assert.equal(matchesShortcut(event({ key: 'z', ctrlKey: true, altKey: true }), discardChangesShortcut, false), false)
+  assert.equal(!!discardChangesShortcut.allowInInputs, false)
+  assert.equal(formatShortcut(discardChangesShortcut, true), '⌘Z')
+  assert.equal(formatShortcut(discardChangesShortcut, false), 'Ctrl+Z')
 })

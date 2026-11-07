@@ -1,6 +1,7 @@
 import { SlidersHorizontal, Check, RefreshCw, Plus } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Table } from '../../types/table'
+import { discardChangesShortcut, formatShortcut } from '../../lib/shortcuts'
 import { Button } from '../atoms/Button'
 import { Spinner } from '../atoms/Spinner'
 
@@ -60,7 +61,11 @@ export function TableToolbar({
         </Button>
         {columnPicker}
         {changeCount > 0 && (
-          <Button disabled={saving} onClick={onDiscard}>
+          <Button
+            title={`Discard changes (${formatShortcut(discardChangesShortcut)})`}
+            disabled={saving}
+            onClick={onDiscard}
+          >
             Discard
           </Button>
         )}
