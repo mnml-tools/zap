@@ -15,7 +15,9 @@ export function QueryParameters({ parameters, disabled, onChange }: Props) {
       </span>
       {parameters.map((parameter) => (
         <div className="query-parameter" key={parameter.name}>
-          <label htmlFor={`${id}-${parameter.name}`}>:{parameter.name}</label>
+          <label htmlFor={`${id}-${parameter.name}`} title={`:${parameter.name}`}>
+            :{parameter.name}
+          </label>
           <select
             aria-label={`Type for :${parameter.name}`}
             value={parameter.type}
