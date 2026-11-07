@@ -3,7 +3,7 @@ import { useState } from 'react'
 import type { NewColumn } from '../../types/table'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
 import { useShortcut } from '../../hooks/useShortcut'
-import { saveChangesShortcut } from '../../lib/shortcuts'
+import { discardChangesShortcut, formatShortcut, saveChangesShortcut } from '../../lib/shortcuts'
 import { Button } from '../atoms/Button'
 import { Spinner } from '../atoms/Spinner'
 import { ColumnTypePicker } from '../molecules/ColumnTypePicker'
@@ -69,7 +69,14 @@ export function TableStructureEditor({ model, rows }: Props) {
     }
   }
 
+  const discard = () => {
+    setEditing(undefined)
+    setError('')
+    model.setStructure({ changes: [] })
+  }
+
   useShortcut(saveChangesShortcut, canSave, save)
+  useShortcut(discardChangesShortcut, count > 0 && !model.structureSaving, discard)
 
   return (
     <>
@@ -95,12 +102,9 @@ export function TableStructureEditor({ model, rows }: Props) {
           {count > 0 && (
             <>
               <Button
+                title={`Discard changes (${formatShortcut(discardChangesShortcut)})`}
                 disabled={model.structureSaving}
-                onClick={() => {
-                  setEditing(undefined)
-                  setError('')
-                  model.setStructure({ changes: [] })
-                }}
+                onClick={discard}
               >
                 Discard
               </Button>
