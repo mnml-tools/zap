@@ -2426,7 +2426,6 @@ aside .table-filter-search:focus-within {
   overflow: auto;
   padding: 5px;
   border: 1px solid var(--border);
-  border-top: 2px solid var(--accent);
   background: var(--raised);
   box-shadow: 0 8px 28px var(--shadow);
 }
