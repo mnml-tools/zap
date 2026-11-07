@@ -4,6 +4,8 @@ import { api } from '../services/api'
 import type { ApiRequest } from '../services/api'
 import type { Connection, Table, QueryDocument, TableFilter } from '../types'
 import type { StructureDraft, TableMode } from '../types/table'
+import { createPreviewStore } from '../lib/tabPreview'
+import type { QueryPreview } from '../lib/tabPreview'
 import { tableKey, countChanges } from '../lib/tableState'
 import { useWorkspaceTabs } from './useWorkspaceTabs'
 import { useTableViewState } from './useTableViewState'
@@ -33,6 +35,7 @@ export function useWorkspace({ id, connection, onClose, onSwitch, request = api 
   const [tableActionError, setTableActionError] = useState('')
   const [structureSaving, setStructureSaving] = useState(false)
   const [structureRevision, setStructureRevision] = useState(0)
+  const [queryPreviews] = useState(() => createPreviewStore<QueryPreview>())
   const tabs = useWorkspaceTabs({ id, request, onError: setError })
   const view = useTableViewState({
     id,
@@ -453,6 +456,7 @@ export function useWorkspace({ id, connection, onClose, onSwitch, request = api 
     queryError: queries.error,
     queryDirty: queries.dirty,
     queryBusy: queries.busy,
+    queryPreviews,
     currentQuery: queries.currentQuery,
     anyQueryDirty: queries.anyDirty,
     anyQueryBusy: queries.anyBusy,

@@ -1,8 +1,11 @@
+import { activeParameters, parameterSql } from '../lib/queryParameters'
+import type { QueryParameter } from '../types/query'
 import { useEffect, useRef, useState } from 'react'
 import type { QueryDocument, SavedQuery, QueryResult } from '../types/query'
 import type { ApiRequest } from '../services/api'
 
 export type QueryEditorOptions = {
+  driver: string
   connectionId: string
   query: QueryDocument
   request: ApiRequest
@@ -15,6 +18,7 @@ export type QueryEditorOptions = {
 
 export function useQueryEditor({
   connectionId,
+  driver,
   query,
   request,
   onSaved,
@@ -30,8 +34,17 @@ export function useQueryEditor({
     [error, setError] = useState(''),
     [result, setResult] = useState<QueryResult | null>(null),
     [resultIndex, setResultIndex] = useState(0)
+  const [parameterValues, setParameterValues] = useState<QueryParameter[]>(query.parameters ?? [])
+  const parameters = activeParameters(sql, parameterValues)
+  const parametersDirty =
+    JSON.stringify(parameters) !== JSON.stringify(activeParameters(baseline?.sql ?? '', baseline?.parameters ?? []))
+  const setParameter = (parameter: QueryParameter) =>
+    setParameterValues((values) => [...values.filter((value) => value.name !== parameter.name), parameter])
+
   const busyRef = useRef(false)
-  const dirty = baseline ? title !== baseline.title || sql !== baseline.sql : !!sql.trim() || title !== query.title
+  const dirty = baseline
+    ? title !== baseline.title || sql !== baseline.sql || parametersDirty
+    : !!sql.trim() || title !== query.title
 
   useEffect(() => {
     onDirty(query.id, dirty)
@@ -59,7 +72,7 @@ export function useQueryEditor({
 
     try {
       const saved = await request<SavedQuery>('save_query', {
-        query: { id: query.id, connectionId, title, sql }
+        query: { id: query.id, connectionId, title, sql, parameters }
       })
       setTitle(saved.title)
       setBaseline(saved)
@@ -77,7 +90,10 @@ export function useQueryEditor({
     setResult(null)
 
     try {
-      const value = await request<QueryResult>('run_query', { id: connectionId, sql })
+      const value = await request<QueryResult>('run_query', {
+        id: connectionId,
+        sql: parameterSql(sql, parameters, driver)
+      })
       setResult(value)
       setResultIndex(0)
       onExecuted()
@@ -93,10 +109,12 @@ export function useQueryEditor({
 
     const title = 'Untitled query'
     setTitle(title)
-    onConvertQuick({ ...query, title, sql, quick: false })
+    onConvertQuick({ ...query, title, sql, parameters, quick: false })
   }
 
   return {
+    parameters,
+    setParameter,
     convertQuick,
     title,
     setTitle,

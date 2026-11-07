@@ -33,6 +33,7 @@ export function useConnections(request: ApiRequest = api) {
     [busy, setBusy] = useState(''),
     [tested, setTested] = useState(false)
   const [id, setId] = useState<string | null>(null)
+  const [restoring, setRestoring] = useState(() => isTauri() || request !== api)
   const [openError, setOpenError] = useState('')
   const [transferMessage, setTransferMessage] = useState<{ title: string; message: string } | null>(null)
   const transferring = useRef(false)
@@ -113,7 +114,7 @@ export function useConnections(request: ApiRequest = api) {
     let cancelled = false
 
     request<Connection[]>('list_connections')
-      .then((saved) => {
+      .then(async (saved) => {
         if (cancelled) return
 
         assignConnectionAvatarColors(saved.map((connection) => connection.id))
@@ -123,12 +124,15 @@ export function useConnections(request: ApiRequest = api) {
           const lastId = readLastConnection()
           const last = saved.find((connection) => connection.id === lastId)
 
-          if (last) void open(last)
+          if (last) await open(last)
           else if (lastId) rememberConnection(null)
         }
       })
       .catch((error) => {
         if (!cancelled) setError(String(error))
+      })
+      .finally(() => {
+        if (!cancelled) setRestoring(false)
       })
 
     return () => {
@@ -263,6 +267,7 @@ export function useConnections(request: ApiRequest = api) {
   }
 
   return {
+    restoring,
     connections,
     transferMessage,
     dismissTransferMessage: () => setTransferMessage(null),

@@ -1,16 +1,26 @@
+import { useEffect, useRef } from 'react'
 import { useQueryEditor } from '../../hooks/useQueryEditor'
 import type { QueryEditorOptions } from '../../hooks/useQueryEditor'
 import { useSqlCompletion } from '../../hooks/useSqlCompletion'
 import type { Table } from '../../types/table'
 import { useShortcut } from '../../hooks/useShortcut'
 import { saveChangesShortcut } from '../../lib/shortcuts'
+import { previewResult } from '../../lib/tabPreview'
+import type { PreviewStore, QueryPreview } from '../../lib/tabPreview'
 import { ErrorMessage } from '../atoms/ErrorMessage'
 import { QueryToolbar } from '../molecules/QueryToolbar'
 import { SqlCodeInput } from '../molecules/SqlCodeInput'
 import { QueryEditorHint } from '../molecules/QueryEditorHint'
+import { QueryParameters } from '../molecules/QueryParameters'
 import { QueryResults } from './QueryResults'
 
-type Props = QueryEditorOptions & { active: boolean; driver: string; tables: Table[]; onDelete: () => void }
+type Props = QueryEditorOptions & {
+  active: boolean
+  driver: string
+  tables: Table[]
+  previews: PreviewStore<QueryPreview>
+  onDelete: () => void
+}
 
 export function QueryEditor(props: Props) {
   const editor = useQueryEditor(props)
@@ -21,6 +31,21 @@ export function QueryEditor(props: Props) {
     tables: props.tables,
     sql: editor.sql
   })
+  const preview = useRef<() => QueryPreview>(undefined)
+  preview.current = () => ({
+    sql: editor.sql,
+    running: editor.busy === 'run',
+    error: editor.error,
+    result: previewResult(editor.result, editor.resultIndex)
+  })
+
+  useEffect(
+    () => props.previews.register(`query:${props.query.id}`, () => preview.current!()),
+    [props.previews, props.query.id]
+  )
+
+  // Typing needs no notice because the switcher is never open while the editor has the keyboard.
+  useEffect(props.previews.changed, [editor.busy, editor.result, editor.error, editor.resultIndex])
 
   useShortcut(
     saveChangesShortcut,
@@ -52,6 +77,7 @@ export function QueryEditor(props: Props) {
         onDelete={props.onDelete}
       />
       <SqlCodeInput value={editor.sql} disabled={!!editor.busy} onChange={editor.setSql} complete={complete} />
+      <QueryParameters parameters={editor.parameters} disabled={!!editor.busy} onChange={editor.setParameter} />
       <QueryEditorHint quick={!!props.query.quick} unsaved={editor.unsaved} lineCount={editor.sql.split('\n').length} />
       {editor.error && <ErrorMessage message={editor.error} />}
       <QueryResults

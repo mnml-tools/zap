@@ -22,6 +22,7 @@ export function QueryEditorHint({
           </>
         )}
         <span className="footer-dot">·</span>Ctrl+Space for suggestions
+        <span className="footer-dot">·</span>:name for parameters
       </span>
       <span>{lineCount} lines</span>
     </div>
