@@ -17,6 +17,8 @@ export const saveChangesShortcut: Shortcut = { key: 's', primary: true, allowInI
 
 export const switchConnectionShortcut: Shortcut = { key: 'p', primary: true, allowInInputs: true }
 
+export const goToShortcut: Shortcut = { key: 'n', primary: true, allowInInputs: true }
+
 export function matchesShortcut(event: KeyboardEvent, shortcut: Shortcut, mac: boolean) {
   return (
     event.key.toLowerCase() === shortcut.key.toLowerCase() &&

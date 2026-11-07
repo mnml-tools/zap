@@ -2,6 +2,12 @@
 
 Changes are grouped by version, with the newest version first. Dates use the tagged commits for tagged releases and the release preparation date for versions awaiting a tag.
 
+## Unreleased
+
+### Added
+
+- Go to any table or saved query of the current connection with Command+N on macOS and Ctrl+N on other platforms, as in DataGrip. Type part of a name or an abbreviation of its words, such as `mvd` for `my_virtual_departments`; matched characters are highlighted, and exact and prefix matches come first. Type `schema.table` to match schema-qualified names. Press Tab or Shift+Tab to switch between All, Tables, and Queries, ↑/↓ to choose, Enter to open, and Esc to close. The last search is kept and selected when the popup opens again.
+
 ## [0.6.0] — 2026-11-06
 
 ### Added

@@ -1,4 +1,5 @@
 import { ConnectionSelector } from '../components/molecules/ConnectionSelector'
+import { GoToNavigator } from '../components/molecules/GoToNavigator'
 import { useState } from 'react'
 import { useWorkspace } from '../hooks/useWorkspace'
 import type { WorkspaceOptions } from '../hooks/useWorkspace'
@@ -99,6 +100,14 @@ export function WorkspacePage(options: WorkspaceOptions) {
         </section>
         <ReferencePanel {...model} />
       </div>
+      <GoToNavigator
+        connectionTitle={options.connection?.title || options.connection?.database || 'Current connection'}
+        tables={model.tables}
+        queries={model.queries}
+        disabled={model.closing || model.saving || model.structureSaving || model.tableActionBusy}
+        onOpenTable={model.openTable}
+        onOpenQuery={model.openQuery}
+      />
     </AppShell>
   )
 }

@@ -23,6 +23,7 @@ UI components compose their own level or lower layers. Atoms do not know about d
 - `useQueryEditor`: local SQL/title changes, query saving, and execution/results state.
 - `useSqlCompletion`: loads columns for the tables a query references and returns the editor's completion provider. Ranking and item building live in `src/lib/sqlCompletion.ts`, and clause order and expression state live in `src/lib/sqlClauses.ts`.
 - `useReferencePanel`: the referenced-row panel opened from foreign-key cells, with a back stack for following further references.
+- `GoToNavigator`: the Ctrl+N (Command+N on macOS) popup that finds tables and saved queries of the current connection, as in DataGrip, and opens the chosen one through the workspace's `openTable` and `openQuery`. Matching and ranking (exact, prefix, word-start substring, inner substring, then word-start abbreviations such as `mvd`) live in `src/lib/goTo.ts`.
 - `useWorkspace`: coordinates those features for cross-feature actions such as closing a connection or protecting unsaved changes.
 - `useUnsavedChanges`, `useContextMenu`, `useSidebarResize`, and `useTheme`: focused interaction and platform lifecycle hooks.
 

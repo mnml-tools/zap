@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   duplicateRowsShortcut,
+  goToShortcut,
   matchesShortcut,
   formatShortcut,
   createDoubleShiftDetector
@@ -77,4 +78,12 @@ test('resetting double Shift discards a tap from a previous window or dialog', (
 
   assert.equal(detector.handle(shift('keydown', 100)), false)
   assert.equal(detector.handle(shift('keyup', 150)), false)
+})
+
+test('go to uses Command+N on macOS and Ctrl+N elsewhere, without Shift', () => {
+  assert.equal(matchesShortcut(event({ key: 'n', metaKey: true }), goToShortcut, true), true)
+  assert.equal(matchesShortcut(event({ key: 'N', ctrlKey: true }), goToShortcut, false), true)
+  assert.equal(matchesShortcut(event({ key: 'n', ctrlKey: true, shiftKey: true }), goToShortcut, false), false)
+  assert.equal(formatShortcut(goToShortcut, false), 'Ctrl+N')
+  assert.equal(formatShortcut(goToShortcut, true), '⌘N')
 })
