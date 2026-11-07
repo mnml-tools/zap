@@ -131,8 +131,8 @@ Initial tagged release.
 - Confirmation for discarding unsaved changes and popup error reporting.
 - Application icons, development fixtures, automated tests, and architecture documentation.
 
-[0.5.0]: https://github.com/rafmst/zap/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/rafmst/zap/compare/0.3.0...v0.4.0
-[0.3.0]: https://github.com/rafmst/zap/compare/0.2.0...0.3.0
-[0.2.0]: https://github.com/rafmst/zap/compare/0.1.0...0.2.0
-[0.1.0]: https://github.com/rafmst/zap/releases/tag/0.1.0
+[0.5.0]: https://github.com/mnml-tools/zap/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/mnml-tools/zap/compare/0.3.0...v0.4.0
+[0.3.0]: https://github.com/mnml-tools/zap/compare/0.2.0...0.3.0
+[0.2.0]: https://github.com/mnml-tools/zap/compare/0.1.0...0.2.0
+[0.1.0]: https://github.com/mnml-tools/zap/releases/tag/0.1.0

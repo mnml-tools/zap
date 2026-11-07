@@ -39,7 +39,7 @@
   "plugins": {
     "updater": {
       "pubkey": "",
-      "endpoints": ["https://github.com/rafmst/zap/releases/latest/download/latest.json"]
+      "endpoints": ["https://github.com/mnml-tools/zap/releases/latest/download/latest.json"]
     }
   }
 }

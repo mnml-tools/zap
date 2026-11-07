@@ -5,8 +5,8 @@
 <h1 align="center">Zap</h1>
 
 <p align="center">
-  <a href="https://github.com/rafmst/zap/actions/workflows/rust.yml"><img src="https://github.com/rafmst/zap/actions/workflows/rust.yml/badge.svg?branch=main" alt="Tauri tests status"></a>
-  <a href="https://github.com/rafmst/zap/actions/workflows/desktop.yml"><img src="https://github.com/rafmst/zap/actions/workflows/desktop.yml/badge.svg?branch=main" alt="Desktop builds status"></a>
+  <a href="https://github.com/mnml-tools/zap/actions/workflows/rust.yml"><img src="https://github.com/mnml-tools/zap/actions/workflows/rust.yml/badge.svg?branch=main" alt="Tauri tests status"></a>
+  <a href="https://github.com/mnml-tools/zap/actions/workflows/desktop.yml"><img src="https://github.com/mnml-tools/zap/actions/workflows/desktop.yml/badge.svg?branch=main" alt="Desktop builds status"></a>
 </p>
 
 <p align="center">

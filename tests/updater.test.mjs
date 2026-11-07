@@ -26,13 +26,13 @@ test('manifest includes both universal Mac architectures and requires matching t
       writeFileSync(join(directory, file), '')
       writeFileSync(join(directory, `${file}.sig`), 'signed-artifact\n')
     }
-    const manifest = createManifest(directory, 'rafmst/zap', 'v0.4.0', '0.4.0')
+    const manifest = createManifest(directory, 'mnml-tools/zap', 'v0.4.0', '0.4.0')
     assert.deepEqual(Object.keys(manifest.platforms).sort(), ['darwin-aarch64', 'darwin-x86_64', 'linux-x86_64'])
     assert.equal(manifest.platforms['darwin-aarch64'].url, manifest.platforms['darwin-x86_64'].url)
     assert.equal(manifest.platforms['linux-x86_64'].signature, 'signed-artifact')
-    assert.throws(() => createManifest(directory, 'rafmst/zap', 'v0.5.0', '0.4.0'), /does not match/)
+    assert.throws(() => createManifest(directory, 'mnml-tools/zap', 'v0.5.0', '0.4.0'), /does not match/)
     rmSync(join(directory, 'Zap.AppImage.sig'))
-    assert.throws(() => createManifest(directory, 'rafmst/zap', 'v0.4.0', '0.4.0'), /ENOENT/)
+    assert.throws(() => createManifest(directory, 'mnml-tools/zap', 'v0.4.0', '0.4.0'), /ENOENT/)
   } finally {
     rmSync(directory, { recursive: true, force: true })
   }

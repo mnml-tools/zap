@@ -1,4 +1,4 @@
-const LATEST_RELEASE_URL: &str = "https://github.com/rafmst/zap/releases/latest";
+const LATEST_RELEASE_URL: &str = "https://github.com/mnml-tools/zap/releases/latest";
 
 #[tauri::command]
 pub async fn open_latest_release() -> Result<(), String> {

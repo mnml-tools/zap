@@ -108,7 +108,7 @@ export function UpdateDialog({ update, onDismiss }: { update: Update; onDismiss:
       <div className="discard-actions update-actions">
         <a
           className="update-release-notes"
-          href="https://github.com/rafmst/zap/releases/latest"
+          href="https://github.com/mnml-tools/zap/releases/latest"
           target="_blank"
           rel="noopener noreferrer"
           onClick={(event) => {
