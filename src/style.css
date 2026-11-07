@@ -1444,6 +1444,64 @@ td.reference-active .reference-open,
 .query-code textarea:focus-visible {
   outline: none;
 }
+
+.query-parameters {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 6px;
+  max-height: 220px;
+  overflow: auto;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--soft);
+}
+.query-parameters-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-bottom: 2px;
+  color: var(--secondary);
+  font-size: 11px;
+  font-weight: 500;
+}
+.query-parameters-heading small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+.query-parameter {
+  display: grid;
+  grid-template-columns: minmax(80px, 140px) minmax(100px, 1fr);
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.query-parameter label {
+  overflow: hidden;
+  color: var(--secondary);
+  font: 11px var(--mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.query-parameter input {
+  width: 100%;
+  min-width: 0;
+  font-family: var(--mono);
+}
+.query-parameter input::placeholder {
+  color: var(--placeholder);
+}
+.query-parameter input:disabled {
+  opacity: 0.55;
+  color: var(--muted);
+}
+@media (max-width: 640px) {
+  .query-parameter {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .query-hint {
   display: flex;
   justify-content: space-between;
@@ -1680,7 +1738,8 @@ td.reference-active .reference-open,
   flex-shrink: 0;
 }
 .filter-row select,
-.filter-row .filter-value {
+.filter-row .filter-value,
+.query-parameter input {
   height: 26px;
   border: 1px solid var(--border);
   background: var(--background);
@@ -1692,6 +1751,8 @@ td.reference-active .reference-open,
 .filter-row select {
   width: 135px;
   flex: 0 1 135px;
+}
+.filter-row select {
   text-overflow: ellipsis;
   border-radius: 0;
   -webkit-appearance: none;
