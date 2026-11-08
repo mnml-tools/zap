@@ -1,12 +1,12 @@
 import { LayoutGrid, List } from 'lucide-react'
 import type { ConnectionView } from '../../hooks/useConnectionView'
-import { Button } from '../atoms/Button'
+import { Button, Segmented } from '@mnml-tools/ui'
 
 type Props = { view: ConnectionView; onChange: (view: ConnectionView) => void }
 
 export function ConnectionViewSwitch({ view, onChange }: Props) {
   return (
-    <div className="view-switch connection-view-switch" role="group" aria-label="Connection view">
+    <Segmented className="connection-view-switch" label="Connection view">
       <Button title="List view" aria-label="List view" aria-pressed={view === 'list'} onClick={() => onChange('list')}>
         <List size={14} />
         List
@@ -15,6 +15,6 @@ export function ConnectionViewSwitch({ view, onChange }: Props) {
         <LayoutGrid size={14} />
         Grid
       </Button>
-    </div>
+    </Segmented>
   )
 }

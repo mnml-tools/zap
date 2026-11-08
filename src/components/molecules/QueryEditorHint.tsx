@@ -1,3 +1,5 @@
+import { Separator } from '@mnml-tools/ui'
+
 export function QueryEditorHint({
   lineCount,
   unsaved,
@@ -12,17 +14,21 @@ export function QueryEditorHint({
       <span>
         {unsaved && (
           <>
-            Run without saving<span className="footer-dot">·</span>
+            Run without saving
+            <Separator />
           </>
         )}
         ⌘/Ctrl+Enter to run
         {!quick && (
           <>
-            <span className="footer-dot">·</span>⌘/Ctrl+S to save
+            <Separator />
+            ⌘/Ctrl+S to save
           </>
         )}
-        <span className="footer-dot">·</span>Ctrl+Space for suggestions
-        <span className="footer-dot">·</span>:name for parameters
+        <Separator />
+        Ctrl+Space for suggestions
+        <Separator />
+        :name for parameters
       </span>
       <span>{lineCount} lines</span>
     </div>

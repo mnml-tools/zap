@@ -1,8 +1,7 @@
 import { Search } from 'lucide-react'
 import { useState } from 'react'
 import { api } from '../../services/api'
-import { Button } from '../atoms/Button'
-import { ErrorMessage } from '../atoms/ErrorMessage'
+import { Button, Message } from '@mnml-tools/ui'
 
 type Props = { path: string; onChange: (path: string) => void }
 
@@ -25,7 +24,7 @@ export function SqliteFilePicker({ path, onChange }: Props) {
   }
 
   return (
-    <div className="full sqlite-file-field">
+    <div className="mnml-field-full sqlite-file-field">
       <span id="sqlite-file-label">Database file</span>
       <Button
         type="button"
@@ -38,7 +37,7 @@ export function SqliteFilePicker({ path, onChange }: Props) {
         <Search size={14} aria-hidden="true" />
         <span className={path ? undefined : 'placeholder'}>{path || 'Find a SQLite database…'}</span>
       </Button>
-      {error && <ErrorMessage message={error} />}
+      {error && <Message tone="error">{error}</Message>}
     </div>
   )
 }

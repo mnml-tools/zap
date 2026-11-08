@@ -2,13 +2,10 @@ import { Check, Plus } from 'lucide-react'
 import { useState } from 'react'
 import type { NewColumn } from '../../types/table'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
-import { useShortcut } from '../../hooks/useShortcut'
 import { discardChangesShortcut, formatShortcut, saveChangesShortcut } from '../../lib/shortcuts'
-import { Button } from '../atoms/Button'
-import { Spinner } from '../atoms/Spinner'
+import { Button, ErrorDialog, Spinner, useShortcut } from '@mnml-tools/ui'
 import { ColumnTypePicker } from '../molecules/ColumnTypePicker'
 import { EditableCell } from '../molecules/EditableCell'
-import { ErrorDialog } from '../molecules/ErrorDialog'
 
 const columnKeys = ['name', 'kind', 'nullable', 'default', 'comment'] as const
 

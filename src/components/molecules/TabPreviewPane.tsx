@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { highlightSql } from '../../lib/sqlHighlight'
 import { loadedAgo, previewSql } from '../../lib/tabPreview'
 import type { TabPreview } from '../../lib/tabPreview'
-import { Spinner } from '../atoms/Spinner'
+import { Spinner } from '@mnml-tools/ui'
 import { PreviewGrid } from './PreviewGrid'
 
 type Props = { title: string; icon: ReactNode; preview: TabPreview }

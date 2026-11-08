@@ -1,6 +1,6 @@
 import { Database, Check } from 'lucide-react'
 import { drivers, driverNames } from '../../lib/connections'
-import { Button } from '../atoms/Button'
+import { Button } from '@mnml-tools/ui'
 
 export function DriverPicker({ value, onChange }: { value: string; onChange: (driver: string) => void }) {
   return (

@@ -1,11 +1,9 @@
 import type { WorkspaceController } from '../../hooks/useWorkspace'
-import { useShortcut } from '../../hooks/useShortcut'
 import { discardChangesShortcut, saveChangesShortcut } from '../../lib/shortcuts'
 import { ColumnVisibility } from '../molecules/ColumnVisibility'
 import { TableToolbar } from '../molecules/TableToolbar'
 import { TablePagination } from '../molecules/TablePagination'
-import { ErrorDialog } from '../molecules/ErrorDialog'
-import { Spinner } from '../atoms/Spinner'
+import { ErrorDialog, Spinner, useShortcut } from '@mnml-tools/ui'
 import { TableFilters } from './TableFilters'
 import { EditableTable } from './EditableTable'
 

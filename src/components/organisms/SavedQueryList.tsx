@@ -1,7 +1,7 @@
 import { Plus, FileCode2 } from 'lucide-react'
 import type { SavedQuery } from '../../types/query'
 import { SavedQueryListItem } from '../molecules/SavedQueryListItem'
-import { Button } from '../atoms/Button'
+import { Button, SidebarNav } from '@mnml-tools/ui'
 
 type Props = {
   queries: SavedQuery[]
@@ -19,7 +19,7 @@ export function SavedQueryList({ queries, search, active, dirty, disabled, onOpe
   )
 
   return (
-    <nav aria-label="Saved queries">
+    <SidebarNav label="Saved queries">
       {filtered.map((query) => (
         <SavedQueryListItem
           key={query.id}
@@ -42,6 +42,6 @@ export function SavedQueryList({ queries, search, active, dirty, disabled, onOpe
       ) : (
         !filtered.length && <p className="no-results">No matching queries</p>
       )}
-    </nav>
+    </SidebarNav>
   )
 }

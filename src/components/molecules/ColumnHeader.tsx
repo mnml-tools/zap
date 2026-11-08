@@ -1,7 +1,7 @@
 import type { MouseEvent } from 'react'
 import { ArrowUp, ArrowDown } from 'lucide-react'
 import type { TableSort } from '../../types/table'
-import { Button } from '../atoms/Button'
+import { Button } from '@mnml-tools/ui'
 
 type Props = {
   column: string

@@ -1,5 +1,5 @@
 import { ArrowUpRight } from 'lucide-react'
-import { Button } from '../atoms/Button'
+import { Button } from '@mnml-tools/ui'
 
 type Props = { title: string; onOpen: () => void }
 

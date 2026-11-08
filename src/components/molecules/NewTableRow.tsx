@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 import { Plus, X } from 'lucide-react'
 import type { Page, DraftRow, CellEditor } from '../../types/table'
 import { EditableCell } from './EditableCell'
-import { Button } from '../atoms/Button'
+import { Button } from '@mnml-tools/ui'
 
 type Props = {
   placeholder?: boolean

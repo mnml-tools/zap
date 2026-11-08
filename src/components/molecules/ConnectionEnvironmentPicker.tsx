@@ -10,7 +10,7 @@ export function ConnectionEnvironmentPicker({ value, onChange }: Props) {
   const name = useId()
 
   return (
-    <fieldset className="full environment-picker">
+    <fieldset className="mnml-field-full environment-picker">
       <legend>Environment</legend>
       <div className="environment-options">
         {(['local', 'prod'] as const).map((environment) => (

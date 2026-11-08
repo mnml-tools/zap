@@ -1,40 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { tableKey } from '../../lib/tableState'
 import type { Table } from '../../types/table'
-import { isDialogBackdropClick } from '../../lib/dialog'
-import { Button } from '../atoms/Button'
+import { Button, Dialog } from '@mnml-tools/ui'
 
 type Props = { tables: Table[]; onCancel: () => void; onExport: (tables: Table[], includeData: boolean) => void }
 
 export function ExportTablesDialog({ tables, onCancel, onExport }: Props) {
-  const dialog = useRef<HTMLDialogElement>(null)
   const [selected, setSelected] = useState(() => new Set(tables.map(tableKey)))
   const [includeData, setIncludeData] = useState(true)
   const chosen = tables.filter((table) => selected.has(tableKey(table)))
 
-  useEffect(() => {
-    const element = dialog.current!
-    element.showModal()
-
-    return () => element.close()
-  }, [])
-
   return (
-    <dialog
-      ref={dialog}
-      className="modal error-dialog export-dialog"
-      aria-labelledby="export-tables-title"
-      onClick={(event) => {
-        if (isDialogBackdropClick(event)) onCancel()
-      }}
-      onCancel={(event) => {
-        event.preventDefault()
-        onCancel()
-      }}
-    >
-      <div className="modal-heading">
-        <h2 id="export-tables-title">Export tables as SQL</h2>
-      </div>
+    <Dialog title="Export tables as SQL" className="export-dialog" onDismiss={onCancel}>
       <form
         onSubmit={(event) => {
           event.preventDefault()
@@ -82,15 +59,15 @@ export function ExportTablesDialog({ tables, onCancel, onExport }: Props) {
           <input type="checkbox" checked={includeData} onChange={(event) => setIncludeData(event.target.checked)} />
           Include data
         </label>
-        <div className="discard-actions">
+        <div className="mnml-dialog-actions">
           <Button type="button" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit" className="primary" disabled={!chosen.length}>
+          <Button type="submit" variant="primary" disabled={!chosen.length}>
             Export…
           </Button>
         </div>
       </form>
-    </dialog>
+    </Dialog>
   )
 }

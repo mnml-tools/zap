@@ -1,7 +1,6 @@
 import { Ellipsis } from 'lucide-react'
 import { useCallback, useState } from 'react'
-import { Button } from '../atoms/Button'
-import { ActionContextMenu } from './ActionContextMenu'
+import { Button, ContextMenu } from '@mnml-tools/ui'
 
 type Props = {
   busy: boolean
@@ -32,15 +31,16 @@ export function ConnectionTransferMenu({ busy, canExport, onImport, onExport }: 
         <Ellipsis size={16} />
       </Button>
       {anchor && (
-        <ActionContextMenu
-          title="Connections"
+        <ContextMenu
+          label="Actions for Connections"
+          className="tab-context-menu"
           x={anchor.getBoundingClientRect().right - 230}
           y={anchor.getBoundingClientRect().bottom + 4}
           trigger={anchor}
           onDismiss={dismiss}
-          actions={[
-            { label: 'Import connections…', disabled: busy, run: () => run(onImport) },
-            { label: 'Export with passwords…', disabled: busy || !canExport, run: () => run(onExport) }
+          items={[
+            { label: 'Import connections…', disabled: busy, onSelect: () => run(onImport) },
+            { label: 'Export with passwords…', disabled: busy || !canExport, onSelect: () => run(onExport) }
           ]}
         />
       )}

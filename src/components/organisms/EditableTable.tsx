@@ -1,16 +1,14 @@
 import type { ComponentProps } from 'react'
 import type { Page, TableDraft, TableSort, CellEditor } from '../../types/table'
-import { useShortcut } from '../../hooks/useShortcut'
 import { duplicateRowsShortcut, removeRowsShortcut, formatShortcut } from '../../lib/shortcuts'
 import { useTableNavigation } from '../../hooks/useTableNavigation'
 import { useColumnSelection } from '../../hooks/useColumnSelection'
-import { ActionContextMenu } from '../molecules/ActionContextMenu'
-import { ErrorDialog } from '../molecules/ErrorDialog'
 import { rowKey } from '../../lib/tableState'
 import { foreignKeyFor, referenceTitle } from '../../lib/relations'
 import { ColumnHeader } from '../molecules/ColumnHeader'
 import { EditableTableRow } from '../molecules/EditableTableRow'
 import { NewTableRow } from '../molecules/NewTableRow'
+import { ContextMenu, ErrorDialog, useShortcut } from '@mnml-tools/ui'
 
 type Props = {
   data: Page
@@ -188,15 +186,16 @@ export function EditableTable({
         </tbody>
       </table>
       {menu && (
-        <ActionContextMenu
-          title={data.columns[menu.range.column]}
+        <ContextMenu
+          label={`Actions for ${data.columns[menu.range.column]}`}
+          className="tab-context-menu"
           x={menu.x}
           y={menu.y}
           trigger={menu.trigger}
           onDismiss={selection.dismissMenu}
-          actions={[
+          items={[
             ...(menu.range.mode === 'cells'
-              ? [{ label: 'Copy All Column Values', disabled: !data.rows.length, run: selection.copy }]
+              ? [{ label: 'Copy All Column Values', disabled: !data.rows.length, onSelect: selection.copy }]
               : []),
             ...(menuRows.length
               ? [
@@ -204,13 +203,13 @@ export function EditableTable({
                     label: `Duplicate ${rowLabel}`,
                     shortcut: formatShortcut(duplicateRowsShortcut),
                     disabled: !canDuplicate,
-                    run: duplicate
+                    onSelect: duplicate
                   },
                   {
                     label: `${restoreRows ? 'Restore' : 'Remove'} ${rowLabel}`,
                     shortcut: formatShortcut(removeRowsShortcut),
                     disabled: !canRemove,
-                    run: remove
+                    onSelect: remove
                   }
                 ]
               : [])

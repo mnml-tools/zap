@@ -5,7 +5,7 @@ import type { SavedQuery } from '../../types/query'
 import type { Table } from '../../types/table'
 import { goToScopes, searchGoTo } from '../../lib/goTo'
 import type { GoToItem, GoToScope } from '../../lib/goTo'
-import { HighlightedText } from '../atoms/HighlightedText'
+import { HighlightedText } from '@mnml-tools/ui'
 import { TableIcon } from '../atoms/TableIcon'
 
 const visibleLimit = 100

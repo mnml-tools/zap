@@ -3,11 +3,10 @@ import { useQueryEditor } from '../../hooks/useQueryEditor'
 import type { QueryEditorOptions } from '../../hooks/useQueryEditor'
 import { useSqlCompletion } from '../../hooks/useSqlCompletion'
 import type { Table } from '../../types/table'
-import { useShortcut } from '../../hooks/useShortcut'
 import { saveChangesShortcut } from '../../lib/shortcuts'
 import { previewResult } from '../../lib/tabPreview'
 import type { PreviewStore, QueryPreview } from '../../lib/tabPreview'
-import { ErrorMessage } from '../atoms/ErrorMessage'
+import { Message, useShortcut } from '@mnml-tools/ui'
 import { QueryToolbar } from '../molecules/QueryToolbar'
 import { SqlCodeInput } from '../molecules/SqlCodeInput'
 import { QueryEditorHint } from '../molecules/QueryEditorHint'
@@ -79,7 +78,7 @@ export function QueryEditor(props: Props) {
       <SqlCodeInput value={editor.sql} disabled={!!editor.busy} onChange={editor.setSql} complete={complete} />
       <QueryParameters parameters={editor.parameters} disabled={!!editor.busy} onChange={editor.setParameter} />
       <QueryEditorHint quick={!!props.query.quick} unsaved={editor.unsaved} lineCount={editor.sql.split('\n').length} />
-      {editor.error && <ErrorMessage message={editor.error} />}
+      {editor.error && <Message tone="error">{editor.error}</Message>}
       <QueryResults
         running={editor.busy === 'run'}
         result={editor.result}

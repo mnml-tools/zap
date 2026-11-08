@@ -3,6 +3,7 @@ import type { Connection } from '../../types/connection'
 import { SshConnectionFields } from './SshConnectionFields'
 import { ConnectionEnvironmentPicker } from './ConnectionEnvironmentPicker'
 import { SqliteFilePicker } from './SqliteFilePicker'
+import { Fields } from '@mnml-tools/ui'
 
 type Props = {
   connection: Connection
@@ -12,12 +13,12 @@ type Props = {
 
 export function ConnectionFields({ connection: form, editing, onChange }: Props) {
   return (
-    <div className="fields">
-      <label className="full">
+    <Fields>
+      <label className="mnml-field-full">
         Connection name
         <input
           required
-          autoFocus
+          data-autofocus
           placeholder="e.g. Production, side project…"
           value={form.title}
           onChange={(event) => onChange({ ...form, title: event.target.value }, false)}
@@ -45,7 +46,7 @@ export function ConnectionFields({ connection: form, editing, onChange }: Props)
               onChange={(event) => onChange({ ...form, port: Number(event.target.value) })}
             />
           </label>
-          <label className="full">
+          <label className="mnml-field-full">
             Authentication
             <select
               value={form.authentication}
@@ -74,7 +75,7 @@ export function ConnectionFields({ connection: form, editing, onChange }: Props)
       {form.driver === 'sqlite' ? (
         <SqliteFilePicker path={form.database} onChange={(database) => onChange({ ...form, database })} />
       ) : (
-        <label className="full">
+        <label className="mnml-field-full">
           Database name
           <input
             required
@@ -87,6 +88,6 @@ export function ConnectionFields({ connection: form, editing, onChange }: Props)
       {(form.driver === 'postgresql' || form.driver === 'mysql') && (
         <SshConnectionFields settings={form.ssh} onChange={(ssh) => onChange({ ...form, ssh })} />
       )}
-    </div>
+    </Fields>
   )
 }

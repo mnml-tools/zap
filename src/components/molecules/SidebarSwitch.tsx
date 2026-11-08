@@ -1,5 +1,5 @@
 import { Table2, FileCode2 } from 'lucide-react'
-import { Button } from '../atoms/Button'
+import { Button, Segmented } from '@mnml-tools/ui'
 
 export function SidebarSwitch({
   value,
@@ -9,7 +9,7 @@ export function SidebarSwitch({
   onChange: (value: 'tables' | 'queries') => void
 }) {
   return (
-    <div className="view-switch sidebar-switch" role="tablist" aria-label="Sidebar content">
+    <Segmented className="sidebar-switch" role="tablist" label="Sidebar content">
       <Button role="tab" aria-selected={value === 'tables'} onClick={() => onChange('tables')}>
         <Table2 size={13} />
         Tables
@@ -18,6 +18,6 @@ export function SidebarSwitch({
         <FileCode2 size={13} />
         Queries
       </Button>
-    </div>
+    </Segmented>
   )
 }

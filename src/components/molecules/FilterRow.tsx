@@ -1,7 +1,7 @@
 import { Plus, Minus } from 'lucide-react'
 import type { TableFilter } from '../../types/filter'
 import { filterOperators } from '../../lib/filters'
-import { Button } from '../atoms/Button'
+import { Button } from '@mnml-tools/ui'
 
 type Props = {
   row: TableFilter

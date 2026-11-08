@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react'
 import type { Table, TableDraft } from '../../types/table'
 import { tableKey, countChanges, isView } from '../../lib/tableState'
-import { ActionContextMenu } from '../molecules/ActionContextMenu'
 import { TableListItem } from '../molecules/TableListItem'
+import { ContextMenu, SidebarLabel, SidebarNav } from '@mnml-tools/ui'
 
 type Props = {
   tables: Table[]
@@ -53,33 +53,34 @@ export function TableList({ tables, search, active, pending, disabled, onOpen, o
         ]
 
   return (
-    <nav>
+    <SidebarNav>
       {items(tables.filter((table) => !isView(table)))}
       {views.length > 0 && (
         <>
-          <div className="sidebar-label sidebar-section-label">
+          <SidebarLabel className="sidebar-section-label">
             VIEWS <span>{views.length}</span>
-          </div>
+          </SidebarLabel>
           {items(views)}
         </>
       )}
       {menu && (
-        <ActionContextMenu
+        <ContextMenu
           key={tableKey(menu.table)}
-          title={menu.table.name}
+          label={`Actions for ${menu.table.name}`}
+          className="tab-context-menu"
           x={menu.x}
           y={menu.y}
           onDismiss={dismissMenu}
-          actions={actions(menu.table).map(({ label, action }) => ({
+          items={actions(menu.table).map(({ label, action }) => ({
             label,
             disabled,
-            run: () => {
+            onSelect: () => {
               dismissMenu()
               action(menu.table)
             }
           }))}
         />
       )}
-    </nav>
+    </SidebarNav>
   )
 }

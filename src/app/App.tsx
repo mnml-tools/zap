@@ -1,5 +1,4 @@
-import { useAppUpdate } from '../hooks/useAppUpdate'
-import { UpdateDialog } from '../components/organisms/UpdateDialog'
+import { UpdateDialog, useAppUpdate } from '@mnml-tools/ui/tauri'
 import { api } from '../services/api'
 import type { ApiRequest } from '../services/api'
 import { useConnections } from '../hooks/useConnections'
@@ -10,7 +9,7 @@ import { ConnectionLoadingPage } from '../pages/ConnectionLoadingPage'
 export function App({ request = api }: { request?: ApiRequest }) {
   const connections = useConnections(request)
 
-  const { update, dismiss } = useAppUpdate()
+  const { update, dismiss } = useAppUpdate({ enabled: !import.meta.env.DEV })
 
   return (
     <>
@@ -31,7 +30,17 @@ export function App({ request = api }: { request?: ApiRequest }) {
       ) : (
         <ConnectionsPage connections={connections} />
       )}
-      {update && <UpdateDialog update={update} onDismiss={dismiss} />}
+      {update && (
+        <UpdateDialog
+          update={update}
+          appName="Zap"
+          releaseNotesUrl="https://github.com/mnml-tools/zap/releases/latest"
+          onOpenReleaseNotes={() => api('open_latest_release')}
+          busyMessage="Wait for database operations to finish before updating."
+          discardMessage="Unsaved SQL, table edits, and structure changes will be discarded. Cancel to save your work first, or discard changes and update."
+          onDismiss={dismiss}
+        />
+      )}
     </>
   )
 }
