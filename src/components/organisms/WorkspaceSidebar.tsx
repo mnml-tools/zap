@@ -8,7 +8,7 @@ import { Button } from '../atoms/Button'
 import { Spinner } from '../atoms/Spinner'
 import { StatusDot } from '../atoms/StatusDot'
 import { ErrorMessage } from '../atoms/ErrorMessage'
-import { tableKey } from '../../lib/tableState'
+import { tableKey, isView } from '../../lib/tableState'
 import { SidebarSqlMenu } from '../molecules/SidebarSqlMenu'
 import { SidebarSwitch } from '../molecules/SidebarSwitch'
 import { SearchField } from '../molecules/SearchField'
@@ -64,6 +64,7 @@ export function WorkspaceSidebar(props: Props) {
   }, [focusRequest])
 
   const activeTable = props.tables.find((table) => tableKey(table) === props.active)
+  const tableCount = props.tables.filter((table) => !isView(table)).length
 
   return (
     <ResizableSidebar>
@@ -105,7 +106,7 @@ export function WorkspaceSidebar(props: Props) {
             onChange={props.setSearch}
           />
           <div className="sidebar-label">
-            TABLES <span>{props.tables.length}</span>
+            TABLES <span>{tableCount}</span>
           </div>
           <TableList
             tables={props.tables}
@@ -155,8 +156,8 @@ export function WorkspaceSidebar(props: Props) {
           disabled={closing || saving || props.structureSaving || props.tableActionBusy}
           importDisabled={anyQueryBusy}
           onImport={props.importSql}
-          onExportTables={props.tables.length ? props.onChooseExportTables : undefined}
-          onExport={activeTable ? () => props.exportTable(activeTable) : undefined}
+          onExportTables={tableCount ? props.onChooseExportTables : undefined}
+          onExport={activeTable && !isView(activeTable) ? () => props.exportTable(activeTable) : undefined}
         />
       </div>
     </ResizableSidebar>

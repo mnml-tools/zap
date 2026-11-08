@@ -4,7 +4,8 @@ import type { Table, TableMode } from '../../types/table'
 import { ErrorMessage } from '../atoms/ErrorMessage'
 import { Spinner } from '../atoms/Spinner'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
-import { TableStructureEditor } from './TableStructureEditor'
+import { isView } from '../../lib/tableState'
+import { structureFields, TableStructureEditor } from './TableStructureEditor'
 import { ReadOnlyTable } from './ReadOnlyTable'
 
 type Props = {
@@ -37,7 +38,9 @@ export function TableCatalogView({ id, table, mode, request, model }: Props) {
     }
   }, [id, table, structure, request])
 
-  if (structure && catalog && 'rows' in catalog) return <TableStructureEditor model={model} rows={catalog.rows} />
+  // Views can't be altered here, so their columns are shown like the index list.
+  if (structure && catalog && 'rows' in catalog && !isView(table))
+    return <TableStructureEditor model={model} rows={catalog.rows} />
 
   return (
     <div className="grid-wrap" aria-busy={!catalog}>
@@ -49,9 +52,12 @@ export function TableCatalogView({ id, table, mode, request, model }: Props) {
       ) : 'error' in catalog ? (
         <ErrorMessage message={catalog.error} />
       ) : catalog.rows.length ? (
-        <ReadOnlyTable columns={['Index', 'Kind', 'Position', 'Field']} rows={catalog.rows} />
+        <ReadOnlyTable
+          columns={structure ? structureFields : ['Index', 'Kind', 'Position', 'Field']}
+          rows={catalog.rows}
+        />
       ) : (
-        <div className="table-message">This table has no indexes.</div>
+        <div className="table-message">This {isView(table) ? 'view' : 'table'} has no indexes.</div>
       )}
     </div>
   )

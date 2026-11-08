@@ -8,18 +8,20 @@ const modes = [
   { value: 'indexes', label: 'Indexes', icon: List }
 ] as const
 
-type Props = { mode: TableMode; onChange: (mode: TableMode) => void }
+type Props = { mode: TableMode; available: readonly TableMode[]; onChange: (mode: TableMode) => void }
 
-export function TableViewSwitch({ mode, onChange }: Props) {
+export function TableViewSwitch({ mode, available, onChange }: Props) {
   return (
     <div className="table-view-bar">
       <div className="view-switch table-view-switch" role="group" aria-label="Table view">
-        {modes.map(({ value, label, icon: Icon }) => (
-          <Button key={value} aria-pressed={mode === value} onClick={() => onChange(value)}>
-            <Icon size={13} aria-hidden="true" />
-            {label}
-          </Button>
-        ))}
+        {modes
+          .filter(({ value }) => available.includes(value))
+          .map(({ value, label, icon: Icon }) => (
+            <Button key={value} aria-pressed={mode === value} onClick={() => onChange(value)}>
+              <Icon size={13} aria-hidden="true" />
+              {label}
+            </Button>
+          ))}
       </div>
     </div>
   )

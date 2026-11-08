@@ -79,6 +79,45 @@ pub async fn columns(
         .map_err(|error| error.to_string())
 }
 
+/// Views have no row identity Zap can rely on, so their data and structure stay read-only.
+pub async fn view_reason(
+    pool: &AnyPool,
+    driver: &str,
+    table: &Table,
+) -> Result<Option<String>, String> {
+    let query = match driver {
+        "postgresql" => {
+            "SELECT CAST(c.relkind AS TEXT) FROM pg_catalog.pg_class c
+             JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+             WHERE n.nspname = $1 AND c.relname = $2"
+        }
+        "mysql" => {
+            "SELECT CAST(TABLE_TYPE AS CHAR) FROM information_schema.tables
+             WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?"
+        }
+        "sqlite" => "SELECT type FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type IN ('table', 'view')",
+        _ => return Err("Unsupported driver".into()),
+    };
+    let row = if driver == "sqlite" {
+        sqlx::query(query).bind(&table.name)
+    } else {
+        sqlx::query(query).bind(&table.schema).bind(&table.name)
+    }
+    .fetch_optional(pool)
+    .await
+    .map_err(|error| error.to_string())?;
+    let kind = match row {
+        Some(row) => crate::sql_text::optional(&row, 0).map_err(|error| error.to_string())?,
+        None => None,
+    };
+
+    Ok(match kind.as_deref() {
+        Some("m") => Some("Materialized views are read-only.".into()),
+        Some("v" | "VIEW" | "SYSTEM VIEW" | "view") => Some("Views are read-only.".into()),
+        _ => None,
+    })
+}
+
 pub async fn indexes(
     pool: &AnyPool,
     driver: &str,
@@ -284,6 +323,65 @@ mod tests {
             .unwrap();
         assert_eq!(enabled, 1);
     }
+
+    #[tokio::test]
+    async fn sqlite_views_expose_columns_but_reject_structure_changes() {
+        sqlx::any::install_default_drivers();
+        let pool = sqlx::any::AnyPoolOptions::new()
+            .max_connections(1)
+            .connect("sqlite::memory:")
+            .await
+            .unwrap();
+        let view = Table {
+            schema: String::new(),
+            name: "labels".into(),
+        };
+
+        sqlx::query("CREATE TABLE source (id INTEGER PRIMARY KEY, label TEXT NOT NULL)")
+            .execute(&pool)
+            .await
+            .unwrap();
+        sqlx::query("CREATE VIEW labels AS SELECT id, upper(label) AS label FROM source")
+            .execute(&pool)
+            .await
+            .unwrap();
+
+        let source = Table {
+            schema: String::new(),
+            name: "source".into(),
+        };
+        assert_eq!(view_reason(&pool, "sqlite", &source).await.unwrap(), None);
+        assert_eq!(
+            view_reason(&pool, "sqlite", &view)
+                .await
+                .unwrap()
+                .as_deref(),
+            Some("Views are read-only.")
+        );
+        assert_eq!(
+            columns(&pool, "sqlite", &view)
+                .await
+                .unwrap()
+                .iter()
+                .map(|column| column[0].as_deref())
+                .collect::<Vec<_>>(),
+            [Some("id"), Some("label")]
+        );
+        assert!(indexes(&pool, "sqlite", &view).await.unwrap().is_empty());
+        assert_eq!(
+            save_structure(
+                &pool,
+                "sqlite",
+                &view,
+                Some("renamed".into()),
+                vec![],
+                vec![]
+            )
+            .await
+            .unwrap_err(),
+            "Views are read-only."
+        );
+    }
 }
 
 #[derive(serde::Deserialize)]
@@ -311,6 +409,10 @@ pub async fn save_structure(
     additions: Vec<NewColumn>,
 ) -> Result<(), String> {
     use crate::editor::{qualified, quote};
+
+    if let Some(reason) = view_reason(pool, driver, table).await? {
+        return Err(reason);
+    }
 
     fn identifier(driver: &str, value: &str) -> Result<String, String> {
         if value.trim().is_empty() || value.contains('\0') {

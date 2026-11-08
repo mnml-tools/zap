@@ -1,3 +1,4 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-export default defineConfig({plugins:[react()],server:{port:1420,strictPort:true},clearScreen:false});
+// The linked @mnml-tools/ui has its own dev copy of React; dedupe keeps one React for hooks.
+export default defineConfig({plugins:[react()],resolve:{dedupe:['react','react-dom','@tauri-apps/api']},server:{port:1420,strictPort:true},clearScreen:false});

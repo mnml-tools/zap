@@ -6,9 +6,10 @@ Changes are grouped by version, with the newest version first. Dates use the tag
 
 ### Added
 
-- Go to any table or saved query of the current connection with Command+N on macOS and Ctrl+N on other platforms, as in DataGrip. Type part of a name or an abbreviation of its words, such as `mvd` for `my_virtual_departments`; matched characters are highlighted, and exact and prefix matches come first. Type `schema.table` to match schema-qualified names. Press Tab or Shift+Tab to switch between All, Tables, and Queries, ↑/↓ to choose, Enter to open, and Esc to close. The last search is kept and selected when the popup opens again.
+- Go to any table or saved query of the current connection with Command+N on macOS and Ctrl+N on other platforms, as in DataGrip. Type part of a name or an abbreviation of its words, such as `mvd` for `my_virtual_departments`; matched characters are highlighted, and exact and prefix matches come first. Type `schema.table` to match schema-qualified names. Press Tab or Shift+Tab to switch between All, Tables, Queries, and Views, ↑/↓ to choose, Enter to open, and Esc to close. The last search is kept and selected when the popup opens again.
 - Switch between open tabs with Ctrl+Tab, as in JetBrains IDEs. Tabs are listed by most recent use. Keep Ctrl held and press Tab or Shift+Tab (or ↑/↓) to move through the list, then release Ctrl to switch. Esc or a click outside the list cancels. Ctrl+Shift+Tab starts from the least recently used tab. The shortcut uses Ctrl on macOS too.
 - Preview the highlighted tab in the Ctrl+Tab switcher. Tables show the first rows from their last load, with the row count, pending changes, and when the rows were loaded. Queries show their SQL and the last result or error. A small loader appears while a table loads or a query runs. The preview makes no database requests.
+- List views in a separate Views section of the sidebar, below Tables. PostgreSQL materialized views are included. Views open read-only in Data and Structure, and materialized views also show Indexes. Go to (Command+N / Ctrl+N) includes views and has a Views tab after Queries, and SQL suggestions include views. A view's context menu only offers Copy view name. Views aren't offered for export or deletion, and Zap refuses data or structure edits to them.
 
 ## [0.6.0] — 2026-11-06
 

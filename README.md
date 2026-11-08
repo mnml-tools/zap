@@ -29,7 +29,7 @@ View screenshots in [light mode](docs/zap-screenshot-light.png) or [dark mode](d
 ## What you can do
 
 - **Connect** to PostgreSQL or MySQL directly or over SSH, or pick an existing SQLite file. Saved passwords stay in your operating system’s credential store.
-- **Explore** tables in tabs with Data, Structure, and Indexes views. Search the sidebar, filter and sort rows, and choose which columns to show.
+- **Explore** tables in tabs with Data, Structure, and Indexes views. Views and materialized views are listed separately and open read-only. Search the sidebar, filter and sort rows, and choose which columns to show.
 - **Follow relations** from any foreign-key cell: click its ↗ icon, or Ctrl+click (⌘-click on macOS), to see the referenced row in a side panel. Follow further references from there, or open the row in its own filtered tab.
 - **Edit** cells and stage changes before saving. In Structure, you can rename tables and add fields. Available edits depend on the database driver and permissions.
 - **Run SQL** with a syntax-highlighted editor that suggests tables, columns, and keywords as you type. Save queries per connection and revisit them in their own tabs.
