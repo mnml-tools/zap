@@ -3,10 +3,7 @@ import { ConnectionViewSwitch } from '../components/molecules/ConnectionViewSwit
 import { Plus } from 'lucide-react'
 import type { useConnections } from '../hooks/useConnections'
 import { AppShell } from '../components/templates/AppShell'
-import { Button } from '../components/atoms/Button'
-import { ErrorMessage } from '../components/atoms/ErrorMessage'
-import { ErrorDialog } from '../components/molecules/ErrorDialog'
-import { SearchField } from '../components/molecules/SearchField'
+import { Button, ErrorDialog, Message, SearchField, Separator } from '@mnml-tools/ui'
 import { ConnectionTransferMenu } from '../components/molecules/ConnectionTransferMenu'
 import { ConnectionContextMenu } from '../components/molecules/ConnectionContextMenu'
 import { ConnectionsList } from '../components/organisms/ConnectionsList'
@@ -69,7 +66,7 @@ export function ConnectionsPage({ connections: c }: Props) {
               onImport={c.importConnections}
               onExport={c.exportConnections}
             />
-            <Button className="primary" onClick={c.create} disabled={!!c.busy}>
+            <Button variant="primary" onClick={c.create} disabled={!!c.busy}>
               <Plus size={16} />
               New connection
             </Button>
@@ -82,7 +79,6 @@ export function ConnectionsPage({ connections: c }: Props) {
             value={c.search}
             onChange={c.setSearch}
             size={15}
-            shortcut
           />
           <div className="connection-view-controls">
             <span>
@@ -91,7 +87,7 @@ export function ConnectionsPage({ connections: c }: Props) {
             <ConnectionViewSwitch view={view} onChange={changeView} />
           </div>
         </div>
-        {c.error && !c.form && <ErrorMessage message={c.error} />}
+        {c.error && !c.form && <Message tone="error">{c.error}</Message>}
         {c.connections.length === 0 ? (
           <ConnectionsEmptyState onCreate={c.create} />
         ) : (
@@ -111,7 +107,9 @@ export function ConnectionsPage({ connections: c }: Props) {
             Local connections
           </span>
           <span>
-            Stored on your device<span className="footer-dot">·</span>Credentials in system keychain
+            Stored on your device
+            <Separator />
+            Credentials in system keychain
           </span>
         </div>
       </main>

@@ -1,8 +1,6 @@
 import { Columns3 } from 'lucide-react'
-import { useEffect, useId, useRef, useState } from 'react'
-import { isDialogBackdropClick } from '../../lib/dialog'
-import { Button } from '../atoms/Button'
-import { SearchField } from './SearchField'
+import { useState } from 'react'
+import { Button, Dialog, SearchField } from '@mnml-tools/ui'
 
 type Props = {
   columns: string[]
@@ -12,16 +10,15 @@ type Props = {
 }
 
 export function ColumnVisibility({ columns, hidden, disabled, onChange }: Props) {
-  const dialog = useRef<HTMLDialogElement>(null)
-  const title = useId()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const hiddenSet = new Set(hidden)
   const matches = columns.filter((column) => column.toLowerCase().includes(search.trim().toLowerCase()))
 
-  useEffect(() => {
-    if (open) dialog.current?.showModal()
-  }, [open])
+  const close = () => {
+    setOpen(false)
+    setSearch('')
+  }
 
   return (
     <>
@@ -29,21 +26,7 @@ export function ColumnVisibility({ columns, hidden, disabled, onChange }: Props)
         <Columns3 size={13} aria-hidden="true" />
         Columns
       </Button>
-      <dialog
-        ref={dialog}
-        className="modal error-dialog columns-dialog"
-        aria-labelledby={title}
-        onClick={(event) => {
-          if (isDialogBackdropClick(event)) event.currentTarget.close()
-        }}
-        onClose={() => {
-          setOpen(false)
-          setSearch('')
-        }}
-      >
-        <div className="modal-heading">
-          <h2 id={title}>Visible columns</h2>
-        </div>
+      <Dialog title="Visible columns" open={open} className="columns-dialog" onDismiss={close}>
         <div className="columns-dialog-body">
           <SearchField label="Search columns" placeholder="Search columns…" value={search} onChange={setSearch} />
           <div className="export-selection">
@@ -76,12 +59,12 @@ export function ColumnVisibility({ columns, hidden, disabled, onChange }: Props)
             {!matches.length && <p>No matching columns.</p>}
           </div>
         </div>
-        <div className="discard-actions">
-          <Button type="button" onClick={() => dialog.current?.close()}>
+        <div className="mnml-dialog-actions">
+          <Button type="button" onClick={close}>
             Done
           </Button>
         </div>
-      </dialog>
+      </Dialog>
     </>
   )
 }

@@ -3,8 +3,7 @@ import { ArrowUpRight } from 'lucide-react'
 import type { Connection } from '../../types/connection'
 import { driverNames } from '../../lib/connections'
 import { ConnectionEnvironmentBadge } from '../atoms/ConnectionEnvironmentBadge'
-import { Spinner } from '../atoms/Spinner'
-import { Button } from '../atoms/Button'
+import { Badge, Button, Spinner } from '@mnml-tools/ui'
 
 type Props = {
   connection: Connection
@@ -43,7 +42,7 @@ export function ConnectionRow({ connection: c, active, busy, onOpen, onMenu }: P
         <p>{c.driver === 'sqlite' ? c.database : `${c.host}:${c.port} / ${c.database}`}</p>
       </div>
       <ConnectionEnvironmentBadge environment={c.environment} />
-      <span className="badge">{driverNames[c.driver]}</span>
+      <Badge>{driverNames[c.driver]}</Badge>
       <Button aria-label={`Open ${c.title}`} onClick={() => onOpen(c)} disabled={!!busy}>
         {busy === c.id ? <Spinner size={17} /> : <ArrowUpRight size={18} />}
       </Button>

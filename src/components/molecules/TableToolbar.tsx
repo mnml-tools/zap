@@ -2,8 +2,7 @@ import { SlidersHorizontal, Check, RefreshCw, Plus } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Table } from '../../types/table'
 import { discardChangesShortcut, formatShortcut } from '../../lib/shortcuts'
-import { Button } from '../atoms/Button'
-import { Spinner } from '../atoms/Spinner'
+import { Button, spinClassName, Spinner } from '@mnml-tools/ui'
 
 type Props = {
   table: Table
@@ -76,7 +75,7 @@ export function TableToolbar({
           </Button>
         )}
         <Button aria-label="Refresh table" disabled={loading || saving} onClick={onRefresh}>
-          <RefreshCw size={14} className={loading ? 'spin' : ''} />
+          <RefreshCw size={14} className={loading ? spinClassName : ''} />
         </Button>
       </div>
     </div>

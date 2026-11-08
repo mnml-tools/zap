@@ -1,5 +1,5 @@
 import { Plus, X } from 'lucide-react'
-import { Button } from '../atoms/Button'
+import { Button } from '@mnml-tools/ui'
 
 type Props = {
   disabled: boolean
@@ -27,7 +27,7 @@ export function FilterToolbar(props: Props) {
         <Button disabled={props.disabled || !props.canClear} onClick={props.onClear}>
           Clear
         </Button>
-        <Button className="primary" disabled={props.disabled || !props.canApply} onClick={props.onApply}>
+        <Button variant="primary" disabled={props.disabled || !props.canApply} onClick={props.onApply}>
           Apply all
         </Button>
         <Button aria-label="Hide filters" title="Hide filters (Escape)" onClick={props.onHide}>

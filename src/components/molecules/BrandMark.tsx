@@ -1,12 +1,6 @@
 import { Zap } from 'lucide-react'
+import { Brand } from '@mnml-tools/ui'
 
 export function BrandMark() {
-  return (
-    <div className="brand">
-      <span className="brand-icon">
-        <Zap size={19} fill="currentColor" />
-      </span>
-      zap<span className="brand-note">database explorer</span>
-    </div>
-  )
+  return <Brand icon={<Zap size={19} fill="currentColor" />} name="zap" note="database explorer" />
 }

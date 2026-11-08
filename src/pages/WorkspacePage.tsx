@@ -5,9 +5,7 @@ import { useWorkspace } from '../hooks/useWorkspace'
 import type { WorkspaceOptions } from '../hooks/useWorkspace'
 import { countChanges, isView } from '../lib/tableState'
 import { AppShell } from '../components/templates/AppShell'
-import { ErrorMessage } from '../components/atoms/ErrorMessage'
-import { ErrorDialog } from '../components/molecules/ErrorDialog'
-import { ConfirmDialog } from '../components/molecules/ConfirmDialog'
+import { ConfirmDialog, ErrorDialog, Message, Separator } from '@mnml-tools/ui'
 import { WorkspaceEmptyState } from '../components/molecules/WorkspaceEmptyState'
 import { WorkspaceSidebar } from '../components/organisms/WorkspaceSidebar'
 import { WorkspaceTabs } from '../components/organisms/WorkspaceTabs'
@@ -42,7 +40,7 @@ export function WorkspacePage(options: WorkspaceOptions) {
       footerRight={
         <>
           {Object.values(model.pending).reduce((count, draft) => count + countChanges(draft), 0)} pending changes
-          <span className="footer-dot">·</span>
+          <Separator />
           {model.anyQueryDirty ? 'Unsaved query changes' : 'Double-click a cell to edit'}
         </>
       }
@@ -78,7 +76,7 @@ export function WorkspacePage(options: WorkspaceOptions) {
         <section className="data-area">
           <WorkspaceTabs {...model} />
           {model.table ? <TableView {...model} /> : !model.currentQuery && <WorkspaceEmptyState error={model.error} />}
-          {model.currentQuery && model.error && <ErrorMessage message={model.error} />}
+          {model.currentQuery && model.error && <Message tone="error">{model.error}</Message>}
           {model.queryTabs.map((query) => (
             <div key={query.id} className={model.active === `query:${query.id}` ? 'query-pane' : 'query-pane hidden'}>
               <QueryEditor

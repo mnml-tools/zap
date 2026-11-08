@@ -4,10 +4,11 @@ Zap uses atomic design for rendering and feature hooks for behavior. Each React 
 
 ## UI layers
 
-- `src/components/atoms`: small primitives such as Button, Spinner, StatusDot, DirtyIndicator, ErrorMessage, and NullValue.
+- `@mnml-tools/ui` (the shared mnml-tools UI kit, linked from `../ui-kit` until it is published): design tokens, the base element styles, the theme store, and generic primitives (Button, IconButton, Spinner, StatusDot, DirtyIndicator, Message, Badge, Avatar, SearchField, Segmented) building blocks (Dialog, ConfirmDialog, ErrorDialog, ThemeToggle, ContextMenu, Tabs, Pagination, ResizeHandle, Fields, EmptyState), the window shell (AppShell, TitleBar, StatusBar, Sidebar and its parts), and, from `@mnml-tools/ui/tauri`, WindowControls and the UpdateDialog. `src/style.css` imports its CSS first; the kit's CSS sits in cascade layers, so any rule in `src/style.css` overrides it.
+- `src/components/atoms`: Zap-specific primitives such as ConnectionAvatar, ConnectionEnvironmentBadge, TableIcon, and NullValue.
 - `src/components/molecules`: focused combinations such as a connection row, filter row, column header, cell input, SQL input, or toolbar.
 - `src/components/organisms`: complete feature sections such as the connection dialog, workspace sidebar, editable table, filter panel, or query editor.
-- `src/components/templates`: the shared application shell with its header, content, footer, and dialogs.
+- `src/components/templates`: Zap's application shell, which composes the kit's `AppShell`, `TitleBar`, and `StatusBar` with Zap's header content, footer text, and dialogs.
 - `src/pages`: screen composition for saved connections and the connected workspace.
 - `src/app/App.tsx`: switches between the two screens; `src/main.tsx` only mounts the app and loads styles.
 
@@ -26,7 +27,7 @@ UI components compose their own level or lower layers. Atoms do not know about d
 - `GoToNavigator`: the Ctrl+N (Command+N on macOS) popup that finds tables, views, and saved queries of the current connection, as in DataGrip, and opens the chosen one through the workspace's `openTable` and `openQuery`. Matching and ranking (exact, prefix, word-start substring, inner substring, then word-start abbreviations such as `mvd`) live in `src/lib/goTo.ts`.
 - `useTabSwitcher`: the Ctrl+Tab switcher over open table and query tabs, ordered by most recent use. It listens in the capture phase so the SQL editor and other shortcuts do not see the keys while it is open. Ordering and stepping live in `src/lib/tabSwitcher.ts`. Its previews make no database requests: `useTableViewState` keeps a small snapshot of each table's last loaded page, and query editors register a reader in a preview store that the switcher reads, and listens to, only while it is open. Snapshot sizes and the store live in `src/lib/tabPreview.ts`.
 - `useWorkspace`: coordinates those features for cross-feature actions such as closing a connection or protecting unsaved changes.
-- `useUnsavedChanges`, `useContextMenu`, `useSidebarResize`, and `useTheme`: focused interaction and platform lifecycle hooks.
+- `useUnsavedChanges`: protects unsaved work before navigation. Context menus, resizable panes, keyboard shortcuts, and the theme come from `@mnml-tools/ui` (`ContextMenu`, `useResize`, `useShortcut`, `createTheme`); Zap keeps its own shortcut definitions in `src/lib/shortcuts.ts`.
 
 `src/services` owns Tauri invocation and the persistent theme store. `ApiRequest` is injectable so fixtures can exercise the real screens without native credentials or databases. `src/lib` contains non-React helpers such as connection defaults, SQL tokenization, draft transitions, foreign-key references, and the three-state sort cycle. `src/types` contains separate connection, table, filter, and query models.
 

@@ -1,6 +1,6 @@
 import { Play } from 'lucide-react'
 import type { QueryResult } from '../../types/query'
-import { Spinner } from '../atoms/Spinner'
+import { Spinner } from '@mnml-tools/ui'
 import { QueryResultTabs } from '../molecules/QueryResultTabs'
 import { ReadOnlyTable } from './ReadOnlyTable'
 

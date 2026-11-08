@@ -16,7 +16,7 @@
     "build:mac": "tauri build --bundles app,dmg"
   },
   "dependencies": {
-    "@mnml-tools/ui": "file:../ui-kit",
+    "@mnml-tools/ui": "^0.1.0",
     "@tauri-apps/api": "^2.9.0",
     "@tauri-apps/plugin-process": "^2.4.0",
     "@tauri-apps/plugin-updater": "^2.14.1",

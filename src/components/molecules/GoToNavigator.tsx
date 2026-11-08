@@ -3,8 +3,8 @@ import type { SavedQuery } from '../../types/query'
 import type { Table } from '../../types/table'
 import type { GoToItem, GoToScope } from '../../lib/goTo'
 import { goToShortcut } from '../../lib/shortcuts'
-import { useShortcut } from '../../hooks/useShortcut'
 import { GoToMenu } from './GoToMenu'
+import { useShortcut } from '@mnml-tools/ui'
 
 type Props = {
   connectionTitle: string

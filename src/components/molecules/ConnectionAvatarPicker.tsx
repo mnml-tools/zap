@@ -12,7 +12,7 @@ export function ConnectionAvatarPicker({ connection, onChange }: Props) {
   const selected = connection.avatarColor ?? connectionAvatarColor(connection.id)
 
   return (
-    <fieldset className="connection-avatar-picker full">
+    <fieldset className="connection-avatar-picker mnml-field-full">
       <legend>Avatar color</legend>
       <div className="connection-avatar-picker-content">
         <ConnectionAvatar connection={connection} color={selected} />

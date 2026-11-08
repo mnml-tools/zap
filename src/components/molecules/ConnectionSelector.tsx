@@ -2,10 +2,10 @@ import { useCallback, useId, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import type { Connection } from '../../types/connection'
 import { orderConnections } from '../../lib/connectionOrder'
-import { useShortcut } from '../../hooks/useShortcut'
 import { formatShortcut, switchConnectionShortcut } from '../../lib/shortcuts'
 import { ConnectionSelectorMenu } from './ConnectionSelectorMenu'
 import { ConnectionSummary } from './ConnectionSummary'
+import { useShortcut } from '@mnml-tools/ui'
 
 type Props = {
   connection: Connection

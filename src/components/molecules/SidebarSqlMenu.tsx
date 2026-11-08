@@ -1,7 +1,6 @@
 import { Ellipsis } from 'lucide-react'
 import { useCallback, useState } from 'react'
-import { Button } from '../atoms/Button'
-import { ActionContextMenu } from './ActionContextMenu'
+import { Button, ContextMenu } from '@mnml-tools/ui'
 
 type Props = {
   disabled: boolean
@@ -34,17 +33,18 @@ export function SidebarSqlMenu({ disabled, importDisabled, onImport, onExport, o
         <Ellipsis size={16} aria-hidden="true" />
       </Button>
       {anchor && (
-        <ActionContextMenu
-          title="Database"
+        <ContextMenu
+          label="Actions for Database"
+          className="tab-context-menu"
           x={anchor.getBoundingClientRect().right - 230}
           y={anchor.getBoundingClientRect().top - 4}
           above
           trigger={anchor}
           onDismiss={dismiss}
-          actions={[
-            { label: 'Import SQL…', disabled: disabled || importDisabled, run: () => run(onImport) },
-            { label: 'Export active table as SQL…', disabled: disabled || !onExport, run: () => run(onExport) },
-            { label: 'Export tables…', disabled: disabled || !onExportTables, run: () => run(onExportTables) }
+          items={[
+            { label: 'Import SQL…', disabled: disabled || importDisabled, onSelect: () => run(onImport) },
+            { label: 'Export active table as SQL…', disabled: disabled || !onExport, onSelect: () => run(onExport) },
+            { label: 'Export tables…', disabled: disabled || !onExportTables, onSelect: () => run(onExportTables) }
           ]}
         />
       )}

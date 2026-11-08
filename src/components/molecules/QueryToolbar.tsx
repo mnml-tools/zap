@@ -1,6 +1,5 @@
 import { Play, Save, Trash2 } from 'lucide-react'
-import { Button } from '../atoms/Button'
-import { Spinner } from '../atoms/Spinner'
+import { Button, Spinner } from '@mnml-tools/ui'
 
 type Props = {
   quick: boolean
@@ -56,7 +55,7 @@ export function QueryToolbar({
             {busy === 'save' ? 'Saving…' : 'Save query'}
           </Button>
         )}
-        <Button className="primary" disabled={!!busy || !sql.trim()} title="Run query (⌘/Ctrl+Enter)" onClick={onRun}>
+        <Button variant="primary" disabled={!!busy || !sql.trim()} title="Run query (⌘/Ctrl+Enter)" onClick={onRun}>
           {busy === 'run' ? <Spinner size={13} /> : <Play size={13} />} {busy === 'run' ? 'Running…' : 'Run query'}
         </Button>
         {!quick && (

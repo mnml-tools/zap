@@ -1,4 +1,4 @@
-import { Spinner } from '../components/atoms/Spinner'
+import { Spinner } from '@mnml-tools/ui'
 import { AppShell } from '../components/templates/AppShell'
 import type { Connection } from '../types/connection'
 

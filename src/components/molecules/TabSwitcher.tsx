@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useTabSwitcher } from '../../hooks/useTabSwitcher'
 import type { TabPreview } from '../../lib/tabPreview'
-import { DirtyIndicator } from '../atoms/DirtyIndicator'
+import { DirtyIndicator } from '@mnml-tools/ui'
 import { TabPreviewPane } from './TabPreviewPane'
 
 export type SwitchableTab = {

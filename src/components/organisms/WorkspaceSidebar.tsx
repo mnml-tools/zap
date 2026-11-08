@@ -1,17 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
-import { useShortcut } from '../../hooks/useShortcut'
 import { filterTablesShortcut } from '../../lib/shortcuts'
 import { ArrowBigUp, ArrowLeft, Plus, Zap } from 'lucide-react'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
-import { ResizableSidebar } from './ResizableSidebar'
-import { Button } from '../atoms/Button'
-import { Spinner } from '../atoms/Spinner'
-import { StatusDot } from '../atoms/StatusDot'
-import { ErrorMessage } from '../atoms/ErrorMessage'
+import {
+  Button,
+  Message,
+  ResizableSidebar,
+  SearchField,
+  SidebarFooter,
+  SidebarLabel,
+  Spinner,
+  StatusDot,
+  useShortcut
+} from '@mnml-tools/ui'
 import { tableKey, isView } from '../../lib/tableState'
 import { SidebarSqlMenu } from '../molecules/SidebarSqlMenu'
 import { SidebarSwitch } from '../molecules/SidebarSwitch'
-import { SearchField } from '../molecules/SearchField'
 import { TableList } from './TableList'
 import { SavedQueryList } from './SavedQueryList'
 
@@ -67,7 +71,7 @@ export function WorkspaceSidebar(props: Props) {
   const tableCount = props.tables.filter((table) => !isView(table)).length
 
   return (
-    <ResizableSidebar>
+    <ResizableSidebar id="table-sidebar" storageKey="zap.sidebarWidth">
       <Button
         className="close-connection"
         disabled={closing || saving || anyQueryBusy || props.tableActionBusy}
@@ -105,9 +109,9 @@ export function WorkspaceSidebar(props: Props) {
             value={props.search}
             onChange={props.setSearch}
           />
-          <div className="sidebar-label">
+          <SidebarLabel>
             TABLES <span>{tableCount}</span>
-          </div>
+          </SidebarLabel>
           <TableList
             tables={props.tables}
             search={props.search}
@@ -128,7 +132,7 @@ export function WorkspaceSidebar(props: Props) {
             value={props.querySearch}
             onChange={props.setQuerySearch}
           />
-          <div className="sidebar-label">
+          <SidebarLabel>
             QUERIES{' '}
             <div className="query-list-actions">
               <span>{props.queries.length}</span>
@@ -136,8 +140,8 @@ export function WorkspaceSidebar(props: Props) {
                 <Plus size={13} />
               </Button>
             </div>
-          </div>
-          {props.queryError && <ErrorMessage message={props.queryError} />}
+          </SidebarLabel>
+          {props.queryError && <Message tone="error">{props.queryError}</Message>}
           <SavedQueryList
             queries={props.queries}
             search={props.querySearch}
@@ -149,7 +153,7 @@ export function WorkspaceSidebar(props: Props) {
           />
         </>
       )}
-      <div className="sidebar-bottom">
+      <SidebarFooter>
         <StatusDot />
         Connection active
         <SidebarSqlMenu
@@ -159,7 +163,7 @@ export function WorkspaceSidebar(props: Props) {
           onExportTables={tableCount ? props.onChooseExportTables : undefined}
           onExport={activeTable && !isView(activeTable) ? () => props.exportTable(activeTable) : undefined}
         />
-      </div>
+      </SidebarFooter>
     </ResizableSidebar>
   )
 }

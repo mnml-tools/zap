@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ApiRequest } from '../../services/api'
 import type { Table, TableMode } from '../../types/table'
-import { ErrorMessage } from '../atoms/ErrorMessage'
-import { Spinner } from '../atoms/Spinner'
+import { Message, Spinner } from '@mnml-tools/ui'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
 import { isView } from '../../lib/tableState'
 import { structureFields, TableStructureEditor } from './TableStructureEditor'
@@ -50,7 +49,7 @@ export function TableCatalogView({ id, table, mode, request, model }: Props) {
           {structure ? 'Loading structure…' : 'Loading indexes…'}
         </div>
       ) : 'error' in catalog ? (
-        <ErrorMessage message={catalog.error} />
+        <Message tone="error">{catalog.error}</Message>
       ) : catalog.rows.length ? (
         <ReadOnlyTable
           columns={structure ? structureFields : ['Index', 'Kind', 'Position', 'Field']}

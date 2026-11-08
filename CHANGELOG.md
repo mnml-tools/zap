@@ -11,6 +11,11 @@ Changes are grouped by version, with the newest version first. Dates use the tag
 - Preview the highlighted tab in the Ctrl+Tab switcher. Tables show the first rows from their last load, with the row count, pending changes, and when the rows were loaded. Queries show their SQL and the last result or error. A small loader appears while a table loads or a query runs. The preview makes no database requests.
 - List views in a separate Views section of the sidebar, below Tables. PostgreSQL materialized views are included. Views open read-only in Data and Structure, and materialized views also show Indexes. Go to (Command+N / Ctrl+N) includes views and has a Views tab after Queries, and SQL suggestions include views. A view's context menu only offers Copy view name. Views aren't offered for export or deletion, and Zap refuses data or structure edits to them.
 
+### Changed
+
+- Zap's design tokens, base styles, and shared components (buttons, dialogs, menus, tabs, sidebar, title bar, status bar, window controls, and the update dialog) now come from the mnml-tools UI kit, `@mnml-tools/ui`, so other mnml-tools apps share the same look. Zap looks the same.
+- Every dialog is now a native modal dialog. Esc closes the connection form (unless it is saving or testing) and cancels the confirmation prompt, and focus stays inside the open dialog.
+
 ## [0.6.0] — 2026-11-06
 
 ### Added

@@ -4,9 +4,8 @@ import type { WorkspaceController } from '../../hooks/useWorkspace'
 import { tableKey, countChanges, isView } from '../../lib/tableState'
 import type { TabPreview } from '../../lib/tabPreview'
 import { TableIcon } from '../atoms/TableIcon'
-import { ActionContextMenu } from '../molecules/ActionContextMenu'
-import { WorkspaceTab } from '../molecules/WorkspaceTab'
 import { TabSwitcher } from '../molecules/TabSwitcher'
+import { ContextMenu, Tab, Tabs } from '@mnml-tools/ui'
 
 type Props = Pick<
   WorkspaceController,
@@ -68,16 +67,16 @@ export function WorkspaceTabs(props: Props) {
   const action = (label: string, keys: string[]) => ({
     label,
     disabled: disabled || !keys.length || keys.some((key) => key.startsWith('query:') && props.queryBusy[key.slice(6)]),
-    run: () => {
+    onSelect: () => {
       dismissMenu()
       props.closeTabs(keys)
     }
   })
 
   return (
-    <div className="tabs">
+    <Tabs>
       {props.tabs.map((table) => (
-        <WorkspaceTab
+        <Tab
           key={tableKey(table)}
           title={table.name}
           icon={<TableIcon table={table} size={14} />}
@@ -102,7 +101,7 @@ export function WorkspaceTabs(props: Props) {
         />
       ))}
       {props.queryTabs.map((query) => (
-        <WorkspaceTab
+        <Tab
           key={query.id}
           title={query.title}
           icon={query.quick ? <Zap size={14} className="quick-query-icon" /> : <FileCode2 size={14} />}
@@ -122,13 +121,14 @@ export function WorkspaceTabs(props: Props) {
         subscribe={props.queryPreviews.subscribe}
       />
       {menu && index >= 0 && (
-        <ActionContextMenu
+        <ContextMenu
           key={menu.key}
-          title={menu.title}
+          label={`Actions for ${menu.title}`}
+          className="tab-context-menu"
           x={menu.x}
           y={menu.y}
           onDismiss={dismissMenu}
-          actions={[
+          items={[
             action('Close tab', [menu.key]),
             action('Close all tabs to the left', order.slice(0, index)),
             action('Close all tabs to the right', order.slice(index + 1)),
@@ -140,6 +140,6 @@ export function WorkspaceTabs(props: Props) {
           ]}
         />
       )}
-    </div>
+    </Tabs>
   )
 }

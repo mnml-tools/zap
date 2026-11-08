@@ -1,5 +1,5 @@
 import type { QueryResultSet } from '../../types/query'
-import { Button } from '../atoms/Button'
+import { Button } from '@mnml-tools/ui'
 
 type Props = {
   results: QueryResultSet[]

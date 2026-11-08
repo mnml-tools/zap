@@ -5,7 +5,7 @@ type Props = { settings?: SshSettings | null; onChange: (settings: SshSettings |
 export function SshConnectionFields({ settings, onChange }: Props) {
   return (
     <>
-      <label className="full ssh-toggle">
+      <label className="mnml-field-full ssh-toggle">
         <input
           type="checkbox"
           checked={!!settings}
@@ -34,7 +34,7 @@ export function SshConnectionFields({ settings, onChange }: Props) {
               onChange={(event) => onChange({ ...settings, port: Number(event.target.value) })}
             />
           </label>
-          <label className="full">
+          <label className="mnml-field-full">
             SSH user
             <input
               required
@@ -42,7 +42,7 @@ export function SshConnectionFields({ settings, onChange }: Props) {
               onChange={(event) => onChange({ ...settings, user: event.target.value })}
             />
           </label>
-          <label className="full">
+          <label className="mnml-field-full">
             SSH private key path
             <input
               value={settings.keyPath}

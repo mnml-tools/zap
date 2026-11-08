@@ -1,13 +1,9 @@
 import { ArrowLeft, ExternalLink, X } from 'lucide-react'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
-import { useSidebarResize } from '../../hooks/useSidebarResize'
 import { foreignKeyFor, referenceFrom, referenceLabel, referenceTitle, tableLabel } from '../../lib/relations'
-import { Button } from '../atoms/Button'
-import { ErrorMessage } from '../atoms/ErrorMessage'
+import { IconButton, Message, ResizeHandle, Sidebar, Spinner, useResize } from '@mnml-tools/ui'
 import { NullValue } from '../atoms/NullValue'
-import { Spinner } from '../atoms/Spinner'
 import { ReferenceButton } from '../molecules/ReferenceButton'
-import { SidebarResizeHandle } from '../molecules/SidebarResizeHandle'
 
 type Props = Pick<
   WorkspaceController,
@@ -22,7 +18,7 @@ export function ReferencePanel({
   closeReference,
   openReferenceInTab
 }: Props) {
-  const resize = useSidebarResize({
+  const resize = useResize({
     storageKey: 'zap.referencePanelWidth',
     initial: 320,
     minimum: 240,
@@ -37,7 +33,7 @@ export function ReferencePanel({
   const target = tableLabel(reference.key.target)
 
   return (
-    <aside
+    <Sidebar
       id="reference-panel"
       className="reference-panel"
       style={{ width: resize.width }}
@@ -47,34 +43,28 @@ export function ReferencePanel({
         if (event.key === 'Escape') closeReference()
       }}
     >
-      <SidebarResizeHandle {...resize} label="Resize reference panel" controls="reference-panel" />
+      <ResizeHandle {...resize} label="Resize reference panel" controls="reference-panel" />
       <div className="reference-header">
         {referenceDepth > 1 && (
-          <Button className="icon-button" title="Back" aria-label="Back" onClick={backReference}>
+          <IconButton title="Back" aria-label="Back" onClick={backReference}>
             <ArrowLeft size={13} aria-hidden="true" />
-          </Button>
+          </IconButton>
         )}
         <div className="reference-heading">
           <strong>Preview</strong>
           <span className="reference-table-badge">{target}</span>
         </div>
-        <Button className="icon-button" title="Close" aria-label="Close" onClick={closeReference}>
+        <IconButton title="Close" aria-label="Close" onClick={closeReference}>
           <X size={13} aria-hidden="true" />
-        </Button>
+        </IconButton>
       </div>
       <div className="reference-summary">
         <span className="reference-summary-label">Record</span>
         <div className="reference-record">
           <span>{referenceLabel(reference)}</span>
-          <Button
-            className="icon-button"
-            title="Open in tab"
-            aria-label="Open in tab"
-            onClick={openReferenceInTab}
-            disabled={!data}
-          >
+          <IconButton title="Open in tab" aria-label="Open in tab" onClick={openReferenceInTab} disabled={!data}>
             <ExternalLink size={12} aria-hidden="true" />
-          </Button>
+          </IconButton>
         </div>
       </div>
       <div className="reference-body" aria-busy={!data && !error}>
@@ -84,7 +74,7 @@ export function ReferencePanel({
             Loading row…
           </div>
         )}
-        {error && <ErrorMessage message={error} />}
+        {error && <Message tone="error">{error}</Message>}
         {data && !row && (
           <div className="table-message">
             No row in {target} matches. It may have been deleted, or the relation is not enforced.
@@ -131,6 +121,6 @@ export function ReferencePanel({
         )}
         {data && data.total > 1 && <p className="reference-note">{data.total} rows match. Showing the first.</p>}
       </div>
-    </aside>
+    </Sidebar>
   )
 }
