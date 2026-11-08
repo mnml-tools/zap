@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react'
-import { Table2, FileCode2, Zap } from 'lucide-react'
+import { FileCode2, Zap } from 'lucide-react'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
-import { tableKey, countChanges } from '../../lib/tableState'
+import { tableKey, countChanges, isView } from '../../lib/tableState'
 import type { TabPreview } from '../../lib/tabPreview'
+import { TableIcon } from '../atoms/TableIcon'
 import { ActionContextMenu } from '../molecules/ActionContextMenu'
 import { WorkspaceTab } from '../molecules/WorkspaceTab'
 import { TabSwitcher } from '../molecules/TabSwitcher'
@@ -37,12 +38,12 @@ export function WorkspaceTabs(props: Props) {
     ...props.tabs.map((table) => ({
       key: tableKey(table),
       title: table.name,
-      icon: <Table2 size={14} />,
+      icon: <TableIcon table={table} size={14} />,
       dirty: tableDirty(tableKey(table)),
       select: () => props.selectTable(table),
       preview: (): TabPreview => ({
         kind: 'table',
-        subtitle: table.schema || 'Table',
+        subtitle: table.schema || (isView(table) ? 'View' : 'Table'),
         loading: props.loading && props.active === tableKey(table),
         grid: props.tablePreviews[tableKey(table)],
         pending: countChanges(props.pending[tableKey(table)])
@@ -79,7 +80,7 @@ export function WorkspaceTabs(props: Props) {
         <WorkspaceTab
           key={tableKey(table)}
           title={table.name}
-          icon={<Table2 size={14} />}
+          icon={<TableIcon table={table} size={14} />}
           active={props.active === tableKey(table)}
           dirty={tableDirty(tableKey(table))}
           disabled={props.saving || props.structureSaving}

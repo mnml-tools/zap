@@ -1,8 +1,8 @@
 import type { SavedQuery } from '../types/query'
 import type { Table } from '../types/table'
-import { tableKey } from './tableState.ts'
+import { isView, tableKey } from './tableState.ts'
 
-export type GoToScope = 'all' | 'tables' | 'queries'
+export type GoToScope = 'all' | 'tables' | 'queries' | 'views'
 
 export type TextMatch = { rank: number; indices: number[] }
 
@@ -13,7 +13,8 @@ export type GoToItem = { key: string; rank: number; label: string; matches: numb
 export const goToScopes: { value: GoToScope; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'tables', label: 'Tables' },
-  { value: 'queries', label: 'Queries' }
+  { value: 'queries', label: 'Queries' },
+  { value: 'views', label: 'Views' }
 ]
 
 const separator = /[^\p{L}\p{N}]/u
@@ -133,8 +134,10 @@ function matchQuery(query: SavedQuery, search: string): GoToItem | null {
 
 export function searchGoTo(tables: Table[], queries: SavedQuery[], scope: GoToScope, search: string) {
   const items = [
-    ...(scope === 'queries' ? [] : tables.map((table) => matchTable(table, search))),
-    ...(scope === 'tables' ? [] : queries.map((query) => matchQuery(query, search)))
+    ...tables
+      .filter((table) => scope === 'all' || scope === (isView(table) ? 'views' : 'tables'))
+      .map((table) => matchTable(table, search)),
+    ...(scope === 'all' || scope === 'queries' ? queries.map((query) => matchQuery(query, search)) : [])
   ].filter((item) => item !== null)
 
   if (!search.trim()) return items

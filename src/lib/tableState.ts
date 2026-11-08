@@ -2,6 +2,8 @@ import type { Table, Page, TableDraft, CellEditor, TableSort } from '../types/ta
 
 export const tableKey = (table: Table) => JSON.stringify([table.schema, table.name])
 
+export const isView = (table: Table) => table.kind === 'view' || table.kind === 'materialized_view'
+
 export const rowKey = (row: (string | null)[], page: Page) => JSON.stringify(page.primaryKeys.map((i) => row[i]))
 
 export const countChanges = (draft?: TableDraft) =>

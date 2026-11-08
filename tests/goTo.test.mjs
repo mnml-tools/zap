@@ -48,6 +48,25 @@ test('an empty search keeps every item in its original order', () => {
   assert.deepEqual(labels(searchGoTo(tables, queries, 'queries', '')), ['Monthly report'])
 })
 
+test('views have their own scope and stay out of Tables and Queries', () => {
+  const tables = [
+    table('orders'),
+    { ...table('order_totals'), kind: 'view' },
+    { ...table('order_stats'), kind: 'materialized_view' }
+  ]
+  const queries = [query('1', 'Orders by month')]
+
+  assert.deepEqual(labels(searchGoTo(tables, queries, 'all', '')), [
+    'orders',
+    'order_totals',
+    'order_stats',
+    'Orders by month'
+  ])
+  assert.deepEqual(labels(searchGoTo(tables, queries, 'tables', 'order')), ['orders'])
+  assert.deepEqual(labels(searchGoTo(tables, queries, 'views', 'order')), ['order_stats', 'order_totals'])
+  assert.deepEqual(labels(searchGoTo(tables, queries, 'queries', 'order')), ['Orders by month'])
+})
+
 test('results sort by rank, then shorter names, then alphabetically', () => {
   const tables = [
     'global_departments',

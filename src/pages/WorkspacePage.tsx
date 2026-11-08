@@ -3,7 +3,7 @@ import { GoToNavigator } from '../components/molecules/GoToNavigator'
 import { useState } from 'react'
 import { useWorkspace } from '../hooks/useWorkspace'
 import type { WorkspaceOptions } from '../hooks/useWorkspace'
-import { countChanges } from '../lib/tableState'
+import { countChanges, isView } from '../lib/tableState'
 import { AppShell } from '../components/templates/AppShell'
 import { ErrorMessage } from '../components/atoms/ErrorMessage'
 import { ErrorDialog } from '../components/molecules/ErrorDialog'
@@ -55,7 +55,7 @@ export function WorkspacePage(options: WorkspaceOptions) {
           />
         ) : choosingExport ? (
           <ExportTablesDialog
-            tables={model.tables}
+            tables={model.tables.filter((table) => !isView(table))}
             onCancel={() => setChoosingExport(false)}
             onExport={(tables, includeData) => {
               setChoosingExport(false)

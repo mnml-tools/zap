@@ -12,7 +12,7 @@ import { ErrorDialog } from '../molecules/ErrorDialog'
 
 const columnKeys = ['name', 'kind', 'nullable', 'default', 'comment'] as const
 
-const fields = ['Column Name', 'Data Type', 'Nullable', 'Default', 'Comment']
+export const structureFields = ['Column Name', 'Data Type', 'Nullable', 'Default', 'Comment']
 
 type Props = {
   model: WorkspaceController
@@ -125,7 +125,7 @@ export function TableStructureEditor({ model, rows }: Props) {
           <thead>
             <tr>
               <th className="row-number">#</th>
-              {fields.map((field) => (
+              {structureFields.map((field) => (
                 <th key={field} className={field === 'Data Type' ? 'structure-type' : undefined}>
                   {field}
                 </th>
@@ -176,7 +176,7 @@ export function TableStructureEditor({ model, rows }: Props) {
                         modified={!!change}
                         saving={model.structureSaving}
                         editing={active}
-                        column={fields[field]}
+                        column={structureFields[field]}
                         rowNumber={index + 1}
                         hint={field === 3 ? 'Double-click to edit the SQL default expression' : undefined}
                         choices={field === 2 ? ['Yes', 'No'] : undefined}

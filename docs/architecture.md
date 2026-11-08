@@ -16,14 +16,14 @@ UI components compose their own level or lower layers. Atoms do not know about d
 ## Behavior and boundaries
 
 - `useConnections`: connection listing, create/edit/test/save/remove, and connection navigation.
-- `useWorkspaceTabs`: table discovery and table-tab selection.
+- `useWorkspaceTabs`: table and view discovery and table-tab selection. `list_tables` tags each entry with a `kind` (`table`, `view`, or `materialized_view`); the sidebar groups views separately, and the backend refuses data and structure edits to views whatever the client sends.
 - `useTableViewState`: table loading, pagination, sorting, filters, and per-tab view preferences.
 - `useTableDrafts`: cell editors, pending edits, saving, and reverting drafts.
 - `useSavedQueries`: saved-query definitions, open query tabs, and dirty/busy state.
 - `useQueryEditor`: local SQL/title changes, query saving, and execution/results state.
 - `useSqlCompletion`: loads columns for the tables a query references and returns the editor's completion provider. Ranking and item building live in `src/lib/sqlCompletion.ts`, and clause order and expression state live in `src/lib/sqlClauses.ts`.
 - `useReferencePanel`: the referenced-row panel opened from foreign-key cells, with a back stack for following further references.
-- `GoToNavigator`: the Ctrl+N (Command+N on macOS) popup that finds tables and saved queries of the current connection, as in DataGrip, and opens the chosen one through the workspace's `openTable` and `openQuery`. Matching and ranking (exact, prefix, word-start substring, inner substring, then word-start abbreviations such as `mvd`) live in `src/lib/goTo.ts`.
+- `GoToNavigator`: the Ctrl+N (Command+N on macOS) popup that finds tables, views, and saved queries of the current connection, as in DataGrip, and opens the chosen one through the workspace's `openTable` and `openQuery`. Matching and ranking (exact, prefix, word-start substring, inner substring, then word-start abbreviations such as `mvd`) live in `src/lib/goTo.ts`.
 - `useTabSwitcher`: the Ctrl+Tab switcher over open table and query tabs, ordered by most recent use. It listens in the capture phase so the SQL editor and other shortcuts do not see the keys while it is open. Ordering and stepping live in `src/lib/tabSwitcher.ts`. Its previews make no database requests: `useTableViewState` keeps a small snapshot of each table's last loaded page, and query editors register a reader in a preview store that the switcher reads, and listens to, only while it is open. Snapshot sizes and the store live in `src/lib/tabPreview.ts`.
 - `useWorkspace`: coordinates those features for cross-feature actions such as closing a connection or protecting unsaved changes.
 - `useUnsavedChanges`, `useContextMenu`, `useSidebarResize`, and `useTheme`: focused interaction and platform lifecycle hooks.

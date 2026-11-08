@@ -1,24 +1,27 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { FileCode2, Search, Table2 } from 'lucide-react'
+import { FileCode2, Search } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import type { SavedQuery } from '../../types/query'
 import type { Table } from '../../types/table'
 import { goToScopes, searchGoTo } from '../../lib/goTo'
 import type { GoToItem, GoToScope } from '../../lib/goTo'
 import { HighlightedText } from '../atoms/HighlightedText'
+import { TableIcon } from '../atoms/TableIcon'
 
 const visibleLimit = 100
 
 const placeholders: Record<GoToScope, string> = {
-  all: 'Search tables and queries…',
+  all: 'Search tables, views, and queries…',
   tables: 'Search tables…',
-  queries: 'Search queries…'
+  queries: 'Search queries…',
+  views: 'Search views…'
 }
 
 const emptyMessages: Record<GoToScope, string> = {
-  all: 'No matching tables or queries.',
+  all: 'No matching tables, views, or queries.',
   tables: 'No matching tables.',
-  queries: 'No matching queries.'
+  queries: 'No matching queries.',
+  views: 'No matching views.'
 }
 
 type Props = {
@@ -163,7 +166,7 @@ export function GoToMenu(props: Props) {
             onClick={() => onChoose(item)}
           >
             {item.kind === 'table' ? (
-              <Table2 size={14} aria-hidden="true" />
+              <TableIcon table={item.table} size={14} />
             ) : (
               <FileCode2 size={14} aria-hidden="true" />
             )}

@@ -129,6 +129,12 @@ async fn metadata(pool: &AnyPool, driver: &str, table: &Table) -> Result<Metadat
     if columns.is_empty() {
         return Err("Table no longer exists or its columns are inaccessible.".into());
     }
+    if let Some(reason) = crate::catalog::view_reason(pool, driver, table).await? {
+        return Ok(Metadata {
+            columns,
+            reason: Some(reason),
+        });
+    }
     let mut reason = if columns.iter().any(|c| c.primary > 0) {
         None
     } else {
@@ -907,5 +913,37 @@ mod tests {
             r#"{"column":"id","direction":"desc; DROP TABLE items"}"#
         )
         .is_err());
+    }
+    #[tokio::test]
+    async fn views_load_read_only_and_reject_edits() {
+        let (pool, _) = fixture().await;
+        sqlx::query("CREATE VIEW priced AS SELECT tenant, id, amount FROM \"order details\" WHERE amount > 0")
+            .execute(&pool)
+            .await
+            .unwrap();
+        let view = Table {
+            schema: String::new(),
+            name: "PRICED".into(),
+        };
+        let loaded = page(&pool, "sqlite", &view, 0, &[]).await.unwrap();
+        assert_eq!(loaded.columns, ["tenant", "id", "amount"]);
+        assert_eq!(loaded.total, 2);
+        assert_eq!(
+            loaded.read_only_reason.as_deref(),
+            Some("Views are read-only.")
+        );
+        assert!(loaded.editable.iter().all(|editable| !editable));
+
+        let original = loaded.rows[0].clone();
+        let error = save(
+            &pool,
+            "sqlite",
+            &view,
+            &loaded.columns,
+            &[change(&original, "amount", Some("1"))],
+        )
+        .await
+        .unwrap_err();
+        assert_eq!(error, "Views are read-only.");
     }
 }

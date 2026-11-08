@@ -1,6 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use serde::{Deserialize, Serialize};
-use sqlx::{any::AnyPoolOptions, AnyPool, Row};
+use sqlx::{any::AnyPoolOptions, AnyPool};
 use std::{collections::HashMap, sync::Mutex, time::Duration};
 use tauri::{Manager, State};
 use tauri_plugin_dialog::DialogExt;
@@ -270,27 +270,62 @@ struct Table {
     schema: String,
     name: String,
 }
+#[derive(Serialize)]
+struct TableListing {
+    schema: String,
+    name: String,
+    // "table", "view" or "materialized_view"; commands receiving a Table ignore it.
+    kind: String,
+}
 #[tauri::command]
 async fn list_tables(
     app: tauri::AppHandle,
     state: State<'_, Store>,
     id: String,
-) -> Result<Vec<Table>, String> {
+) -> Result<Vec<TableListing>, String> {
     let c = read(&app)?
         .into_iter()
         .find(|c| c.id == id)
         .ok_or("Connection not found")?;
-    let p = pool(&state, &id)?;
-    let q=match c.driver.as_str(){"postgresql"=>"SELECT CAST(table_schema AS TEXT) AS s, CAST(table_name AS TEXT) AS n FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema NOT IN ('pg_catalog','information_schema') ORDER BY 1,2", "mysql"=>"SELECT table_schema AS s, table_name AS n FROM information_schema.tables WHERE table_schema=DATABASE() AND table_type='BASE TABLE' ORDER BY 2",_=>"SELECT '' AS s, name AS n FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"};
+    table_listings(&pool(&state, &id)?, &c.driver).await
+}
+async fn table_listings(p: &AnyPool, driver: &str) -> Result<Vec<TableListing>, String> {
+    let q = match driver {
+        "postgresql" => {
+            "SELECT CAST(table_schema AS TEXT) AS s, CAST(table_name AS TEXT) AS n,
+                    CAST(CASE WHEN table_type = 'VIEW' THEN 'view' ELSE 'table' END AS TEXT) AS k
+             FROM information_schema.tables
+             WHERE table_type IN ('BASE TABLE', 'VIEW') AND table_schema NOT IN ('pg_catalog', 'information_schema')
+             UNION ALL
+             SELECT CAST(n.nspname AS TEXT), CAST(c.relname AS TEXT), CAST('materialized_view' AS TEXT)
+             FROM pg_catalog.pg_class c
+             JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+             WHERE c.relkind = 'm' AND n.nspname NOT IN ('pg_catalog', 'information_schema')
+               AND pg_catalog.has_table_privilege(c.oid, 'SELECT')
+             ORDER BY 1, 2"
+        }
+        "mysql" => {
+            "SELECT table_schema AS s, table_name AS n,
+                    CASE WHEN table_type = 'VIEW' THEN 'view' ELSE 'table' END AS k
+             FROM information_schema.tables
+             WHERE table_schema = DATABASE() AND table_type IN ('BASE TABLE', 'VIEW')
+             ORDER BY 2"
+        }
+        _ => {
+            "SELECT '' AS s, name AS n, type AS k FROM sqlite_master
+             WHERE type IN ('table', 'view') AND name NOT LIKE 'sqlite_%' ORDER BY name"
+        }
+    };
     sqlx::query(q)
-        .fetch_all(&p)
+        .fetch_all(p)
         .await
         .map_err(|e| e.to_string())?
         .iter()
         .map(|r| {
-            Ok(Table {
-                schema: r.try_get("s").map_err(|e| e.to_string())?,
-                name: r.try_get("n").map_err(|e| e.to_string())?,
+            Ok(TableListing {
+                schema: sql_text::required(r, "s").map_err(|e| e.to_string())?,
+                name: sql_text::required(r, "n").map_err(|e| e.to_string())?,
+                kind: sql_text::required(r, "k").map_err(|e| e.to_string())?,
             })
         })
         .collect()
@@ -702,5 +737,31 @@ mod tests {
         assert!(connect(&config("/does/not/exist/zap.sqlite".into()))
             .await
             .is_err());
+    }
+
+    #[tokio::test]
+    async fn sqlite_listing_includes_views_with_their_kind() {
+        sqlx::any::install_default_drivers();
+        let pool = AnyPoolOptions::new()
+            .max_connections(1)
+            .connect("sqlite::memory:")
+            .await
+            .unwrap();
+        for sql in [
+            "CREATE TABLE orders (id INTEGER PRIMARY KEY, total INTEGER)",
+            "CREATE INDEX orders_total ON orders (total)",
+            r#"CREATE VIEW "big orders" AS SELECT * FROM orders WHERE total > 100"#,
+        ] {
+            sqlx::query(sql).execute(&pool).await.unwrap();
+        }
+
+        let listed = table_listings(&pool, "sqlite").await.unwrap();
+        assert_eq!(
+            listed
+                .iter()
+                .map(|t| (t.name.as_str(), t.kind.as_str()))
+                .collect::<Vec<_>>(),
+            [("big orders", "view"), ("orders", "table")]
+        );
     }
 }

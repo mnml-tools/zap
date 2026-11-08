@@ -21,7 +21,22 @@ const fixtureTables: Record<string, { columns: string[]; rows: (string | null)[]
       { columns: [2], target: { schema: 'public', name: 'people' }, targetColumns: ['id'] },
       { columns: [3], target: { schema: 'public', name: 'events' }, targetColumns: ['id'] }
     ]
+  },
+  // A view and a materialized view, which the backend always reports as read-only.
+  people_with_email: { columns: ['id', 'name', 'email'], rows: rows.filter((row) => row[2] !== null), foreignKeys: [] },
+  event_counts: {
+    columns: ['person_id', 'events'],
+    rows: [
+      ['2', '1'],
+      ['9', '1'],
+      ['30', '1']
+    ],
+    foreignKeys: []
   }
+}
+const readOnlyReasons: Record<string, string> = {
+  people_with_email: 'Views are read-only.',
+  event_counts: 'Materialized views are read-only.'
 }
 let failNext = false
 const savedQueries: SavedQuery[] = JSON.parse(localStorage.getItem('zap.fixtureQueries') || '[]')
@@ -67,13 +82,20 @@ export const request: ApiRequest = async <T>(command: string, args?: Record<stri
   }
   if (command === 'list_tables')
     return [
-      { schema: 'public', name: 'people' },
-      { schema: 'public', name: 'events' }
+      { schema: 'public', name: 'people', kind: 'table' },
+      { schema: 'public', name: 'events', kind: 'table' },
+      { schema: 'public', name: 'people_with_email', kind: 'view' },
+      { schema: 'public', name: 'event_counts', kind: 'materialized_view' }
     ] as T
   if (command === 'table_columns') {
     const table = args!.table as Table
+    if (table.name === 'event_counts')
+      return [
+        ['person_id', 'integer', 'Yes', null, null],
+        ['events', 'bigint', 'Yes', null, null]
+      ] as T
     return (
-      table.name === 'people'
+      table.name === 'people' || table.name === 'people_with_email'
         ? [
             ['id', 'integer', 'No', null, null],
             ['name', 'text', 'No', null, null],
@@ -87,7 +109,9 @@ export const request: ApiRequest = async <T>(command: string, args?: Record<stri
     ) as T
   }
   if (command === 'table_page') {
-    const table = fixtureTables[(args!.table as Table).name]
+    const name = (args!.table as Table).name
+    const table = fixtureTables[name]
+    const readOnlyReason = readOnlyReasons[name] ?? null
     let filtered = table.rows
     for (const filter of (args!.filters || []) as TableFilter[]) {
       if (!filter.enabled) continue
@@ -160,9 +184,9 @@ export const request: ApiRequest = async <T>(command: string, args?: Record<stri
         )
         .map((r) => [...r]),
       total: filtered.length,
-      primaryKeys: [0],
-      editable: table.columns.map(() => true),
-      readOnlyReason: null,
+      primaryKeys: readOnlyReason ? [] : [0],
+      editable: table.columns.map(() => !readOnlyReason),
+      readOnlyReason,
       foreignKeys: table.foreignKeys
     } satisfies Page as T
   }

@@ -1,4 +1,7 @@
-export type Table = { schema: string; name: string }
+export type TableKind = 'table' | 'view' | 'materialized_view'
+
+// `kind` comes from list_tables; tables reached another way (e.g. a foreign key target) omit it.
+export type Table = { schema: string; name: string; kind?: TableKind }
 
 export type ForeignKey = { columns: number[]; target: Table; targetColumns: string[] }
 

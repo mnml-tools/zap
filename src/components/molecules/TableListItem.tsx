@@ -1,8 +1,8 @@
 import type { MouseEventHandler } from 'react'
-import { Table2 } from 'lucide-react'
 import type { Table } from '../../types/table'
 import { Button } from '../atoms/Button'
 import { DirtyIndicator } from '../atoms/DirtyIndicator'
+import { TableIcon } from '../atoms/TableIcon'
 
 type Props = {
   table: Table
@@ -21,7 +21,7 @@ export function TableListItem({ table, active, dirty, disabled, onOpen, onContex
       onClick={() => onOpen(table)}
       onContextMenu={onContextMenu}
     >
-      <Table2 size={15} />
+      <TableIcon table={table} size={15} />
       <span>{table.name}</span>
       {dirty && <DirtyIndicator />}
       {table.schema && table.schema !== 'public' && <small>{table.schema}</small>}
