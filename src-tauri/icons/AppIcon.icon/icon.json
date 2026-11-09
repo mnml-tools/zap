@@ -1,42 +1,26 @@
 {
   "fill" : {
     "linear-gradient" : [
-      "srgb:0.11944,0.60433,0.80548,1.00000",
-      "display-p3:0.26681,0.54498,0.71388,1.00000"
+      "display-p3:0.96804,0.96496,0.95419,1.00000",
+      "srgb:0.89240,0.88928,0.87991,1.00000"
     ]
   },
   "groups" : [
     {
       "layers" : [
         {
-          "blend-mode-specializations" : [
-            {
-              "appearance" : "dark",
-              "value" : "normal"
-            }
-          ],
-          "fill-specializations" : [
-            {
-              "appearance" : "dark",
-              "value" : "automatic"
-            }
-          ],
           "glass-specializations" : [
             {
-              "appearance" : "dark",
               "value" : true
+            },
+            {
+              "appearance" : "dark",
+              "value" : false
             }
           ],
           "hidden" : false,
-          "image-name" : "zap_icon_only.svg",
-          "name" : "zap_icon_only",
-          "position" : {
-            "scale" : 1,
-            "translation-in-points" : [
-              0.6443981205603677,
-              1.9963317090395094
-            ]
-          }
+          "image-name" : "SVG Image.svg",
+          "name" : "SVG Image"
         }
       ],
       "shadow" : {
