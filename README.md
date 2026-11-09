@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/assets/AppIcon.png" width="112" height="112" alt="Zap app icon">
+  <img src="src/assets/AppIcon.png?v=1" width="112" height="112" alt="Zap app icon">
 </p>
 
 <h1 align="center">Zap</h1>
@@ -123,11 +123,11 @@ npm run tauri signer generate -- -w "$HOME/.tauri/zap.key"
 
 In the repository's **Settings → Secrets and variables → Actions**, add:
 
-| Secret | Value |
-| --- | --- |
-| `TAURI_SIGNING_PRIVATE_KEY` | Full contents of `zap.key`, not its path. |
-| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | The password chosen when generating the key; omit if unencrypted. |
-| `TAURI_UPDATER_PUBLIC_KEY` | Full contents of `zap.key.pub`. This is public information, stored as a secret for build configuration convenience. |
+| Secret                               | Value                                                                                                               |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `TAURI_SIGNING_PRIVATE_KEY`          | Full contents of `zap.key`, not its path.                                                                           |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | The password chosen when generating the key; omit if unencrypted.                                                   |
+| `TAURI_UPDATER_PUBLIC_KEY`           | Full contents of `zap.key.pub`. This is public information, stored as a secret for build configuration convenience. |
 
 Back up the private key and its password securely. Keep using the same key pair for
 future versions so existing installations can verify updates. Never commit the private key.
