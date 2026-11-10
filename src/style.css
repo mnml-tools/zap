@@ -2404,3 +2404,48 @@ th[aria-sort='descending'] {
 .settings-accent-option[data-swatch='purple'] {
   --swatch: #986dc4;
 }
+
+.settings-fields {
+  display: flex;
+  flex-direction: column;
+}
+.settings-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.settings-field > span {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.settings-field strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.settings-field > span > span {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.settings-field select {
+  max-width: 180px;
+  flex-shrink: 0;
+}
+.settings-field input[type='checkbox'] {
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.data-wrap .data-area tbody td:not(.row-number):not(.cell-editing) {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-width: 480px;
+}
+.data-density-comfortable .data-area tbody td {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
