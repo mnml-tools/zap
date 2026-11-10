@@ -1,14 +1,13 @@
 {
   "fill" : {
-    "solid" : "display-p3:0.12769,0.26247,0.25016,1.00000"
+    "solid" : "display-p3:0.25384,0.20997,0.08793,1.00000"
   },
   "groups" : [
     {
       "layers" : [
         {
-          "glass" : true,
-          "image-name" : "SVG Image 2.svg",
-          "name" : "SVG Image 2"
+          "image-name" : "SVG Image.svg",
+          "name" : "SVG Image"
         }
       ],
       "shadow" : {
