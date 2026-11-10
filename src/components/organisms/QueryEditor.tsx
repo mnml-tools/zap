@@ -1,12 +1,13 @@
+import { useAppShortcut } from '../../hooks/useAppShortcut'
 import { useEffect, useRef } from 'react'
 import { useQueryEditor } from '../../hooks/useQueryEditor'
 import type { QueryEditorOptions } from '../../hooks/useQueryEditor'
 import { useSqlCompletion } from '../../hooks/useSqlCompletion'
 import type { Table } from '../../types/table'
-import { saveChangesShortcut } from '../../lib/shortcuts'
+import { runQueryShortcut, saveChangesShortcut } from '../../lib/shortcuts'
 import { previewResult } from '../../lib/tabPreview'
 import type { PreviewStore, QueryPreview } from '../../lib/tabPreview'
-import { Message, useShortcut } from '@mnml-tools/ui'
+import { Message } from '@mnml-tools/ui'
 import { QueryToolbar } from '../molecules/QueryToolbar'
 import { SqlCodeInput } from '../molecules/SqlCodeInput'
 import { QueryEditorHint } from '../molecules/QueryEditorHint'
@@ -46,22 +47,16 @@ export function QueryEditor(props: Props) {
   // Typing needs no notice because the switcher is never open while the editor has the keyboard.
   useEffect(props.previews.changed, [editor.busy, editor.result, editor.error, editor.resultIndex])
 
-  useShortcut(
+  useAppShortcut(
     saveChangesShortcut,
     !props.query.quick && props.active && editor.dirty && !editor.busy && !!editor.title.trim() && !!editor.sql.trim(),
     editor.save
   )
 
+  useAppShortcut(runQueryShortcut, props.active && !editor.busy && !!editor.sql.trim(), editor.run)
+
   return (
-    <div
-      className="query-editor"
-      onKeyDown={(event) => {
-        if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-          event.preventDefault()
-          void editor.run()
-        }
-      }}
-    >
+    <div className="query-editor">
       <QueryToolbar
         quick={!!props.query.quick}
         canConvertQuick={!!editor.result}

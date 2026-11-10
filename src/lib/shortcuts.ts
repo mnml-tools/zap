@@ -1,10 +1,8 @@
 import type { Shortcut } from '@mnml-tools/ui'
 
-export { createDoubleShiftDetector, formatShortcut, matchesShortcut } from '@mnml-tools/ui'
+export { formatShortcut, matchesShortcut } from '@mnml-tools/ui'
 
 export type { Shortcut } from '@mnml-tools/ui'
-
-export const filterTablesShortcut: Shortcut = { key: 'Shift', doubleTap: true, allowInInputs: true }
 
 export const duplicateRowsShortcut: Shortcut = { key: 'd', primary: true }
 
@@ -17,3 +15,5 @@ export const saveChangesShortcut: Shortcut = { key: 's', primary: true, allowInI
 export const switchConnectionShortcut: Shortcut = { key: 'p', primary: true, allowInInputs: true }
 
 export const goToShortcut: Shortcut = { key: 'n', primary: true, allowInInputs: true }
+
+export const runQueryShortcut: Shortcut = { key: 'Enter', primary: true, allowInInputs: true }

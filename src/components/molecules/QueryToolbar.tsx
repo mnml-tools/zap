@@ -1,3 +1,5 @@
+import { formatAppShortcut, useShortcutPreferences } from '../../hooks/useAppShortcut'
+import { runQueryShortcut } from '../../lib/shortcuts'
 import { Play, Save, Trash2 } from 'lucide-react'
 import { Button, Spinner } from '@mnml-tools/ui'
 
@@ -28,6 +30,8 @@ export function QueryToolbar({
   onRun,
   onDelete
 }: Props) {
+  useShortcutPreferences()
+
   return (
     <div className={`query-toolbar${quick ? ' quick-query-toolbar' : ''}`}>
       {!quick && (
@@ -55,7 +59,12 @@ export function QueryToolbar({
             {busy === 'save' ? 'Saving…' : 'Save query'}
           </Button>
         )}
-        <Button variant="primary" disabled={!!busy || !sql.trim()} title="Run query (⌘/Ctrl+Enter)" onClick={onRun}>
+        <Button
+          variant="primary"
+          disabled={!!busy || !sql.trim()}
+          title={`Run query (${formatAppShortcut(runQueryShortcut)})`}
+          onClick={onRun}
+        >
           {busy === 'run' ? <Spinner size={13} /> : <Play size={13} />} {busy === 'run' ? 'Running…' : 'Run query'}
         </Button>
         {!quick && (

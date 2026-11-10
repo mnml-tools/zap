@@ -1,6 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
-import { filterTablesShortcut } from '../../lib/shortcuts'
-import { ArrowBigUp, ArrowLeft, Plus, Zap } from 'lucide-react'
+import { ArrowLeft, Plus, Zap } from 'lucide-react'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
 import {
   Button,
@@ -10,8 +8,7 @@ import {
   SidebarFooter,
   SidebarLabel,
   Spinner,
-  StatusDot,
-  useShortcut
+  StatusDot
 } from '@mnml-tools/ui'
 import { tableKey, isView } from '../../lib/tableState'
 import { SidebarSqlMenu } from '../molecules/SidebarSqlMenu'
@@ -52,21 +49,6 @@ type Props = { onChooseExportTables: () => void } & Pick<
 export function WorkspaceSidebar(props: Props) {
   const { closing, saving, anyQueryBusy, closeConnection, sidebar, setSidebar } = props
 
-  const tableSearch = useRef<HTMLInputElement>(null)
-  const [focusRequest, setFocusRequest] = useState(0)
-
-  useShortcut(filterTablesShortcut, !closing, () => {
-    setSidebar('tables')
-    setFocusRequest((count) => count + 1)
-  })
-
-  useEffect(() => {
-    if (!focusRequest) return
-
-    tableSearch.current?.focus()
-    tableSearch.current?.select()
-  }, [focusRequest])
-
   const activeTable = props.tables.find((table) => tableKey(table) === props.active)
   const tableCount = props.tables.filter((table) => !isView(table)).length
 
@@ -95,15 +77,7 @@ export function WorkspaceSidebar(props: Props) {
       {sidebar === 'tables' ? (
         <>
           <SearchField
-            inputRef={tableSearch}
             className="table-filter-search"
-            shortcutLabel="Press Shift twice"
-            shortcutHint={
-              <>
-                <ArrowBigUp size={12} aria-hidden="true" />
-                <ArrowBigUp size={12} aria-hidden="true" />
-              </>
-            }
             label="Filter tables"
             placeholder="Filter tables…"
             value={props.search}

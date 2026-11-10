@@ -1,9 +1,11 @@
+import { formatAppShortcut } from '../../hooks/useAppShortcut'
+import { useAppShortcut } from '../../hooks/useAppShortcut'
 import { Check, Plus } from 'lucide-react'
 import { useState } from 'react'
 import type { NewColumn } from '../../types/table'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
-import { discardChangesShortcut, formatShortcut, saveChangesShortcut } from '../../lib/shortcuts'
-import { Button, ErrorDialog, Spinner, useShortcut } from '@mnml-tools/ui'
+import { discardChangesShortcut, saveChangesShortcut } from '../../lib/shortcuts'
+import { Button, ErrorDialog, Spinner } from '@mnml-tools/ui'
 import { ColumnTypePicker } from '../molecules/ColumnTypePicker'
 import { EditableCell } from '../molecules/EditableCell'
 
@@ -72,8 +74,8 @@ export function TableStructureEditor({ model, rows }: Props) {
     model.setStructure({ changes: [] })
   }
 
-  useShortcut(saveChangesShortcut, canSave, save)
-  useShortcut(discardChangesShortcut, count > 0 && !model.structureSaving, discard)
+  useAppShortcut(saveChangesShortcut, canSave, save)
+  useAppShortcut(discardChangesShortcut, count > 0 && !model.structureSaving, discard)
 
   return (
     <>
@@ -99,7 +101,7 @@ export function TableStructureEditor({ model, rows }: Props) {
           {count > 0 && (
             <>
               <Button
-                title={`Discard changes (${formatShortcut(discardChangesShortcut)})`}
+                title={`Discard changes (${formatAppShortcut(discardChangesShortcut)})`}
                 disabled={model.structureSaving}
                 onClick={discard}
               >

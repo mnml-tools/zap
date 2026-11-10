@@ -1,6 +1,8 @@
+import { formatAppShortcut } from '../../hooks/useAppShortcut'
+import { useAppShortcut } from '../../hooks/useAppShortcut'
 import type { ComponentProps } from 'react'
 import type { Page, TableDraft, TableSort, CellEditor } from '../../types/table'
-import { duplicateRowsShortcut, removeRowsShortcut, formatShortcut } from '../../lib/shortcuts'
+import { duplicateRowsShortcut, removeRowsShortcut } from '../../lib/shortcuts'
 import { useTableNavigation } from '../../hooks/useTableNavigation'
 import { useColumnSelection } from '../../hooks/useColumnSelection'
 import { rowKey } from '../../lib/tableState'
@@ -8,7 +10,7 @@ import { foreignKeyFor, referenceTitle } from '../../lib/relations'
 import { ColumnHeader } from '../molecules/ColumnHeader'
 import { EditableTableRow } from '../molecules/EditableTableRow'
 import { NewTableRow } from '../molecules/NewTableRow'
-import { ContextMenu, ErrorDialog, useShortcut } from '@mnml-tools/ui'
+import { ContextMenu, ErrorDialog } from '@mnml-tools/ui'
 
 type Props = {
   data: Page
@@ -87,8 +89,8 @@ export function EditableTable({
     selection.dismissMenu()
   }
 
-  useShortcut(duplicateRowsShortcut, canDuplicate, duplicate)
-  useShortcut(removeRowsShortcut, canRemove, remove)
+  useAppShortcut(duplicateRowsShortcut, canDuplicate, duplicate)
+  useAppShortcut(removeRowsShortcut, canRemove, remove)
 
   return (
     <>
@@ -201,13 +203,13 @@ export function EditableTable({
               ? [
                   {
                     label: `Duplicate ${rowLabel}`,
-                    shortcut: formatShortcut(duplicateRowsShortcut),
+                    shortcut: formatAppShortcut(duplicateRowsShortcut),
                     disabled: !canDuplicate,
                     onSelect: duplicate
                   },
                   {
                     label: `${restoreRows ? 'Restore' : 'Remove'} ${rowLabel}`,
-                    shortcut: formatShortcut(removeRowsShortcut),
+                    shortcut: formatAppShortcut(removeRowsShortcut),
                     disabled: !canRemove,
                     onSelect: remove
                   }
