@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Button, Dialog } from '@mnml-tools/ui'
-import { Palette, Keyboard, Table2, Code2, Plug } from 'lucide-react'
+import { Palette, Keyboard, Table2, Code2, Plug, Info } from 'lucide-react'
+import { UpdateSettings } from './UpdateSettings'
 import { ConnectionSettings } from './ConnectionSettings'
 import { EditorSettings } from './EditorSettings'
 import { DataSettings } from './DataSettings'
@@ -9,7 +10,9 @@ import { ThemeSettings } from './ThemeSettings'
 import { ShortcutSettings } from './ShortcutSettings'
 
 export function GeneralSettings({ onDismiss }: { onDismiss: () => void }) {
-  const [section, setSection] = useState<'themes' | 'shortcuts' | 'data' | 'editor' | 'connections'>('themes')
+  const [section, setSection] = useState<'themes' | 'shortcuts' | 'data' | 'editor' | 'connections' | 'updates'>(
+    'themes'
+  )
 
   return createPortal(
     <Dialog title="General settings" className="settings-dialog" closeLabel="Close settings" onDismiss={onDismiss}>
@@ -38,12 +41,18 @@ export function GeneralSettings({ onDismiss }: { onDismiss: () => void }) {
             <Plug size={15} />
             Connections
           </Button>
+          <Button aria-current={section === 'updates' ? 'page' : undefined} onClick={() => setSection('updates')}>
+            <Info size={15} />
+            Updates &amp; about
+          </Button>
         </nav>
         <div className="settings-content">
           {section === 'themes' ? (
             <ThemeSettings />
           ) : section === 'data' ? (
             <DataSettings />
+          ) : section === 'updates' ? (
+            <UpdateSettings onDismiss={onDismiss} />
           ) : section === 'connections' ? (
             <ConnectionSettings />
           ) : section === 'editor' ? (

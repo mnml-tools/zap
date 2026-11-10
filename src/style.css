@@ -2449,3 +2449,30 @@ th[aria-sort='descending'] {
   padding-top: 12px;
   padding-bottom: 12px;
 }
+
+.settings-about-version {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  background: var(--soft);
+  font-size: 12px;
+}
+.settings-about-version strong {
+  font-size: 20px;
+}
+.settings-about-version span {
+  color: var(--muted);
+}
+.settings-project-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.settings-update-check {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}

@@ -625,6 +625,7 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             releases::open_latest_release,
+            releases::open_project_page,
             pick_sqlite_file,
             pick_sql_file,
             import_sql_file,
