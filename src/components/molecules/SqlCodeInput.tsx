@@ -1,4 +1,14 @@
-import { useId, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { editorPreferences } from '../../services/editorPreferences'
+import {
+  useId,
+  useSyncExternalStore,
+  type CSSProperties,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState
+} from 'react'
 import { createPortal } from 'react-dom'
 import { highlightSql } from '../../lib/sqlHighlight'
 import type { Completion, CompletionItem } from '../../lib/sqlCompletion'
@@ -16,6 +26,7 @@ const caretKeys = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'H
 let measure: CanvasRenderingContext2D | null = null
 
 export function SqlCodeInput({ value, disabled, onChange, complete }: Props) {
+  const preferences = useSyncExternalStore(editorPreferences.subscribe, editorPreferences.getSnapshot)
   const gutter = useRef<HTMLPreElement>(null),
     highlight = useRef<HTMLPreElement>(null),
     input = useRef<HTMLTextAreaElement>(null),
@@ -43,7 +54,10 @@ export function SqlCodeInput({ value, disabled, onChange, complete }: Props) {
     const style = getComputedStyle(textarea)
     const lineHeight = parseFloat(style.lineHeight) || 20
     const lines = value.slice(0, completion.start).split('\n')
-    const column = [...lines[lines.length - 1]].reduce((at, char) => (char === '\t' ? at + 2 - (at % 2) : at + 1), 0)
+    const column = [...lines[lines.length - 1]].reduce(
+      (at, char) => (char === '\t' ? at + preferences.indentSize - (at % preferences.indentSize) : at + 1),
+      0
+    )
     const rect = textarea.getBoundingClientRect()
     const left = rect.left + parseFloat(style.paddingLeft) + column * charWidth(style) - textarea.scrollLeft
     const top = rect.top + parseFloat(style.paddingTop) + (lines.length - 1) * lineHeight - textarea.scrollTop
@@ -80,7 +94,16 @@ export function SqlCodeInput({ value, disabled, onChange, complete }: Props) {
   }
 
   return (
-    <div className="query-code">
+    <div
+      className="query-code"
+      style={
+        {
+          '--editor-font-size': `${preferences.fontSize}px`,
+          '--editor-line-height': `${preferences.fontSize + 8}px`,
+          '--editor-indent': preferences.indentSize
+        } as CSSProperties
+      }
+    >
       <pre ref={gutter} className="query-gutter" aria-hidden="true">
         {Array.from({ length: Math.max(12, value.split('\n').length) }, (_, i) => i + 1).join('\n')}
       </pre>
@@ -115,7 +138,7 @@ export function SqlCodeInput({ value, disabled, onChange, complete }: Props) {
             const typed = next.length - value.length === 1 && word,
               erased = next.length < value.length && suggesting && word
 
-            setSuggesting(!accepting.current && (typed || erased))
+            setSuggesting(preferences.autoComplete && !accepting.current && (typed || erased))
             setCursor(position)
             onChange(next)
           }}
@@ -177,9 +200,9 @@ export function SqlCodeInput({ value, disabled, onChange, complete }: Props) {
               const input = event.currentTarget,
                 start = input.selectionStart,
                 end = input.selectionEnd
-              onChange(value.slice(0, start) + '  ' + value.slice(end))
+              onChange(value.slice(0, start) + ' '.repeat(preferences.indentSize) + value.slice(end))
               requestAnimationFrame(() => {
-                input.selectionStart = input.selectionEnd = start + 2
+                input.selectionStart = input.selectionEnd = start + preferences.indentSize
               })
             }
           }}

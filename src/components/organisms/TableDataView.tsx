@@ -1,9 +1,10 @@
+import { useAppShortcut } from '../../hooks/useAppShortcut'
 import type { WorkspaceController } from '../../hooks/useWorkspace'
 import { discardChangesShortcut, saveChangesShortcut } from '../../lib/shortcuts'
 import { ColumnVisibility } from '../molecules/ColumnVisibility'
 import { TableToolbar } from '../molecules/TableToolbar'
 import { TablePagination } from '../molecules/TablePagination'
-import { ErrorDialog, Spinner, useShortcut } from '@mnml-tools/ui'
+import { ErrorDialog, Spinner } from '@mnml-tools/ui'
 import { TableFilters } from './TableFilters'
 import { EditableTable } from './EditableTable'
 
@@ -58,8 +59,8 @@ type Props = Pick<
 export function TableDataView(props: Props) {
   const { table, data, loading, saving, currentFilters } = props
 
-  useShortcut(saveChangesShortcut, !!table && props.changeCount > 0 && !saving && !loading, props.save)
-  useShortcut(discardChangesShortcut, !!table && props.changeCount > 0 && !saving && !loading, props.discard)
+  useAppShortcut(saveChangesShortcut, !!table && props.changeCount > 0 && !saving && !loading, props.save)
+  useAppShortcut(discardChangesShortcut, !!table && props.changeCount > 0 && !saving && !loading, props.discard)
 
   if (!table) return null
 

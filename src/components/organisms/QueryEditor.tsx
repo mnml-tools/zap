@@ -1,12 +1,15 @@
-import { useEffect, useRef } from 'react'
+import { editorPreferences } from '../../services/editorPreferences'
+import { queryNeedsConfirmation } from '../../lib/queryConfirmation'
+import { useAppShortcut } from '../../hooks/useAppShortcut'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useQueryEditor } from '../../hooks/useQueryEditor'
 import type { QueryEditorOptions } from '../../hooks/useQueryEditor'
 import { useSqlCompletion } from '../../hooks/useSqlCompletion'
 import type { Table } from '../../types/table'
-import { saveChangesShortcut } from '../../lib/shortcuts'
+import { runQueryShortcut, saveChangesShortcut } from '../../lib/shortcuts'
 import { previewResult } from '../../lib/tabPreview'
 import type { PreviewStore, QueryPreview } from '../../lib/tabPreview'
-import { Message, useShortcut } from '@mnml-tools/ui'
+import { ConfirmDialog, Message } from '@mnml-tools/ui'
 import { QueryToolbar } from '../molecules/QueryToolbar'
 import { SqlCodeInput } from '../molecules/SqlCodeInput'
 import { QueryEditorHint } from '../molecules/QueryEditorHint'
@@ -23,6 +26,12 @@ type Props = QueryEditorOptions & {
 
 export function QueryEditor(props: Props) {
   const editor = useQueryEditor(props)
+  const preferences = useSyncExternalStore(editorPreferences.subscribe, editorPreferences.getSnapshot)
+  const [confirmRun, setConfirmRun] = useState(false)
+  const run = () => {
+    if (preferences.confirmChanges && queryNeedsConfirmation(editor.sql)) setConfirmRun(true)
+    else void editor.run()
+  }
   const complete = useSqlCompletion({
     connectionId: props.connectionId,
     driver: props.driver,
@@ -46,22 +55,28 @@ export function QueryEditor(props: Props) {
   // Typing needs no notice because the switcher is never open while the editor has the keyboard.
   useEffect(props.previews.changed, [editor.busy, editor.result, editor.error, editor.resultIndex])
 
-  useShortcut(
+  useAppShortcut(
     saveChangesShortcut,
     !props.query.quick && props.active && editor.dirty && !editor.busy && !!editor.title.trim() && !!editor.sql.trim(),
     editor.save
   )
 
+  useAppShortcut(runQueryShortcut, props.active && !editor.busy && !!editor.sql.trim(), run)
+
   return (
-    <div
-      className="query-editor"
-      onKeyDown={(event) => {
-        if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-          event.preventDefault()
-          void editor.run()
-        }
-      }}
-    >
+    <div className="query-editor">
+      {confirmRun && (
+        <ConfirmDialog
+          title="Run query?"
+          message="This SQL contains statements that can change data or database structure. Run it against the current connection?"
+          confirmLabel="Run query"
+          onCancel={() => setConfirmRun(false)}
+          onConfirm={() => {
+            setConfirmRun(false)
+            void editor.run()
+          }}
+        />
+      )}
       <QueryToolbar
         quick={!!props.query.quick}
         canConvertQuick={!!editor.result}
@@ -72,7 +87,7 @@ export function QueryEditor(props: Props) {
         busy={editor.busy}
         onTitleChange={editor.setTitle}
         onSave={editor.save}
-        onRun={editor.run}
+        onRun={run}
         onDelete={props.onDelete}
       />
       <SqlCodeInput value={editor.sql} disabled={!!editor.busy} onChange={editor.setSql} complete={complete} />

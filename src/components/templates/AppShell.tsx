@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { dataPreferences } from '../../services/dataPreferences'
+import { useSyncExternalStore, type ReactNode } from 'react'
 import { AppShell as Shell, StatusBar } from '@mnml-tools/ui'
 import { nativeLinux } from '../../lib/platform'
 import type { Connection } from '../../types/connection'
@@ -25,8 +26,13 @@ export function AppShell({
   children,
   dialogs
 }: Props) {
+  const data = useSyncExternalStore(dataPreferences.subscribe, dataPreferences.getSnapshot)
+
   return (
-    <Shell framed={nativeLinux} className={variant}>
+    <Shell
+      framed={nativeLinux}
+      className={`${variant} data-density-${data.density}${data.wrapText ? ' data-wrap' : ''}`}
+    >
       <AppHeader status={status} connection={connection} connectionSelector={connectionSelector} />
       {children}
       <StatusBar start={footerLeft} end={footerRight} />

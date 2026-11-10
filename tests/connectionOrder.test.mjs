@@ -36,3 +36,18 @@ test('same-name connections put Local before Prod while keeping alphabetical ord
   ]
   assert.deepEqual(orderConnections(connections), [connections[2], connections[1], connections[3], connections[0]])
 })
+
+test('environment order groups local first and production last, sorting names within groups', () => {
+  const connections = [
+    { title: 'Alpha', environment: 'prod' },
+    { title: 'Zebra', environment: 'local' },
+    { title: 'Beta' },
+    { title: 'Alpha', environment: 'local' }
+  ]
+  assert.deepEqual(orderConnections(connections, 'environment'), [
+    connections[3],
+    connections[1],
+    connections[2],
+    connections[0]
+  ])
+})

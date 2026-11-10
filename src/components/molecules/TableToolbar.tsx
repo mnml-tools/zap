@@ -1,7 +1,8 @@
+import { formatAppShortcut, useShortcutPreferences } from '../../hooks/useAppShortcut'
 import { SlidersHorizontal, Check, RefreshCw, Plus } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Table } from '../../types/table'
-import { discardChangesShortcut, formatShortcut } from '../../lib/shortcuts'
+import { discardChangesShortcut } from '../../lib/shortcuts'
 import { Button, spinClassName, Spinner } from '@mnml-tools/ui'
 
 type Props = {
@@ -37,6 +38,8 @@ export function TableToolbar({
   onSave,
   onRefresh
 }: Props) {
+  useShortcutPreferences()
+
   return (
     <div className="table-toolbar">
       <div>
@@ -61,7 +64,7 @@ export function TableToolbar({
         {columnPicker}
         {changeCount > 0 && (
           <Button
-            title={`Discard changes (${formatShortcut(discardChangesShortcut)})`}
+            title={`Discard changes (${formatAppShortcut(discardChangesShortcut)})`}
             disabled={saving}
             onClick={onDiscard}
           >

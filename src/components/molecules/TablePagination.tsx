@@ -1,3 +1,4 @@
+import { pageSizeOptions } from '../../services/dataPreferences'
 import { Pagination, Separator } from '@mnml-tools/ui'
 
 type Props = {
@@ -41,7 +42,7 @@ export function TablePagination({
               disabled={disabled}
               onChange={(event) => onPageSizeChange(Number(event.target.value))}
             >
-              {[50, 100, 250, 500, 1000].map((size) => (
+              {pageSizeOptions.map((size) => (
                 <option key={size} value={size}>
                   {size}
                 </option>

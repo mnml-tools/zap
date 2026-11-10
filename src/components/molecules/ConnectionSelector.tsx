@@ -1,11 +1,14 @@
+import { useSyncExternalStore } from 'react'
+import { connectionPreferences } from '../../services/connectionPreferences'
+import { formatAppShortcut } from '../../hooks/useAppShortcut'
+import { useAppShortcut } from '../../hooks/useAppShortcut'
 import { useCallback, useId, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import type { Connection } from '../../types/connection'
 import { orderConnections } from '../../lib/connectionOrder'
-import { formatShortcut, switchConnectionShortcut } from '../../lib/shortcuts'
+import { switchConnectionShortcut } from '../../lib/shortcuts'
 import { ConnectionSelectorMenu } from './ConnectionSelectorMenu'
 import { ConnectionSummary } from './ConnectionSummary'
-import { useShortcut } from '@mnml-tools/ui'
 
 type Props = {
   connection: Connection
@@ -15,14 +18,15 @@ type Props = {
 }
 
 export function ConnectionSelector({ connection, connections, disabled, onSelect }: Props) {
-  const ordered = orderConnections(connections)
+  const preferences = useSyncExternalStore(connectionPreferences.subscribe, connectionPreferences.getSnapshot)
+  const ordered = orderConnections(connections, preferences.order)
 
   const [open, setOpen] = useState(false)
   const trigger = useRef<HTMLButtonElement>(null)
   const menuId = useId()
   const dismiss = useCallback(() => setOpen(false), [])
 
-  useShortcut(switchConnectionShortcut, !disabled, () => setOpen(true))
+  useAppShortcut(switchConnectionShortcut, !disabled, () => setOpen(true))
 
   return (
     <div className="connection-selector">
@@ -31,8 +35,7 @@ export function ConnectionSelector({ connection, connections, disabled, onSelect
         type="button"
         className="connection-selector-trigger"
         aria-label={`Switch connection: ${connection.title}`}
-        title={`Switch connection (${formatShortcut(switchConnectionShortcut)})`}
-        aria-keyshortcuts="Control+P Meta+P"
+        title={`Switch connection (${formatAppShortcut(switchConnectionShortcut)})`}
         aria-haspopup="dialog"
         aria-expanded={open && !disabled}
         aria-controls={open && !disabled ? menuId : undefined}

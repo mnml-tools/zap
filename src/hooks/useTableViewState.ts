@@ -1,3 +1,4 @@
+import { dataPreferences, pageSizeOptions } from '../services/dataPreferences'
 import { useEffect, useState } from 'react'
 import type { ApiRequest } from '../services/api'
 import type { Table, Page, TableSort } from '../types/table'
@@ -26,7 +27,7 @@ export function useTableViewState({ id, active, table, request, onError }: Optio
   const [data, setData] = useState<Page | null>(null),
     [loading, setLoading] = useState(false),
     [revision, setRevision] = useState(0)
-  const pageSize = pageSizes[active] ?? 100
+  const pageSize = pageSizes[active] ?? dataPreferences.getSnapshot().pageSize
   const page = pages[active] || 0,
     sort = sorts[active],
     currentFilters = filters[active]
@@ -35,6 +36,10 @@ export function useTableViewState({ id, active, table, request, onError }: Optio
     sortSignature = JSON.stringify(sort)
   const columns = data?.columns || tableColumns[active] || [],
     enabledFilters = applied.filter((filter) => filter.enabled).length
+
+  useEffect(() => {
+    if (table) setPageSizes((all) => (all[active] ? all : { ...all, [active]: pageSize }))
+  }, [active, table])
 
   useEffect(() => {
     let canceled = false
@@ -72,7 +77,7 @@ export function useTableViewState({ id, active, table, request, onError }: Optio
   const firstPage = () => setPages((all) => ({ ...all, [active]: 0 }))
 
   const changePageSize = (size: number) => {
-    if (![50, 100, 250, 500, 1000].includes(size)) return
+    if (!pageSizeOptions.includes(size)) return
 
     setPageSizes((all) => ({ ...all, [active]: size }))
     firstPage()
