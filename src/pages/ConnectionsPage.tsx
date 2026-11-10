@@ -19,7 +19,7 @@ export function ConnectionsPage({ connections: c }: Props) {
     <AppShell
       variant="app"
       status="Local workspace"
-      footerLeft="Zap / 1.0.0"
+      footerLeft="Zap / 1.0.1"
       footerRight="PostgreSQL · MySQL · SQLite"
       dialogs={
         <>
