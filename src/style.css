@@ -1145,7 +1145,8 @@ td.reference-active .reference-open,
   width: 135px;
   flex: 0 1 135px;
 }
-.filter-row select {
+.filter-row select,
+.settings-field select {
   text-overflow: ellipsis;
   border-radius: 0;
   -webkit-appearance: none;
@@ -2169,11 +2170,19 @@ th[aria-sort='descending'] {
 .settings-dialog {
   width: min(780px, calc(100vw - 32px));
   max-width: 780px;
+  height: min(620px, calc(100dvh - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: hidden;
+}
+.settings-dialog[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
 }
 .settings-layout {
   display: grid;
   grid-template-columns: 150px minmax(0, 1fr);
-  min-height: 360px;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 0;
   padding: 0 16px;
 }
 .settings-navigation {
@@ -2183,6 +2192,7 @@ th[aria-sort='descending'] {
   gap: 6px;
   padding: 20px 16px 20px 0;
   border-right: 1px solid var(--border);
+  overflow-y: auto;
 }
 .settings-navigation button {
   justify-content: flex-start;
@@ -2195,6 +2205,8 @@ th[aria-sort='descending'] {
 }
 .settings-content {
   min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
   padding: 20px 0 20px 24px;
 }
 .settings-actions {
@@ -2241,10 +2253,12 @@ th[aria-sort='descending'] {
 @media (max-width: 600px) {
   .settings-layout {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
   }
   .settings-navigation {
     grid-row: auto;
     flex-direction: row;
+    flex-wrap: wrap;
     border-right: 0;
     border-bottom: 1px solid var(--border);
     padding: 12px 0;
@@ -2435,10 +2449,47 @@ th[aria-sort='descending'] {
 .settings-field select {
   max-width: 180px;
   flex-shrink: 0;
+  min-width: 110px;
+  height: 28px;
+  padding: 4px 26px 4px 7px;
+  border: 1px solid var(--border);
+  background-color: var(--background);
+  color: var(--text);
+  font: 11px var(--mono);
 }
 .settings-field input[type='checkbox'] {
-  accent-color: var(--accent);
+  -webkit-appearance: none;
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border: 1px solid var(--control-border);
+  border-radius: 0;
+  background: var(--background);
+  color: var(--background);
   flex-shrink: 0;
+  cursor: pointer;
+}
+.settings-field input[type='checkbox']:hover {
+  border-color: var(--accent);
+}
+.settings-field input[type='checkbox']:checked {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.settings-field input[type='checkbox']::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: currentColor;
+  clip-path: polygon(14% 44%, 0 58%, 38% 96%, 100% 24%, 85% 10%, 37% 68%);
+  visibility: hidden;
+}
+.settings-field input[type='checkbox']:checked::before {
+  visibility: visible;
 }
 .data-wrap .data-area tbody td:not(.row-number):not(.cell-editing) {
   white-space: pre-wrap;
