@@ -38,7 +38,7 @@ export function EditableCell({
   reference,
   ...editor
 }: Props) {
-  const title = editable ? (hint ?? 'Double-click to edit') : (value ?? 'NULL')
+  const title = editable ? (hint ?? (editOnClick ? 'Click to edit' : 'Double-click to edit')) : (value ?? 'NULL')
   const classes = [
     editable && 'editable-cell',
     modified && 'cell-edited',
@@ -50,6 +50,18 @@ export function EditableCell({
   return (
     <td
       {...(!editing ? selectionEvents : undefined)}
+      onPointerDown={(event) => {
+        if (editing) return
+
+        if (editOnClick && editable && !saving && event.button === 0) {
+          // Keep the current editor active until the click switches cells.
+          // Focusing this td first would commit on blur and end row editing.
+          event.preventDefault()
+          return
+        }
+
+        selectionEvents?.onPointerDown?.(event)
+      }}
       data-selected={selected}
       tabIndex={editable && !saving ? 0 : undefined}
       className={classes.filter(Boolean).join(' ')}
