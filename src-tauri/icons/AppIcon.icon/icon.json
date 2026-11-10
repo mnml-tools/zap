@@ -1,26 +1,14 @@
 {
   "fill" : {
-    "linear-gradient" : [
-      "display-p3:0.96804,0.96496,0.95419,1.00000",
-      "srgb:0.89240,0.88928,0.87991,1.00000"
-    ]
+    "solid" : "display-p3:0.12769,0.26247,0.25016,1.00000"
   },
   "groups" : [
     {
       "layers" : [
         {
-          "glass-specializations" : [
-            {
-              "value" : true
-            },
-            {
-              "appearance" : "dark",
-              "value" : false
-            }
-          ],
-          "hidden" : false,
-          "image-name" : "SVG Image.svg",
-          "name" : "SVG Image"
+          "glass" : true,
+          "image-name" : "SVG Image 2.svg",
+          "name" : "SVG Image 2"
         }
       ],
       "shadow" : {
