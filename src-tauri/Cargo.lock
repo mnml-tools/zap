@@ -5742,7 +5742,7 @@ dependencies = [
 
 [[package]]
 name = "zap"
-version = "0.7.1"
+version = "1.0.0"
 dependencies = [
  "futures-util",
  "keyring",

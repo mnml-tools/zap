@@ -7,7 +7,7 @@ export function ConnectionLoadingPage({ connection }: { connection?: Connection 
     <AppShell
       variant="app"
       status="Restoring connections"
-      footerLeft="Zap / 0.7.1"
+      footerLeft="Zap / 1.0.0"
       footerRight="PostgreSQL · MySQL · SQLite"
     >
       <main className="connection-loading" aria-busy="true">
