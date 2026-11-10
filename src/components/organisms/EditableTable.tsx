@@ -1,6 +1,5 @@
-import { formatAppShortcut } from '../../hooks/useAppShortcut'
-import { useAppShortcut } from '../../hooks/useAppShortcut'
-import type { ComponentProps } from 'react'
+import { formatAppShortcut, useAppShortcut } from '../../hooks/useAppShortcut'
+import { useEffect, type ComponentProps } from 'react'
 import type { Page, TableDraft, TableSort, CellEditor } from '../../types/table'
 import { duplicateRowsShortcut, removeRowsShortcut } from '../../lib/shortcuts'
 import { useTableNavigation } from '../../hooks/useTableNavigation'
@@ -55,6 +54,13 @@ export function EditableTable({
 }: Props) {
   const selection = useColumnSelection(data, draft)
   const newRows = Object.entries(draft?.rows ?? {}).filter(([, row]) => row.inserted)
+  const { clear } = selection
+  const editing = editor?.tab === active
+
+  useEffect(() => {
+    if (editing || newRows.length) clear()
+  }, [editing, editor?.rowKey, editor?.column, newRows.length, clear])
+
   const navigate = useTableNavigation({
     disabled: saving,
     onSelect: (row, columnIndex) => {

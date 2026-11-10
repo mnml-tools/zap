@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { MouseEvent, PointerEvent } from 'react'
 import { rowKey } from '../lib/tableState'
 import type { Page, TableDraft } from '../types/table'
@@ -10,6 +10,10 @@ export function useColumnSelection(data: Page, draft?: TableDraft) {
   const [range, setRange] = useState<Range>()
   const [menu, setMenu] = useState<Menu>()
   const [error, setError] = useState('')
+  const clear = useCallback(() => {
+    setRange(undefined)
+    setMenu(undefined)
+  }, [])
 
   function start(event: PointerEvent<HTMLElement>, column: number, row: number, mode: Range['mode'] = 'cells') {
     if (event.button !== 0) return
@@ -92,6 +96,7 @@ export function useColumnSelection(data: Page, draft?: TableDraft) {
   }
 
   return {
+    clear,
     selectCell: (column: number, row: number) =>
       setRange(row < data.rows.length ? { column, anchor: row, end: row, mode: 'cells' } : undefined),
     selectedRows: data.rows.filter((_, index) => includesRow(index)),

@@ -51,6 +51,7 @@ export function EditableTableRow({
     draft && Object.hasOwn(draft.changes, column) ? draft.changes[column] : value
   )
   const activeOrigin = referenceOrigin?.tab === active && referenceOrigin.rowKey === rowKey ? referenceOrigin : null
+  const editingRow = editor?.tab === active && editor.rowKey === rowKey
 
   return (
     <tr
@@ -85,6 +86,7 @@ export function EditableTableRow({
         return (
           <EditableCell
             key={column}
+            editOnClick={editingRow}
             selected={selection.includes(column, rowIndex)}
             selectionEvents={{
               onPointerDown: (event) => selection.start(event, column, rowIndex),
