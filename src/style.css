@@ -827,12 +827,12 @@ td.reference-active .reference-open,
   color: var(--text);
   padding: 14px 12px;
   white-space: pre;
-  tab-size: 2;
+  tab-size: var(--editor-indent, 2);
 }
 .query-code .query-gutter,
 .query-code textarea,
 .sql-highlight {
-  font: 12px/20px var(--mono);
+  font: var(--editor-font-size, 12px) / var(--editor-line-height, 20px) var(--mono);
 }
 .query-code textarea:focus-visible {
   outline: none;
@@ -994,7 +994,7 @@ td.reference-active .reference-open,
   padding: 14px 12px;
   border: 0;
   white-space: pre;
-  tab-size: 2;
+  tab-size: var(--editor-indent, 2);
   letter-spacing: normal;
   font-variant-ligatures: none;
   text-align: left;
