@@ -1,3 +1,4 @@
+import { connectionPreferences, startupConnection } from '../services/connectionPreferences'
 import { useEffect, useRef, useState } from 'react'
 import { isTauri } from '@tauri-apps/api/core'
 import type { Connection } from '../types/connection'
@@ -122,10 +123,10 @@ export function useConnections(request: ApiRequest = api) {
 
         if (isTauri()) {
           const lastId = readLastConnection()
-          const last = saved.find((connection) => connection.id === lastId)
+          const last = startupConnection(saved, lastId, connectionPreferences.getSnapshot())
 
           if (last) await open(last)
-          else if (lastId) rememberConnection(null)
+          else if (lastId && !saved.some((connection) => connection.id === lastId)) rememberConnection(null)
         }
       })
       .catch((error) => {

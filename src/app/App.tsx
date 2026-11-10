@@ -1,3 +1,4 @@
+import { SavedConnections } from '../services/savedConnections'
 import { UpdateDialog, useAppUpdate } from '@mnml-tools/ui/tauri'
 import { api } from '../services/api'
 import type { ApiRequest } from '../services/api'
@@ -12,7 +13,7 @@ export function App({ request = api }: { request?: ApiRequest }) {
   const { update, dismiss } = useAppUpdate({ enabled: !import.meta.env.DEV })
 
   return (
-    <>
+    <SavedConnections.Provider value={connections.connections}>
       {connections.restoring ? (
         <ConnectionLoadingPage
           connection={connections.connections.find((connection) => connection.id === connections.busy)}
@@ -41,6 +42,6 @@ export function App({ request = api }: { request?: ApiRequest }) {
           onDismiss={dismiss}
         />
       )}
-    </>
+    </SavedConnections.Provider>
   )
 }

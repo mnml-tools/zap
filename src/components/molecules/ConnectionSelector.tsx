@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from 'react'
+import { connectionPreferences } from '../../services/connectionPreferences'
 import { formatAppShortcut } from '../../hooks/useAppShortcut'
 import { useAppShortcut } from '../../hooks/useAppShortcut'
 import { useCallback, useId, useRef, useState } from 'react'
@@ -16,7 +18,8 @@ type Props = {
 }
 
 export function ConnectionSelector({ connection, connections, disabled, onSelect }: Props) {
-  const ordered = orderConnections(connections)
+  const preferences = useSyncExternalStore(connectionPreferences.subscribe, connectionPreferences.getSnapshot)
+  const ordered = orderConnections(connections, preferences.order)
 
   const [open, setOpen] = useState(false)
   const trigger = useRef<HTMLButtonElement>(null)

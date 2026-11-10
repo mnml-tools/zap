@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from 'react'
+import { connectionPreferences } from '../../services/connectionPreferences'
 import type { ComponentProps } from 'react'
 import { orderConnections } from '../../lib/connectionOrder'
 import type { ConnectionView } from '../../hooks/useConnectionView'
@@ -11,7 +13,10 @@ type Props = { connections: Connection[]; search: string; activeId?: string; vie
 >
 
 export function ConnectionsList({ connections, search, activeId, view = 'grid', ...actions }: Props) {
-  const filtered = orderConnections(connections).filter((connection) => matchesConnection(connection, search))
+  const preferences = useSyncExternalStore(connectionPreferences.subscribe, connectionPreferences.getSnapshot)
+  const filtered = orderConnections(connections, preferences.order).filter((connection) =>
+    matchesConnection(connection, search)
+  )
 
   return (
     <div className={`connections connections-${view}`} aria-label="Saved connections">
