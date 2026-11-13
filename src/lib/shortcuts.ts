@@ -16,6 +16,8 @@ export const switchConnectionShortcut: Shortcut = { key: 'p', primary: true, all
 
 export const goToShortcut: Shortcut = { key: 'n', primary: true, allowInInputs: true }
 
+export const closeAllTabsShortcut: Shortcut = { key: 'w', primary: true, shift: true, allowInInputs: true }
+
 export const runQueryShortcut: Shortcut = { key: 'Enter', primary: true, allowInInputs: true }
 
 export const formatQueryShortcut: Shortcut = { key: 'l', alt: true, shift: true }
