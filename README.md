@@ -63,7 +63,7 @@ This regenerates the app icons from [AppIcon.svg](src/assets/AppIcon.svg) and pr
 - **App** at `src-tauri/target/release/bundle/macos/Zap.app`
 - **DMG** in `src-tauri/target/release/bundle/dmg/`
 
-For public distribution, see [Tauri’s macOS signing and notarization guide](https://v2.tauri.app/distribute/sign/macos/).
+For public distribution, follow [Zap's macOS signing and notarization guide](docs/macos-signing.md) for certificate setup, local builds, verification, and GitHub Actions configuration.
 
 ### Linux AppImage
 
@@ -101,7 +101,7 @@ The release is published after both platform builds pass, with both packages
 attached. The workflow uses GitHub's built-in token for publishing. Version-tag builds also require the updater signing secrets described below.
 macOS builds are not Developer ID signed or notarized, so downloaded apps may
 require approval in macOS security settings. For public distribution, configure
-[macOS signing and notarization](https://v2.tauri.app/distribute/sign/macos/).
+[macOS signing and notarization](docs/macos-signing.md).
 
 ## Automatic updates
 
