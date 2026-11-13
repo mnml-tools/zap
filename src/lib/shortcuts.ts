@@ -17,3 +17,11 @@ export const switchConnectionShortcut: Shortcut = { key: 'p', primary: true, all
 export const goToShortcut: Shortcut = { key: 'n', primary: true, allowInInputs: true }
 
 export const runQueryShortcut: Shortcut = { key: 'Enter', primary: true, allowInInputs: true }
+
+export const formatQueryShortcut: Shortcut = { key: 'l', alt: true, shift: true }
+
+type KeyPress = { code: string; metaKey: boolean; ctrlKey: boolean; altKey: boolean; shiftKey: boolean }
+
+// Matched by physical key because Option changes `event.key` on macOS (Option+Shift+L types "Ò").
+export const isFormatQueryShortcut = (event: KeyPress) =>
+  event.code === 'KeyL' && event.altKey && event.shiftKey && !event.ctrlKey && !event.metaKey

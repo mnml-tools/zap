@@ -54,3 +54,25 @@ test('discard uses Command/Ctrl+Z and preserves redo and input undo', () => {
   assert.equal(formatShortcut(discardChangesShortcut, true), '⌘Z')
   assert.equal(formatShortcut(discardChangesShortcut, false), 'Ctrl+Z')
 })
+
+test('format query matches Alt+Shift+L by physical key on every platform', async () => {
+  const { isFormatQueryShortcut } = await import('../src/lib/shortcuts.ts')
+  const press = (overrides = {}) => ({
+    code: 'KeyL',
+    metaKey: false,
+    ctrlKey: false,
+    altKey: true,
+    shiftKey: true,
+    ...overrides
+  })
+
+  assert.equal(isFormatQueryShortcut(press()), true)
+  for (const overrides of [
+    { altKey: false },
+    { shiftKey: false },
+    { ctrlKey: true },
+    { metaKey: true },
+    { code: 'KeyK' }
+  ])
+    assert.equal(isFormatQueryShortcut(press(overrides)), false)
+})

@@ -11,6 +11,8 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import { highlightSql } from '../../lib/sqlHighlight'
+import { formatSql, formattedPosition } from '../../lib/sqlFormat'
+import { isFormatQueryShortcut } from '../../lib/shortcuts'
 import type { Completion, CompletionItem } from '../../lib/sqlCompletion'
 import { SqlCompletionList } from './SqlCompletionList'
 
@@ -71,26 +73,51 @@ export function SqlCodeInput({ value, disabled, onChange, complete }: Props) {
 
   const select = (index: number) => setSelection({ key: completionKey, index })
 
+  const replace = (
+    textarea: HTMLTextAreaElement,
+    start: number,
+    end: number,
+    text: string,
+    range: [number, number]
+  ) => {
+    setSuggesting(false)
+    textarea.focus()
+    textarea.setSelectionRange(start, end)
+    // insertText keeps the native undo history; the fallback still produces the same SQL.
+    accepting.current = true
+    const inserted = document.execCommand('insertText', false, text)
+    accepting.current = false
+
+    if (inserted) textarea.setSelectionRange(...range)
+    else {
+      onChange(value.slice(0, start) + text + value.slice(end))
+      requestAnimationFrame(() => textarea.setSelectionRange(...range))
+    }
+  }
+
   const accept = (item: CompletionItem) => {
     const textarea = input.current
 
     if (!textarea || !completion) return
 
     const { start, end } = completion
-    setSuggesting(false)
-    textarea.focus()
-    textarea.setSelectionRange(start, end)
-    // insertText keeps the native undo history; the fallback still produces the same SQL.
-    accepting.current = true
-    const inserted = document.execCommand('insertText', false, item.insert)
-    accepting.current = false
+    const caret = start + item.insert.length
+    replace(textarea, start, end, item.insert, [caret, caret])
+  }
 
-    if (!inserted) {
-      onChange(value.slice(0, start) + item.insert + value.slice(end))
-      requestAnimationFrame(() => {
-        textarea.selectionStart = textarea.selectionEnd = start + item.insert.length
-      })
-    }
+  // Formats the selection, or the whole query when nothing is selected.
+  const format = (textarea: HTMLTextAreaElement) => {
+    const { selectionStart, selectionEnd } = textarea
+    const whole = selectionStart === selectionEnd
+    const start = whole ? 0 : selectionStart,
+      end = whole ? value.length : selectionEnd
+    const source = value.slice(start, end),
+      formatted = formatSql(source, preferences.indentSize)
+
+    if (formatted === source) return
+
+    const caret = formattedPosition(source, formatted, selectionStart)
+    replace(textarea, start, end, formatted, whole ? [caret, caret] : [start, start + formatted.length])
   }
 
   return (
@@ -190,6 +217,12 @@ export function SqlCodeInput({ value, disabled, onChange, complete }: Props) {
               event.preventDefault()
               setCursor(event.currentTarget.selectionStart)
               setSuggesting(true)
+              return
+            }
+
+            if (isFormatQueryShortcut(event)) {
+              event.preventDefault()
+              format(event.currentTarget)
               return
             }
 
