@@ -1,5 +1,5 @@
 import { formatAppShortcut, useShortcutPreferences } from '../../hooks/useAppShortcut'
-import { runQueryShortcut, saveChangesShortcut } from '../../lib/shortcuts'
+import { formatQueryShortcut, formatShortcut, runQueryShortcut, saveChangesShortcut } from '../../lib/shortcuts'
 import { Separator } from '@mnml-tools/ui'
 
 export function QueryEditorHint({
@@ -29,6 +29,8 @@ export function QueryEditorHint({
             {formatAppShortcut(saveChangesShortcut)} to save
           </>
         )}
+        <Separator />
+        {formatShortcut(formatQueryShortcut)} to format
         <Separator />
         Ctrl+Space for suggestions
         <Separator />
