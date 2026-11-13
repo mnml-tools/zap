@@ -10,7 +10,7 @@ This guide covers distributing Zap through GitHub Releases or your website with 
 - CI: `.github/workflows/desktop.yml` builds a universal app for Intel and Apple Silicon, then archives it as `Zap-macos-universal.app.zip`.
 - Version-tag builds also produce updater archives and signatures.
 
-The current workflow does not pass Apple credentials. Adding GitHub secrets alone will not enable signing; the build step must also reference them as described below.
+The workflow signs and notarizes every macOS build, including main-branch pushes, version tags, and manual runs. Configure the six repository secrets below before running it. Missing credentials fail the macOS job before dependencies are installed.
 
 | Mechanism               | Purpose                                                    | Credential                                               |
 | ----------------------- | ---------------------------------------------------------- | -------------------------------------------------------- |
@@ -149,45 +149,13 @@ In `mnml-tools/zap`, open **Settings → Secrets and variables → Actions → N
 | `APPLE_PASSWORD`             | App-specific password                  |
 | `APPLE_TEAM_ID`              | Developer Team ID                      |
 
-### Wire secrets into the macOS build
+### How the workflow uses the secrets
 
-Replace the existing **Build desktop package** step with these two steps. This example signs every macOS build handled by the current workflow, including manual runs; the Linux command and updater variables retain their current behavior.
+The [desktop workflow](../.github/workflows/desktop.yml) checks all six secrets and requires a Developer ID Application signing identity. The macOS build passes the certificate, export password, identity, and notarization credentials to Tauri. Tauri imports the certificate and uses Apple's notarization service during packaging.
 
-```yaml
-- name: Build macOS package
-  if: runner.os == 'macOS'
-  env:
-    APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-    APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-    APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-    APPLE_ID: ${{ secrets.APPLE_ID }}
-    APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-    APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-    TAURI_SIGNING_PRIVATE_KEY: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.TAURI_SIGNING_PRIVATE_KEY || '' }}
-    TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD || '' }}
-  run: |
-    set -euo pipefail
-    for name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
-      if [[ -z "${!name}" ]]; then
-        echo "Missing required secret: $name" >&2
-        exit 1
-      fi
-    done
-    npm run tauri build -- --ci ${{ matrix.args }} -- --locked
-    ZAP_APP='src-tauri/target/universal-apple-darwin/release/bundle/macos/Zap.app'
-    codesign --verify --deep --strict --verbose=2 "$ZAP_APP"
-    xcrun stapler validate "$ZAP_APP"
-    spctl --assess --type execute --verbose=4 "$ZAP_APP"
+Before archiving, the workflow verifies the app signature with `codesign`, validates the stapled notarization ticket with `stapler`, and assesses the app with `spctl`. Any failed check stops the macOS job and prevents the dependent release job from publishing.
 
-- name: Build Linux package
-  if: runner.os == 'Linux'
-  env:
-    TAURI_SIGNING_PRIVATE_KEY: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.TAURI_SIGNING_PRIVATE_KEY || '' }}
-    TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD || '' }}
-  run: npm run tauri build -- --ci ${{ matrix.args }} -- --locked
-```
-
-Tauri accepts the encoded certificate and export password through these variables. The verification commands stop the job before archiving if signing or stapling fails. Leave the existing archive, artifact upload, updater configuration, and release steps in place. These are proposed workflow edits; this guide does not apply them.
+The Linux build has its own step without Apple credentials. Version-tag builds on both platforms still use the existing updater secrets and release process.
 
 Test through **Actions → Desktop builds → Run workflow** on the branch containing your workflow edits before pushing a release tag. Download its artifact and test it on another Mac. For version releases, also keep the three updater secrets documented in the [README](../README.md#configure-github-signing-secrets).
 

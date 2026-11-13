@@ -99,9 +99,10 @@ git push origin v0.4.0
 
 The release is published after both platform builds pass, with both packages
 attached. The workflow uses GitHub's built-in token for publishing. Version-tag builds also require the updater signing secrets described below.
-macOS builds are not Developer ID signed or notarized, so downloaded apps may
-require approval in macOS security settings. For public distribution, configure
-[macOS signing and notarization](docs/macos-signing.md).
+macOS builds require the six Apple signing secrets listed in the
+[macOS signing and notarization guide](docs/macos-signing.md). The workflow signs
+and notarizes the app, then verifies its signature, stapled ticket, and Gatekeeper
+assessment before archiving it. Missing credentials fail the macOS job before building.
 
 ## Automatic updates
 
