@@ -6,12 +6,14 @@ import {
   saveChangesShortcut,
   switchConnectionShortcut,
   goToShortcut,
+  closeAllTabsShortcut,
   runQueryShortcut
 } from '../lib/shortcuts.ts'
 
 export const shortcutCommands = [
   { id: 'goTo', label: 'Go to table or query', shortcut: goToShortcut },
   { id: 'switchConnection', label: 'Switch connection', shortcut: switchConnectionShortcut },
+  { id: 'closeAllTabs', label: 'Close all tabs', shortcut: closeAllTabsShortcut },
   { id: 'runQuery', label: 'Run query', shortcut: runQueryShortcut },
   { id: 'saveChanges', label: 'Save changes', shortcut: saveChangesShortcut },
   { id: 'discardChanges', label: 'Discard changes', shortcut: discardChangesShortcut },

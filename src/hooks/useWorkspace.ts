@@ -14,6 +14,8 @@ import { useSavedQueries } from './useSavedQueries'
 import { useUnsavedChanges } from './useUnsavedChanges'
 import { useReferencePanel } from './useReferencePanel'
 import { referenceFilters } from '../lib/relations'
+import { closeAllTabsShortcut } from '../lib/shortcuts'
+import { useAppShortcut } from './useAppShortcut'
 
 export type WorkspaceOptions = {
   id: string
@@ -184,6 +186,10 @@ export function useWorkspace({ id, connection, onClose, onSwitch, request = api 
   }
 
   const closeTab = (table: Table) => closeTabs([tableKey(table)])
+
+  useAppShortcut(closeAllTabsShortcut, !closing && !confirm && (tabs.tabs.length > 0 || queries.tabs.length > 0), () =>
+    closeTabs([...tabs.tabs.map(tableKey), ...queries.tabs.map((query) => `query:${query.id}`)])
+  )
 
   const copyTableName = (table: Table) => {
     navigator.clipboard.writeText(table.name).catch((error) => setTableActionError(String(error)))
